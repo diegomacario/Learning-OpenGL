@@ -1,5 +1,5 @@
 # Learning-OpenGL
-Small experiments built with OpenGL.
+Small graphics and physics experiments built with OpenGL.
 
 ### Graphics
 
