@@ -32,9 +32,6 @@ float lastY = SCR_HEIGHT / 2.0f;
 float deltaTime = 0.0f; // Time between the current frame and the last frame
 float lastFrame = 0.0f;
 
-// Lighting
-glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
-
 int main()
 {
    // Initialize GLFW before calling any GLFW functions
@@ -95,87 +92,7 @@ int main()
    // Read the vertex and fragment shaders, and create the vertex programs
    // ****************************************************************************************************
 
-   Shader ourShader("shader/6.2.model_loading.vs", "shader/6.2.model_loading.fs");
-   Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
-
-   // Initialize the relevant buffers with the data that we wish to render
-   // ****************************************************************************************************
-   //                     Positions            Normals              Texture coords
-   //                    <--------------->    <--------------->    <------->
-   float vertices[] = { -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-                         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
-                         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-                         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
-                        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
-                        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
-
-                        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-                         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
-                         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-                         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
-                        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
-                        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
-
-                        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-                        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-                        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-                        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-                        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-                        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-                         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-                         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
-                         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-                         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
-                         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
-                         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
-
-                        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-                         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
-                         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-                         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
-                        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
-                        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
-
-                        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
-                         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
-                         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-                         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
-                        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
-                        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f };
-
-   unsigned int VBO;
-
-   // Create a VBO
-   glGenBuffers(1, &VBO);
-
-   // Bind the VBO and store the vertex data inside of it
-   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
-
-   // Light
-   // ****************************************************************************************************
-
-   unsigned int lightVAO;
-   glGenVertexArrays(1, &lightVAO);
-
-   // Bind the VAO
-   // From this point onward, the VAO will store the vertex attribute configuration
-   glBindVertexArray(lightVAO);
-
-   // Connect the vertex positions that are inside VBO with attribute 0 of the vertex shader
-   // The vertex shader of the light source does not use the normals or the texture coordinates,
-   // so we do not connect them with any attributes
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
-   glEnableVertexAttribArray(0);
-
-   // Clean up
-   // ****************************************************************************************************
-
-   // The call to glVertexAttribPointer registered VBO as the VAOs' bound VBO, so we can safely unbind it now
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-   // We can also unbind the last VAO so that other VAO calls won't accidentally modify it
-   glBindVertexArray(0);
+   Shader ourShader("shader/6.1.model_loading.vs", "shader/6.1.model_loading.fs");
 
    // Load the models
    // ****************************************************************************************************
@@ -205,7 +122,10 @@ int main()
       // Clear the entire buffer of the current framebuffer
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-      // Model matrix
+      // Note: A shader must be active when setting uniforms/drawing
+      ourShader.use();
+
+      // render the loaded model
       glm::mat4 model;
       model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the nanosuit down so that it is at the center of the scene
       model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));       // Scale the nanosuit down so that it fits in our scene
@@ -219,12 +139,6 @@ int main()
                                               0.1f,                                   // Near
                                               100.0f);                                // Far
 
-      // Nanosuit
-      // ****************************************************************************************************
-
-      // Note: A shader must be active when setting uniforms/drawing
-      ourShader.use();
-
       // Pass the MVP to the fragment shader
       ourShader.setMat4("model", model);
       ourShader.setMat4("view", view);
@@ -232,26 +146,6 @@ int main()
 
       // Render the nanosuit
       ourModel.Draw(ourShader);
-
-      // Lamp
-      // ****************************************************************************************************
-
-      // Model matrix
-      model = glm::mat4();
-      model = glm::translate(model, lightPos);
-      model = glm::scale(model, glm::vec3(0.2f));
-
-      // Note: A shader must be active when setting uniforms/drawing
-      lampShader.use();
-
-      // Pass the MVP to the vertex shader
-      lampShader.setMat4("model", model);
-      lampShader.setMat4("view", view);
-      lampShader.setMat4("projection", projection);
-
-      // Draw the light cube
-      glBindVertexArray(lightVAO);
-      glDrawArrays(GL_TRIANGLES, 0, 36);
 
       // Swap the front/back buffers
       // The front buffer contains the final image that is displayed on the screen,
