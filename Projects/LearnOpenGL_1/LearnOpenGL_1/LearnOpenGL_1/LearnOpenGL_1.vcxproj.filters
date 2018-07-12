@@ -1,0 +1,199 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="Source Files">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="Header Files">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hh;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="Resource Files">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav;mfcribbon-ms</Extensions>
+    </Filter>
+    <Filter Include="Texture Files">
+      <UniqueIdentifier>{ab584ceb-0769-4c78-92b4-4d01366f072e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Shader Files">
+      <UniqueIdentifier>{862b0c87-b2b4-47a5-bf42-3343c42a7c4e}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\glad.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\stb_image.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="inc\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\camera.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\shader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\mesh.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\model.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Image Include="tex\awesomeface.png">
+      <Filter>Texture Files</Filter>
+    </Image>
+    <Image Include="tex\container.jpg">
+      <Filter>Texture Files</Filter>
+    </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="shader\1.colors.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\1.colors.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\1.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\1.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\2.2.basic_lighting.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\2.2.basic_lighting.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\2.2.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\2.2.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\3.1.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\3.1.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\3.1.materials.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\3.1.materials.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.1.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.1.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.1.lighting_maps.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.1.lighting_maps.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.2.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.2.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.2.lighting_maps.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.2.lighting_maps.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.3.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.3.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.3.lighting_maps.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\4.3.lighting_maps.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.1.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.1.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.1.light_casters.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.1.light_casters.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.2.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.2.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.2.light_casters.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.2.light_casters.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.3.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.3.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.3.light_casters.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.3.light_casters.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.4.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.4.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.4.light_casters.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.4.light_casters.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.5.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.5.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.5.light_casters.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\5.5.light_casters.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\6.1.model_loading.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\6.1.model_loading.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+  </ItemGroup>
+</Project>
