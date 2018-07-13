@@ -195,5 +195,17 @@
     <None Include="shader\6.1.model_loading.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\6.2.lamp.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\6.2.lamp.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\6.2.model_loading.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\6.2.model_loading.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

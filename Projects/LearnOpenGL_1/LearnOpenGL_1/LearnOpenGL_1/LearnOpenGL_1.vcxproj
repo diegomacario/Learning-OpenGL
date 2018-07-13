@@ -81,6 +81,10 @@
     <None Include="shader\5.5.light_casters.vs" />
     <None Include="shader\6.1.model_loading.fs" />
     <None Include="shader\6.1.model_loading.vs" />
+    <None Include="shader\6.2.lamp.fs" />
+    <None Include="shader\6.2.lamp.vs" />
+    <None Include="shader\6.2.model_loading.fs" />
+    <None Include="shader\6.2.model_loading.vs" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{5D3D89A8-8DC6-473E-AE9A-A9BD5D44656B}</ProjectGuid>
