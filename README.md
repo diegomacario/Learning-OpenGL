@@ -20,3 +20,37 @@ Small graphics and physics experiments built with OpenGL.
 ### Miscellanous
 
 - http://blog.habrador.com/2013/02/how-to-generate-random-terrain.html
+
+### Gallery
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/RGB_Triangle.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Red_Cube_With_Point_Light.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Containers_With_Spotlight.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Containers_With_Multiple_Lights_Front_View.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Containers_With_Multiple_Lights.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Nanosuit_Full.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Nanosuit_Helmet.PNG"/>
+</p>
+
+<p align="center">
+  <img src="https://github.com/diegomacario/Learning-OpenGL/blob/master/readme_images/Nanosuit_Side_View.PNG"/>
+</p>
