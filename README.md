@@ -20,6 +20,9 @@ Small graphics and physics experiments built with OpenGL.
 ### Miscellanous
 
 - http://blog.habrador.com/2013/02/how-to-generate-random-terrain.html
+- https://www.3dgep.com/understanding-the-view-matrix/
+- http://www.songho.ca/opengl/gl_projectionmatrix.html
+- http://steve.hollasch.net/cgindex/math/matrix/column-vec.html
 
 ### Gallery
 
