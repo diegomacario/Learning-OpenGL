@@ -54,6 +54,9 @@
     <ClCompile Include="src\ball_object.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\particle_generator.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\stb_image.h">
@@ -83,12 +86,21 @@
     <ClInclude Include="inc\ball_object.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\particle_generator.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\sprite.fs">
       <Filter>Shader Files</Filter>
     </None>
     <None Include="shaders\sprite.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\particle.frag">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\particle.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

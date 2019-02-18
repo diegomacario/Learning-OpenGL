@@ -240,5 +240,17 @@
     <None Include="shader\9.2.blending_windows.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\10.1.framebuffers.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\10.1.framebuffers.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\10.1.framebuffers_screen.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\10.1.framebuffers_screen.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

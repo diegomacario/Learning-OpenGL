@@ -1264,3 +1264,259 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // glCullFace(GL_FRONT); // Select which face you want to cull: GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
 
 // glFrontFace(GL_CCW); // Define which vertex ordering corresponds to a front-facing triangle
+
+
+// Framebuffers
+
+// So far we have used:
+// Color buffer for writing color values
+// Depth buffer for writing depth information
+// Stencil buffer for discarding certain fragments based on some condition
+
+// The combination of these buffers is called a framebuffer and is stored somewhere in memory.
+// OpenGL gives us the flexibility to define our own framebuffers 
+
+// The rendering operations we've done so far were all done on top of the render buffers
+// that are attached to the default framebuffer.
+// The default framebuffer is created and configured when you create your window (GLFW does this for us).
+
+// To create a framebuffer object (FBO):
+
+// unsigned int fbo;
+// glGenFramebuffers(1, &fbo);
+
+// To bind a framebuffer object:
+
+   // There are 3 framebuffer targets:
+   // GL_FRAMEBUFFER:      By binding to this target, all read and write framebuffer operations will affect
+   //                      the currently bound framebuffer.
+   // GL_READ_FRAMEBUFFER: Only the read operations affect the framebuffer bound to this target.
+   //                      Example: glReadPixels()
+   // GL_DRAW_FRAMEBUFFER: Only the write operations affect the framebuffer bound to this target.
+   //                      Example: Destination for rendering, clearning and other write operations.
+// glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+// Unfortunately, we can't use our framebuffer yet because it is not complete.
+// For a framebuffer to be complete the following requirements have to be satisfied:
+
+// 1) We have to attach at least one buffer (color, depth or stencil buffer).
+// 2) There should be at least one color attachment.
+// 3)All attachments should be complete as well (reserved memory).
+// 4) Each buffer should have the same number of samples.
+
+// For a definition of samples, take a look at the Anti Aliasing section.
+
+// After we have met all the requirements, we can check if we successfully completed the framebuffer
+// by calling glCheckFramebufferStatus with GL_FRAMEBUFFER, which checks the framebuffer that is currently
+// bound to GL_FRAMEBUFFER and returns GL_FRAMEBUFFER_COMPLETE if everything is good.
+
+// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+
+// All subsequent rendering operations will now render to the attachments of the currently bound framebuffer.
+// Since our framebuffer is not the default framebuffer, the rendering commands will have no impact
+// on the visual output of the window. For this reason it is called off-screen rendering when we render
+// to a framebuffer that is not the default one.
+
+// To make sure all rendering operations will have a visual impact on the main window,
+// we need to make the default framebuffer active again by binding to 0:
+
+// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+// When we're done with all framebuffer operations, do not forget to delete the framebuffer object:
+
+// glDeleteFramebuffers(1, &fbo);
+
+// Now, before the completeness check is executed we need to attach one or more attachments to the framebuffer.
+// An attachment is a memory location that can act as a buffer for the framebuffer. Think of it as an image.
+// When creating an attachment we have two options to take: textures or renderbuffer objects.
+
+// Texture attachments:
+// -------------------
+
+// When attaching a texture to a framebuffer, all rendering commands will write to the texture as if it was
+// a normal color/depth/stencil buffer.
+// The advantage of using textures is that the result of all rendering operations will be stored as a texture
+// image that we can then easily use in our shaders.
+
+// Creating a texture for a framebuffer is roughly the same as creating a normal texture:
+
+// unsigned int texture;
+// glGenTextures(1, &texture);
+// glBindTexture(GL_TEXTURE_2D, texture);
+
+// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// The main differences here are that we set the dimensions equal to the screen size (although this is not required),
+// and we pass NULL as the texture's data parameter. For this texture, we're only allocating memory and not
+// actually filling it. The texture will be filled as soon as we render to the framebuffer.
+// Also note that we do not care about any of the wrapping methods or mipmapping since we won't be needing
+// those in most cases.
+
+// If you want to render your whole screen to a texture of a smaller or larger size, you need to call
+// glViewport again (before rendering to your framebuffer) with the new dimensions of your texture.
+// Otherwise only a small part of the texture or screen will be drawn onto the texture.
+
+// Now that we've created a texture the last thing we need to do is actually attach it to the framebuffer:
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER,       // target:     framebuffer type we are targeting (R, W, RW)
+//                        GL_COLOR_ATTACHMENT0, // attachment: type of attachment we are attaching. Options:
+                                                //             GL_COLOR_ATTACHMENTi
+                                                //             GL_DEPTH_ATTACHMENT
+                                                //             GL_STENCIL_ATTACHMENT
+                                                //             GL_DEPTH_STENCIL_ATTACHMENT
+//                        GL_TEXTURE_2D,        // textarget:  type of texture you want to attach.
+//                        texture,              // texture     texture to attach.
+//                        0);                   // level:      mipmap level.
+
+// When creating a depth texture, the texture's format and internalformat should be GL_DEPTH_COMPONENT.
+// In the case of a stencil texture, they should be GL_STENCIL_INDEX.
+
+// It is also possible to attach both a depth buffer and a stencil buffer as a single texture.
+// Each 32 bit value of the texture then consists of 24 bits of depth information and 8 bits of
+// stencil information. To attach a depth and stencil buffer as one texture we use the
+// GL_DEPTH_STENCIL_ATTACHMENT type and configure the texture's formats to contain combined depth and stencil
+// values. Example:
+
+// glTexImage2D(GL_TEXTURE_2D,
+//              0,
+//              GL_DEPTH24_STENCIL8,
+//              800,
+//              600,
+//              0,
+//              GL_DEPTH_STENCIL,
+//              GL_UNSIGNED_INT_24_8,
+//              NULL);
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+
+// Renderbuffer object attachments:
+// -------------------------------
+
+// Just like a texture image, a renderbuffer object is an actual buffer e.g. an array of bytes, integers,
+// pixels or whatever. A renderbuffer object has the added advantage though that it stores its data in OpenGL's
+// native rendering format making it optimized for off-screen rendering to a framebuffer.
+
+// Renderbuffer objects store all the render data directly into their buffer without any conversions
+// to texture-specific formats, thus making them faster as a writeable storage medium.
+// However, renderbuffer objects are generally write-only, thus you cannot read from them
+// (like with texture-access). It is possible to read from them via glReadPixels, though that returns
+// a specified area of pixels from the currently bound framebuffer, but not directly from the attachment itself.
+
+// Because their data is already in its native format, they are quite fast when writing data or simply
+// copying their data to other buffers. Operations like switching buffers are thus quite fast when using
+// renderbuffer objects. The glfwSwapBuffers function we've been using at the end of each render iteration
+// might as well be implemented with renderbuffer objects: we simply write to a renderbuffer image,
+// and swap to the other one at the end. Renderbuffer objects are perfect for these kind of operations.
+
+// To create a renderbuffer object (RBO) and bind it so that all subsequent renderbuffer operations affect it:
+
+// unsigned int rbo;
+// glGenRenderbuffers(1, &rbo);
+// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+// Since renderbuffer objects are generally write-only they are often used as depth and stencil attachments,
+// since most of the time we don't really need to read values from the depth and stencil buffers but still care
+// about depth and stencil testing. We need the depth and stencil values for testing, but we don't need to
+// sample these values so a renderbuffer object suits this perfectly. When we're not sampling from these
+// buffers, a renderbuffer object is generally preferred since it's more optimized.
+
+// Creating a depth and stencil RBO is done by calling the glRenderbufferStorage function.
+// This function establishes the data storage, format and dimensions of an RBO's image.
+// It only allocates memory, it doesn't fill the buffer.
+
+// glRenderbufferStorage(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target
+                                              //         is the one that is configured.
+//                       GL_DEPTH24_STENCIL8, // internalformat: specifies the internal format to be used for
+                                              //                 the RBO's image.
+//                       800,                 // width: width of RBO's image in pixels.
+//                       600);                // height: height of RBO's image in pixels.
+
+// Finally, to attach an RBO to the currently bound framebuffer object:
+
+// glFramebufferRenderbuffer(GL_FRAMEBUFFER,              // target: framebuffer target.
+//                           GL_DEPTH_STENCIL_ATTACHMENT, // attachment: attachment point of FB.
+//                           GL_RENDERBUFFER,             // renderbuffertarget: RB target.
+//                           rbo);                        // renderbuffer: actual RB to attach.
+
+// Renderbuffer objects could provide some optimizations in your framebuffer projects, but it is important
+// to realize when to use renderbuffer objects and when to use textures. The general rule is that if you
+// never need to sample data from a specific buffer, it is wise to use a renderbuffer object for that
+// specific buffer. If you need to someday sample data from a specific buffer like colors or depth values,
+// you should use a texture attachment instead.
+
+// Rendering to a texture:
+// ----------------------
+
+// To render the scene into a color texture attached to a FBO we created:
+
+// unsigned int framebuffer;
+// glGenFramebuffers(1, &framebuffer);
+// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+   // Create a texture image to be used as a color attachment
+// unsigned int texColorBuffer;
+// glGenTextures(1, &texColorBuffer);
+// glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// glBindTexture(GL_TEXTURE_2D, 0);
+
+   // Attach the texture image to the currently bound FBO as a color attachment
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); 
+
+   // Create a RBO to be used as a depth/stencil attachment
+   // We use a RBO instead of a texture image because we won't be sampling the depth/stencil buffers
+// unsigned int rbo;
+// glGenRenderbuffers(1, &rbo);
+// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+// glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+   // Attach the RBO to the currently bound FBO as a depth/stencil attachment
+// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+   // Finally, check that the FBO is complete and we unbind it
+// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+//    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+// Now that the framebuffer is complete all we need to do to render to the framebuffer's buffers instead
+// of the default framebuffer's buffers is to simply bind the framebuffer object. All subsequent rendering
+// commands will then influence the currently bound framebuffer. All the depth and stencil operations will
+// also read from the currently bound framebuffer's depth and stencil attachments if they're available.
+// If you were to omit a depth buffer for example, all depth testing operations will no longer work,
+// because there isn't a depth buffer present in the currently bound framebuffer.
+
+// So, to draw the scene to a single texture we'll have to complete the following steps:
+
+// 1) Render the scene as usual with the new framebuffer bound as the active framebuffer.
+// 2) Bind the default framebuffer.
+// 3) Draw a quad that spans the entire screen with the new framebuffer's color buffer as its texture.
+
+// When drawing to the quad the spans the entire screen, there is no need for a projection matrix if we
+// specify the vertex coordinates of the quad as Normalized Device Coordinates, which allows us to output
+// them from the vertex shader directly.
+
+// Our rendering loop looks like this:
+
+   // first pass
+// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+// glEnable(GL_DEPTH_TEST);
+// DrawScene();
+
+   // second pass
+// glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default framebuffer
+// glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+// glClear(GL_COLOR_BUFFER_BIT); // we'are not using the depth buffer since we are working with a single quad
+
+// screenShader.use();
+// glBindVertexArray(quadVAO);
+// glDisable(GL_DEPTH_TEST);
+// glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+// glDrawArrays(GL_TRIANGLES, 0, 6);
+

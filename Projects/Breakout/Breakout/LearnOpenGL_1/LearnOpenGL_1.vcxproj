@@ -39,6 +39,10 @@
     <None Include="shader\1.colors.vs" />
     <None Include="shader\1.lamp.fs" />
     <None Include="shader\1.lamp.vs" />
+    <None Include="shader\10.1.framebuffers.fs" />
+    <None Include="shader\10.1.framebuffers.vs" />
+    <None Include="shader\10.1.framebuffers_screen.fs" />
+    <None Include="shader\10.1.framebuffers_screen.vs" />
     <None Include="shader\2.2.basic_lighting.fs" />
     <None Include="shader\2.2.basic_lighting.vs" />
     <None Include="shader\2.2.lamp.fs" />

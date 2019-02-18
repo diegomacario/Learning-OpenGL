@@ -1,273 +1,423 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <stb_image.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
+#include <shader.h>
+#include <camera.h>
+#include <model.h>
+
 #include <iostream>
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
-void processInput(GLFWwindow* window);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void processInput(GLFWwindow *window);
+unsigned int loadTexture(const char *path);
 
-const unsigned int SCR_WIDTH = 800;
-const unsigned int SCR_HEIGHT = 600;
+// settings
+const unsigned int SCR_WIDTH = 1280;
+const unsigned int SCR_HEIGHT = 720;
 
-// gl_Position is a pre-defined output
-const char* vertexShaderSource = "#version 330 core                                                \n"
-                                 "layout (location = 0) in vec3 aPos;                              \n"
-                                 "layout (location = 1) in vec3 aCol;                              \n"
-                                 "uniform mat4 projection;                                         \n"
-                                 "out vec3 ourColor;                                               \n"
-                                 "void main()                                                      \n"
-                                 "{                                                                \n"
-                                 "   gl_Position = projection * vec4(aPos.x, aPos.y, aPos.z, 1.0); \n"
-                                 "   ourColor    = aCol;                                           \n"
-                                 "}                                                                \0";
+// camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+float lastX = (float)SCR_WIDTH  / 2.0;
+float lastY = (float)SCR_HEIGHT / 2.0;
+bool firstMouse = true;
 
-// The fragment shader only needs one output: the final color of the fragment
-const char* fragmentShaderSource = "#version 330 core                            \n"
-                                   "in  vec3 ourColor;                           \n"
-                                   "out vec4 FragColor;                          \n"
-                                   "void main()                                  \n"
-                                   "{                                            \n"
-                                   "   FragColor = vec4(ourColor, 1.0);          \n"
-                                   "}                                            \0";
+// timing
+float deltaTime = 0.0f;
+float lastFrame = 0.0f;
 
 int main()
 {
-   // Initialize GLFW before calling any GLFW functions
-   // ****************************************************************************************************
-   glfwInit();
-   // Tell GLFW we want to use OpenGL version 3.3
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   // Tell GLFW we want to use the OpenGL Core Profile
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+    // glfw: initialize and configure
+    // ------------------------------
+    glfwInit();
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
 #ifdef __APPLE__
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE); // uncomment this statement to fix compilation on OS X
 #endif
 
-   // Create a window
-   // ****************************************************************************************************
-   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
-   if (window == NULL)
-   {
-      std::cout << "Failed to create GLFW window" << std::endl;
-      // Destroy all remaining windows, free any allocated resources and set GLFW to an uninitialized state
-      glfwTerminate();
-      return -1;
-   }
+    // glfw window creation
+    // --------------------
+    GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+    if (window == NULL)
+    {
+        std::cout << "Failed to create GLFW window" << std::endl;
+        glfwTerminate();
+        return -1;
+    }
+    glfwMakeContextCurrent(window);
+    glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    glfwSetCursorPosCallback(window, mouse_callback);
+    glfwSetScrollCallback(window, scroll_callback);
 
-   // Make the context of the specified window current on the calling thread
-   // A context can only be made current on a single thread at a time, and each thread can only have a single current context at a time
-   glfwMakeContextCurrent(window);
+    // tell GLFW to capture our mouse
+    glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-   // Specify the function that is called when the window is resized (the resize callback)
-   // When the window is first displayed, this function is also called
-   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+    // glad: load all OpenGL function pointers
+    // ---------------------------------------
+    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+    {
+        std::cout << "Failed to initialize GLAD" << std::endl;
+        return -1;
+    }
 
-   // Initialize GLAD before calling any OpenGL functions
-   // ****************************************************************************************************
-   // GLAD manages function pointers for OpenGL
-   // We pass it the function used to load the addresses of the OpenGL function pointers, which is OS-specific
-   // glfwGetProcAddress defines the correct function based on the OS we are compiling for
-   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-   {
-      std::cout << "Failed to initialize GLAD" << std::endl;
-      return -1;
-   }
+    // configure global opengl state
+    // -----------------------------
+    glEnable(GL_DEPTH_TEST);
 
-   glEnable(GL_DEPTH_TEST);
+    // build and compile shaders
+    // -------------------------
 
-   // Vertex shader
-   // ****************************************************************************************************
-   int vertexShader = glCreateShader(GL_VERTEX_SHADER);        // glCreateShader returns 0 if an error occurs during the creation the shader object
-   glShaderSource(vertexShader, 1, &vertexShaderSource, NULL); // Replace the source code of a given shader
-   glCompileShader(vertexShader);
+    // Note: The two commented lines below are needed if you want to launch this application by double-clicking LearnOpenGL_1.exe
+    //       To launch it by pressing F5 in Visual Studio, the two uncommented lines below are needed.
 
-   int success;
-   char infoLog[512];
+    //Shader shader("../LearnOpenGL_1/shader/10.1.framebuffers.vs", "../LearnOpenGL_1/shader/10.1.framebuffers.fs");
+    //Shader screenShader("../LearnOpenGL_1/shader/10.1.framebuffers_screen.vs", "../LearnOpenGL_1/shader/10.1.framebuffers_screen.fs");
 
-   // glGetShaderiv allows us to query a shader for information (GL_SHADER_TYPE, GL_DELETE_STATUS, GL_COMPILE_STATUS, GL_INFO_LOG_LENGTH, GL_SHADER_SOURCE_LENGTH)
-   glGetShaderiv(vertexShader, GL_COMPILE_STATUS, &success);
-   if (!success)
-   {
-      // glGetShaderInfoLog allows us to print compilation errors
-      glGetShaderInfoLog(vertexShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::VERTEX::COMPILATION_FAILED\n" << infoLog << std::endl;
-   }
+    Shader shader("shader/10.1.framebuffers.vs", "shader/10.1.framebuffers.fs");
+    Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen.fs");
 
-   // Fragment shader
-   // ****************************************************************************************************
-   int fragmentShader = glCreateShader(GL_FRAGMENT_SHADER);
-   glShaderSource(fragmentShader, 1, &fragmentShaderSource, NULL);
-   glCompileShader(fragmentShader);
+    // set up vertex data (and buffer(s)) and configure vertex attributes
+    // ------------------------------------------------------------------
+    float cubeVertices[] = {
+        // positions          // texture Coords
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
 
-   glGetShaderiv(fragmentShader, GL_COMPILE_STATUS, &success);
-   if (!success)
-   {
-      glGetShaderInfoLog(fragmentShader, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::FRAGMENT::COMPILATION_FAILED\n" << infoLog << std::endl;
-   }
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
 
-   // Shader program
-   // ****************************************************************************************************
-   int shaderProgram = glCreateProgram();         // A shader program is the result of linking multiple shaders together. glCreateProgram returns 0 if an error occurs during the creation the shader program
-   glAttachShader(shaderProgram, vertexShader);
-   glAttachShader(shaderProgram, fragmentShader);
-   glLinkProgram(shaderProgram);                  // When two shaders are linked, the outputs of the first one are connected with the inputs of the second one
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-   // glGetProgramiv allows us to query a program for information
-   glGetProgramiv(shaderProgram, GL_LINK_STATUS, &success);
-   if (!success)
-   {
-      // glGetProgramInfoLog allows us to print link errors
-      glGetProgramInfoLog(shaderProgram, 512, NULL, infoLog);
-      std::cout << "ERROR::SHADER::PROGRAM::LINKING_FAILED\n" << infoLog << std::endl;
-   }
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
 
-   // Shaders can be deleted, since they have already been attached and linked to the shader program
-   glDeleteShader(vertexShader);
-   glDeleteShader(fragmentShader);
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
 
-   // Initialize the relevant buffers with the data that we wish to render
-   // ****************************************************************************************************
-   //                    Positions           Colors
-   //                  <---------------->  <-------------->
-   float vertices[] = { 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,   // Right
-                       -0.5f, -0.5f, 0.0f, 0.0f, 1.0f, 0.0f,   // Left
-                        0.0f,  0.5f, 0.0f, 0.0f, 0.0f, 1.0f }; // Top
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
+         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
+    };
 
-   //float vertices[] = { 500.0f, 100.0f, 0.0f, 1.0f, 0.0f, 0.0f,   // Right
-   //                     300.0f, 100.0f, 0.0f, 0.0f, 1.0f, 0.0f,   // Left
-   //                     400.0f, 300.0f, 0.0f, 0.0f, 0.0f, 1.0f }; // Top
+    float planeVertices[] = {
+        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
+         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
 
-   unsigned int VAO, VBO;
+         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
+        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
+         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+    };
 
-   // Create a VAO and a VBO
-   glGenVertexArrays(1, &VAO);
-   glGenBuffers(1, &VBO);
+    // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
+    float quadVertices[] = {
+        // positions   // texCoords
+        -1.0f,  1.0f,  0.0f, 1.0f,
+        -1.0f, -1.0f,  0.0f, 0.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
 
-   // Bind the VAO
-   // From this point onward, the VAO will store the vertex attribute configuration
-   glBindVertexArray(VAO);
+        -1.0f,  1.0f,  0.0f, 1.0f,
+         1.0f, -1.0f,  1.0f, 0.0f,
+         1.0f,  1.0f,  1.0f, 1.0f
+    };
 
-   // Bind the VBO and store the vertex data inside of it
-   glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+    // cube VAO
+    unsigned int cubeVAO, cubeVBO;
+    glGenVertexArrays(1, &cubeVAO);
+    glGenBuffers(1, &cubeVBO);
+    glBindVertexArray(cubeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
 
-   // Connect the vertex positions that are inside VBO with attribute 0 of the vertex shader
-   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
-   glEnableVertexAttribArray(0);
+    // plane VAO
+    unsigned int planeVAO, planeVBO;
+    glGenVertexArrays(1, &planeVAO);
+    glGenBuffers(1, &planeVBO);
+    glBindVertexArray(planeVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glBindVertexArray(0);
 
-   // Connect the vertex colors that are inside VBO with attribute 1 of the vertex shader
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*) (3 * sizeof(GL_FLOAT)));
-   glEnableVertexAttribArray(1);
+    // screen quad VAO
+    unsigned int quadVAO, quadVBO;
+    glGenVertexArrays(1, &quadVAO);
+    glGenBuffers(1, &quadVBO);
+    glBindVertexArray(quadVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, quadVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(quadVertices), &quadVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-   // The call to glVertexAttribPointer registered VBO as the vertex attribute's bound VBO, so we can safely unbind it now.
-   glBindBuffer(GL_ARRAY_BUFFER, 0);
-   // We can also unbind VAO so that other VAO calls won't accidentally modify it
-   glBindVertexArray(0); 
+    // load textures
+    // -------------
+    unsigned int cubeTexture  = loadTexture("tex/container.jpg");
+    unsigned int floorTexture = loadTexture("tex/metal.png");
 
-   // Uncomment this call to draw in wireframe polygons.
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
-   // The opposite is:
-   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    // shader configuration
+    // --------------------
 
-   bool print = true;
+    shader.use();
+    shader.setInt("texture1", 0);
 
-   // Render loop
-   // ****************************************************************************************************
-   while(!glfwWindowShouldClose(window))
-   {
-      // Process keyboard input
-      processInput(window);
+    screenShader.use();
+    screenShader.setInt("screenTexture", 0);
 
-      // Set the color that OpenGL uses to reset the colorbuffer
-      //glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+    // framebuffer configuration
+    // -------------------------
 
-      // Clear the entire buffer of the current framebuffer
-      // Some of the available options are:
-      // GL_COLOR_BUFFER_BIT   (color buffer)
-      // GL_DEPTH_BUFFER_BIT   (depth buffer)
-      // GL_STENCIL_BUFFER_BIT (stencil buffer)
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    unsigned int framebuffer;
+    glGenFramebuffers(1, &framebuffer);
+    glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-      // glUseProgram specifies the shader program that is to be used in all subsequent drawing commands
-      glUseProgram(shaderProgram);
+    // create a color attachment texture
+    unsigned int textureColorbuffer;
+    glGenTextures(1, &textureColorbuffer);
+    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
 
-      glm::mat4 projection = glm::ortho(-1.0f, 1.0f, 1.0f, -1.0f, -1.0f, 1.0f);
-      //glm::mat4 projection = glm::ortho(0.0f, 800.0f, 600.0f, 0.0f, -1.0f, 1.0f);
+    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    unsigned int rbo;
+    glGenRenderbuffers(1, &rbo);
+    glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+    // use a single renderbuffer object for both the depth and the stencil buffer
+    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-      if (print)
-      {
-          std::cout << "   " << projection[0][0] << "   " << projection[1][0] << "   " << projection[2][0] << "   " << projection[3][0] << '\n';
-          std::cout << "   " << projection[0][1] << "   " << projection[1][1] << "   " << projection[2][1] << "   " << projection[3][1] << '\n';
-          std::cout << "   " << projection[0][2] << "   " << projection[1][2] << "   " << projection[2][2] << "   " << projection[3][2] << '\n';
-          std::cout << "   " << projection[0][3] << "   " << projection[1][3] << "   " << projection[2][3] << "   " << projection[3][3] << '\n';
-          print = false;
-      }
+    // now that we created the framebuffer and added all the attachments to it, we can check if it is complete
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+    {
+        cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
+    }
 
-      unsigned int projectionLoc = glGetUniformLocation(shaderProgram, "projection");
-      glUniformMatrix4fv(projectionLoc, 1, GL_FALSE, glm::value_ptr(projection));
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
-      // There is no need to bind the VAO in every iteration of the render loop, since there is only 1, but we will do it anyway in this example
-      glBindVertexArray(VAO);
+    // draw as wireframe
+    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
-      // Draw
-      glDrawArrays(GL_TRIANGLES, 0, 3);
+    // render loop
+    // -----------
+    while(!glfwWindowShouldClose(window))
+    {
+        // per-frame time logic
+        // --------------------
+        float currentFrame = glfwGetTime();
+        deltaTime = currentFrame - lastFrame;
+        lastFrame = currentFrame;
 
-      // There is no need to unbind the VAO in every iteration of the render loop in this example
-      // glBindVertexArray(0);
+        // input
+        // -----
+        processInput(window);
 
-      // Swap the front/back buffers
-      // The front buffer contains the final image that is displayed on the screen,
-      // while all the rendering commands draw to the back buffer
-      // When all the rendering commands are finished, the two buffers are swapped
-      glfwSwapBuffers(window);
+        // render
+        // ------
 
-      // Process the events that have been received
-      // This will cause the window and input callbacks associated with those events to be called
-      glfwPollEvents();
-   }
+        // bind framebuffer and draw scene as we normally would to its color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        // enable depth testing (it is disabled when rendering the screen-space quad)
+        glEnable(GL_DEPTH_TEST);
 
-   glDeleteVertexArrays(1, &VAO);
-   glDeleteBuffers(1, &VBO);
+        // clear the framebuffer's content
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   // Destroy all remaining windows, free any allocated resources and set GLFW to an uninitialized state
-   glfwTerminate();
+        shader.use();
+        glm::mat4 model = glm::mat4(1.0f);
+        glm::mat4 view = camera.GetViewMatrix();
+        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        shader.setMat4("view", view);
+        shader.setMat4("projection", projection);
 
-   return 0;
+        // cubes
+        glBindVertexArray(cubeVAO);
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, cubeTexture);
+        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
+        shader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+        model = glm::mat4(1.0f);
+        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
+        shader.setMat4("model", model);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // floor
+        glBindVertexArray(planeVAO);
+        glBindTexture(GL_TEXTURE_2D, floorTexture);
+        shader.setMat4("model", glm::mat4(1.0f));
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+        glBindVertexArray(0);
+
+        // now bind the default framebuffer and draw a quad plane with our framebuffer's color texture
+        glBindFramebuffer(GL_FRAMEBUFFER, 0);
+        // disable depth test so screen-space quad isn't discarded due to depth test
+        glDisable(GL_DEPTH_TEST);
+        // clear the content of the default renderbuffer's color buffer
+        // we set the clear color to white, but this is not necessary since we won't be able to see behind the quad
+        glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT);
+
+        screenShader.use();
+        glBindVertexArray(quadVAO);
+        glBindTexture(GL_TEXTURE_2D, textureColorbuffer); // use the color attachment texture as the texture of the quad plane
+        glDrawArrays(GL_TRIANGLES, 0, 6);
+
+        // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
+        // -------------------------------------------------------------------------------
+        glfwSwapBuffers(window);
+        glfwPollEvents();
+    }
+
+    // optional: de-allocate all resources once they've outlived their purpose:
+    // ------------------------------------------------------------------------
+    glDeleteVertexArrays(1, &cubeVAO);
+    glDeleteVertexArrays(1, &planeVAO);
+    glDeleteVertexArrays(1, &quadVAO);
+    glDeleteBuffers(1, &cubeVBO);
+    glDeleteBuffers(1, &planeVBO);
+    glDeleteBuffers(1, &quadVBO);
+
+    glfwTerminate();
+    return 0;
 }
 
-// When the window is resized, the rendering window must also be resized
-// For this reason, we call glViewport in the resize callback with the new dimensions of the window
+// process all input: query GLFW whether relevant keys are pressed/released this frame and react accordingly
+// ---------------------------------------------------------------------------------------------------------
+void processInput(GLFWwindow *window)
+{
+    if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+        glfwSetWindowShouldClose(window, true);
+
+    if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+        camera.ProcessKeyboard(FORWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+        camera.ProcessKeyboard(BACKWARD, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+        camera.ProcessKeyboard(LEFT, deltaTime);
+    if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+        camera.ProcessKeyboard(RIGHT, deltaTime);
+}
+
+// glfw: whenever the window size changed (by OS or user resize) this callback function executes
+// ---------------------------------------------------------------------------------------------
 void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-   // glViewPort specifies the size of the rendering window
-   // The first two parameters (x, y) set the location of the lower left corner of the rendering window
-   // The third and fourth parameters set the width and the height of the rendering window
-   // The specified coordinates tell OpenGL how it should map its Normalized Device Coordinates (NDC),
-   // which range from -1 to 1, to window coordinates (whose range is defined here)
-   // We could make the rendering window smaller than GLFW's window, and use the extra space to display a menu
-   // In this case, glViewport maps 2D coordinates as illustrated below:
-   // Horizontally: (-1, 1) -> (0, 800)
-   // Vertically:   (-1, 1) -> (0, 600)
-   //glViewport(0, 0, width, height);
-   glViewport(0, 0, width, height);
+    // make sure the viewport matches the new window dimensions; note that width and 
+    // height will be significantly larger than specified on retina displays.
+    glViewport(0, 0, width, height);
 }
 
-// This function is used to exit the rendering the loop when the escape key is pressed
-// It is called in every iteration of the render loop
-void processInput(GLFWwindow* window)
+// glfw: whenever the mouse moves, this callback is called
+// -------------------------------------------------------
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
 {
-   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-   {
-      glfwSetWindowShouldClose(window, true);
-   }
+    if (firstMouse)
+    {
+        lastX = xpos;
+        lastY = ypos;
+        firstMouse = false;
+    }
+
+    float xoffset = xpos - lastX;
+    float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+    lastX = xpos;
+    lastY = ypos;
+
+    camera.ProcessMouseMovement(xoffset, yoffset);
+}
+
+// glfw: whenever the mouse scroll wheel scrolls, this callback is called
+// ----------------------------------------------------------------------
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+    camera.ProcessMouseScroll(yoffset);
+}
+
+// utility function for loading a 2D texture from file
+// ---------------------------------------------------
+unsigned int loadTexture(char const *path)
+{
+    unsigned int textureID;
+    glGenTextures(1, &textureID);
+
+    int width, height, nrComponents;
+    unsigned char *data = stbi_load(path, &width, &height, &nrComponents, 0);
+    if (data)
+    {
+        GLenum format;
+        if (nrComponents == 1)
+            format = GL_RED;
+        else if (nrComponents == 3)
+            format = GL_RGB;
+        else if (nrComponents == 4)
+            format = GL_RGBA;
+
+        glBindTexture(GL_TEXTURE_2D, textureID);
+        glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
+        glGenerateMipmap(GL_TEXTURE_2D);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+        stbi_image_free(data);
+    }
+    else
+    {
+        std::cout << "Texture failed to load at path: " << path << std::endl;
+        stbi_image_free(data);
+    }
+
+    return textureID;
 }
 
 // Additional information:
@@ -374,7 +524,7 @@ void processInput(GLFWwindow* window)
 
 // glEnableVertexAttribArray(0);            // Enables a generic vertex attribute. A vertex attribute can be disabled by calling glDisableVertexAttribArray.
 
-// Another example of the vertex data is connected with the vertex attributes:
+// Another example of how the vertex data is connected with the vertex attributes:
 
    //                Position    Color             TexCoords
    //                <-------->  <-------------->  <-------->
@@ -403,7 +553,7 @@ void processInput(GLFWwindow* window)
 //    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 //
-// B) Set the vertex attributes pointers.
+// B) Set the vertex attribute pointers.
 //
 //    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
 //    glEnableVertexAttribArray(0);
@@ -662,4 +812,1023 @@ void processInput(GLFWwindow* window)
 // The rasterization stage usually results in a number of fragment that is much larger than the number of vertices we provided
 // The rasterizer determines the positions of the fragments based on where they reside on the triangle shape
 // It then interpolates all the input variables of the fragment shader based on these positions
+
+// Texturing:
+
+// A texture is a 1D, 2D or 3D image used to add detail to an object.
+// Aside from images, textures can also be used to store a large collection of data to send to shaders.
+// In order to map a texture to a triangle, we need to tell each vertex of the triangle which part of the texture it corresponds to.
+// Each vertex should thus have a texture coordinate associated with it that specifies what part of the texture image to sample from.
+// Fragment interpolation then does the rest for all the fragments.
+
+// Texture coordinates range from 0 to 1 in the x and y axes.
+// Retrieving the color of a texture using coordinates is called sampling.
+// Texture coordinates start at (0, 0) on the lower left corner of a texture image, and go up to (1, 1) at the upper right corner.
+
+// For a triangle we only need to pass 3 texture coordinate points to the vertex shader, which passes them to the fragment shader.
+// The fragment shader then interpolates all the texture coordinates for each fragment.
+
+// Texture wrapping:
+
+// Texture coordinates range from (0, 0) to (1, 1)
+// What happens if we specify coordinates outside of this range?
+
+// GL_REPEAT:          Repeat the texture image (default behaviour).
+// GL_MIRRORED_REPEAT: Repeat the texture image but mirror it with each repeat.
+// GL_CLAMP_TO_EDGE:   Clamp the coordinates between 0 and 1. This results in a streched edge pattern.
+// GL_CLAMP_TO_BORDER: Coordinates outside the range are given a user-specified border color.
+
+// Each mode can be set per coordinate axis (S, T and R = X, Y and Z):
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_MIRRORED_REPEAT); // Target, option and mode
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_MIRRORED_REPEAT);
+
+// With the GL_CLAMP_TO_BORDER option we need to specify the border color:
+// float borderColor[] = { 1.0f, 1.0f, 0.0f, 1.0f };
+// glTexParameterfv(GL_TEXTURE_2D, GL_TEXTURE_BORDER_COLOR, borderColor);
+
+// Texture filtering:
+
+// Texture coordinates can be any floating point value, so OpenGL has to figure out what texture pixel (texel) corresponds to a given texture coordinate
+// Texels are limited by the resolution, while texture coordinates are not.
+
+// GL_NEAREST (Nearest Neighbor Filtering): Select the pixel whose center is closest to the texture coordinate (default behavior).
+// GL_LINEAR ((Bi)linear filtering): Select an interpolated value, calculated using the texture coordinate's neighbording texels.
+
+// Texture filtering can be set for magnifying and minifying operations (when scaling up or down)
+// You could have GL_NEAREST when textures are scaled down, and GL_LINEAR when they are scaled up.
+
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// Mipmaps:
+
+// Say we have thousands of objects, each with an attached texture.
+// The ones far away have the same high resolution texture as the ones close by.
+// If a far away object only results in a few fragments,
+// OpenGL has trouble retrieving the right color value for each fragment from the high resolution texture,
+// since each fragment covers a large part of the texture image.
+// This results in visual artifacts and wasted memory on high resolution textures.
+
+// Solution: mipmaps.
+// A mipmap is a collection of texture images, where each subsequent texture is half the size of the previous one.
+// After a certain distance between the viewer and an object, OpenGL will use the mipmap texture that best suits the distance to the object.
+
+// OpenGL might show visual artifacts like sharp edges between two mipmap levels.
+// Just like normal texture filtering, it is also possible to filter between mipmap levels.
+//    Texture        Mipmap
+// GL_NEAREST_MIPMAP_NEAREST: Takes the nearest mipmap to match the pixel size and uses GL_NEAREST for texture sampling.
+// GL_LINEAR_MIPMAP_NEAREST:  Takes the nearest mipmap level and samples using GL_LINEAR.
+// GL_NEAREST_MIPMAP_LINEAR:  Linearly interpolates between the two mipmaps that most closely match the size of a pixel and samples via GL_NEAREST.
+// GL_LINEAR_MIPMAP_LINEAR:   Linearly interpolates between the two closest mipmaps and samples the texture via GL_LINEAR.
+
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// You cannot set one the mipmap filtering options as the magnification filter.
+// Mipmaps are used for when textures get downscaled.
+// Trying to the one of the mipmap filtering options as the magnification filter results in the GL_INVALID_ENUM error code.
+
+// int width, height, nrChannels;
+// unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+
+// unsigned int texture;
+// glGenTextures(1, &texture);
+
+// Bind so any subsequent texture commands will configure the currently bound texture
+// glBindTexture(GL_TEXTURE_2D, texture);
+
+// Now that the texture is bound, we can generate a texture using the previously loaded image data:
+
+// glTexImage2D generates a texture image on the currently bound texture object at the active texture unit
+// glTexImage2D(GL_TEXTURE_2D,    // target:         Common ones are GL_TEXTURE_1D, 2D or 3D.
+//              0,                // level:          Specifies the level-of-detail number.
+                                  //                 Level 0 is the base image level.
+                                  //                 Level n is the nth mipmap reduction image.
+//              GL_RGB,           // internalFormat: Specifies the number of color components in the texture.
+                                  //                 So it tells OpenGL the format in which we want to store the texture.
+//              width,            // Width
+//              height,           // Height
+//              0,                // Border:         Legacy value, must be equal to 0.
+//              GL_RGB,           // format:         Specifies the format of the pixel data.
+//              GL_UNSIGNED_BYTE, // type:           Specifies the type of the pixel data.
+//              data);            // data:           Array of bytes.
+
+// Now the currently bound texture object has the texture image attached to it.
+// But it only has the base-level of the texture image loaded.
+// If we want to use mipmaps, we have to specify all the different images manually by continually increasing the 2nd argument.
+// Or we can call glGenerateMipMap after generating the texture:
+
+// Automatically generates all the mipmap levels for the currently bound texture image of the active texture unit.
+// Each subsequent mipmap image is halved until the mipmap image has a width or height of 1 pixel.
+// glGenerateMipmap(GL_TEXTURE_2D);
+
+// After generating the texture and its mipmaps, we can free the image memory
+// stbi_image_free(data);
+
+// So generating a texture looks like this:
+
+// unsigned int texture;
+// glGenTextures(1, &texture);
+// glBindTexture(GL_TEXTURE_2D, texture);
+// // set the texture wrapping/filtering options (on the currently bound texture object)
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// // load and generate the texture
+// int width, height, nrChannels;
+// unsigned char *data = stbi_load("container.jpg", &width, &height, &nrChannels, 0);
+// if (data)
+// {
+//    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+//    glGenerateMipmap(GL_TEXTURE_2D);
+// }
+// else
+// {
+//    std::cout << "Failed to load texture" << std::endl;
+// }
+// stbi_image_free(data);
+
+// Now to apply a texture to a rectangle:
+
+//                     Position             Color               TexCoords
+//                    <--------------->    <-------------->    <-------->
+// GLfloat data[] = { 0.5f,  0.5f, 0.0f,   1.0f, 0.0f, 0.0f,   1.0f, 1.0f,   // Top right
+//                    0.5f, -0.5f, 0.0f,   0.0f, 1.0f, 0.0f,   1.0f, 0.0f,   // Bottom right
+//                   -0.5f, -0.5f, 0.0f,   0.0f, 0.0f, 1.0f,   0.0f, 0.0f,   // Bottom left
+//                   -0.5f,  0.5f, 0.0f,   1.0f, 1.0f, 0.0f,   0.0f, 1.0f }; // Top left
+
+// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(0));
+// glEnableVertexAttribArray(0);
+// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(3 * sizeof(float)));
+// glEnableVertexAttribArray(1);
+// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)(6 * sizeof(float)));
+// glEnableVertexAttribArray(2);
+
+// The vertex shader must forward the texture coordinates to the fragment shader
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+// layout (location = 1) in vec3 aColor;
+// layout (location = 2) in vec2 aTexCoord;
+// 
+// out vec3 ourColor;
+// out vec2 TexCoord;
+// 
+// void main()
+// {
+//    gl_Position = vec4(aPos, 1.0);
+//    ourColor = aColor;
+//    TexCoord = aTexCoord;
+// }
+
+// How do we pass the texture object to the fragment shader? Using the GLSL built-in data-type sampler2D.
+// To sample the color of a texture we use GLSL's built in texture function. The texture function samples the color value from the texture using the nearest/linear options we set earlier.
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 ourColor;
+// in vec2 TexCoord;
+// 
+// uniform sampler2D ourTexture;
+// 
+// void main()
+// {
+//    FragColor = texture(ourTexture, TexCoord);
+// }
+
+// All that is left is to bind the texture before we draw:
+
+// glBindTexture(GL_TEXTURE_2D, texture);
+// glBindVertexArray(VAO);
+// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+// Texture units:
+
+// Why is the sampler2D variable a uniform if we didn't assign it some value with glUniform?
+// Using glUniform1i we can assign a location value to the texture sampler, so that we can have multiple textures at once in a fragment shader.
+// The location of a shader is known as its texture unit.
+// The default texture unit for a texture is 0, which is also the default active texture unit.
+// That's why we did not have to assign a location to our texture.
+
+// Texture units allow us to have more than 1 texture in our shaders.
+// By assigning texture units to the samplers, we can bind to multiple textures at once as long as we activate the corresponding texture unit first.
+// Just like glBindTexture we can activate texture units using glActiveTexture:
+
+// glActiveTexture(GL_TEXTURE0); // Activate the texture unit
+// glBindTexture(GL_TEXTURE_2D, texture);
+
+// After activating a texture unit, a subsequent glBindTexture call will bind that texture to the currently active texture unit.
+// GL_TEXTURE0 is activated by default.
+// OpenGL should have a minimum of 16 texture units.
+
+// To accept another sampler in the fragment shader:
+
+// #version 330 core
+// ...
+// 
+// uniform sampler2D texture1;
+// uniform sampler2D texture2;
+// 
+// void main()
+// {
+//    FragColor = mix(texture(texture1, TexCoord), texture(texture2, TexCoord), 0.2);
+// }
+
+// The mix function takes two values as input and linearly interpolates between them based on its third argument.
+// If the 3rd argument is 0.0, the function returns the first input.
+// If it is 1.0, it return the second input.
+// If it is 0.2, it return 80% of the first input and 20% of the second input.
+
+// This is how we give the two textures to the shader:
+
+// ... Generate the two textures ...
+// Tell OpenGL how to connect the texture samplers with the texture units using glUniform1i:
+
+// ourShader.use()                                                 // Using our Shader class
+// glUniform1i(glGetUniformLocation(ourShader.ID, "texture1"), 0); // Texture unit 0
+// ourShader.setInt("texture2", 1);                                // Texture unit 1
+
+// Inside the render loop:
+// glActiveTexture(GL_TEXTURE0);
+// glBindTexture(GL_TEXTURE_2D, texture1);
+// glActiveTexture(GL_TEXTURE1);
+// glBindTexture(GL_TEXTURE_2D, texture2);
+// 
+// glBindVertexArray(VAO);
+// glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+// Texture is flipped upside down?
+// OpenGL expects the 0.0 coordinate of the Y-axis to be on the bottom side of the image,
+// but images usually have 0.0 at the top of the Y-axis?
+// The stb_image library has a setting for flipping images while loading them:
+
+// stbi_set_flip_vertically_on_load(true);
+
+// Coordinate systems
+
+// Vertices must be in NDC after the vertex shader is executed
+// We usually specify the vertex coordinates in a range we configure ourselves,
+// and then we transform these coordinates to NDC in the vertex shader
+// The NDC are then given to the rasterizer, which transforms them to 2D coordinates/pixels on the screen
+
+// Vertex coordinates -> NDC -> Screen coordinates
+// Transformations done in a step-by-step fashion
+// The advantage of transforming an object vertices to several intermediate coordinate systems is that
+// some of the calculations are easier to perform in certain coordinate systems
+
+// Five coordinate systems:
+// 1) Local space or object space
+// 2) World space
+// 3) View space or eye space
+// 4) Clip space
+// 5) Screen space
+
+// Let's examine each one in detail:
+
+// 1) Local space:
+// Local coordinates are the coordinates of an object relative to its local origin
+// All the vertices of an object are in local space
+
+// 2) World space:
+// World coordinates are coordinates that are specified relative to the global origin of the world
+// The model matrix transforms local coordinates into world coordinates
+// The model matrix is a transformation matrix that translates, rotates and scales objects to give them
+// a specific location/orientation in the world
+
+// 3) View space:
+// Also known as the camera space of the eye space
+// The view space is the result of transforming world-space coordinates to coordinates that are in front
+// of the user's view
+// The view matrix transforms world coordinates to camera coordinates
+
+// 4) Clip space:
+// At the end of each vertex shader run, OpenGL expects the coordinates to be within a specific range.
+// Any coordinate that falls outside of this range is clipped.
+// Coordinates that are clipped are discarded.
+
+// Because specifying the visible coordinates to be within the range -1.0 and 1.0 isn't intuitive,
+// we specify our own coordinate range to work with and then convert the coordinates in that range to NDC
+
+// To transform vertex coordinates from view space to clip space, we define a projection matrix that
+// specifies a range of coordinates in each dimension. The projection matrix then transforms the coordinates
+// within this specified range to NDC (-1.0, 1.0).
+// All coordinates outside the specified range will not be mapped between -1.0 and 1.0, so they will be clipped.
+
+// Example: If we specify the range [-1000, 1000] in the X, Y and Z axes, a coordinate of (1250, 500, 750)
+// would not be visible, since the X coordinate is outside of the range and thus gets converted to a
+// coordinate higher than 1.0 in NDC.
+
+// Note that if only a part of a primitive e.g. a triangle is outside of the clipping volume,
+// OpenGL will reconstruct the triangle as one or more triangles to fit inside the clipping range.
+
+// The viewing box that a projection matrix creates is called a frustum
+// Each coordinate inside this frustum will end up on the user's screen
+// The total process of converting coordinates within a specified range to NDC that can be easily mapped
+// to 2D view-space coordinates is called projection, since the projection matrix projects 3D coordinates
+// to easy-to-map-to-2D normalized device coordinates
+
+// Once all the vertices are transformed to the clip space, a final operation called perspective division
+// is performed, where we divide the X, Y and Z components of the position vectors by the vector's
+// homogenous W component.
+// Perspective division is what transforms the 4D clip space coordinates to 3D normalized device coordinates
+// This step is performed automatically at the end of each vertex shader run
+// It is after this stage where the resulting coordinates are mapped to screen coordinates
+// using the settings of glViewport, and turned into fragments
+
+// The projection matrix that transforms view coordinates to clip coordinates can take two different forms,
+// where each form defines its own unique frustum:
+
+// 1) Orthographic projection:
+// An ortographic projection matrix defines a cube-like frustum
+// Because of this, when we create an ortographic projection matrix we need to specify the width,
+// height and length of the visible frustum
+// All the coordinates that end up inside this frustum after being transformed from the view space to the
+// clip space will not be clipped
+
+// The dimensions of the frustum are specified with a width, a height, a near plane and a far plane.
+// The ortographic frustum directly maps all coordinates inside the frustum to NDC since the W
+// component of each vector is untouched
+// If the W component is equal to 1.0, perspective division does not change the coordinates
+
+// glm::ortho(GLint left, GLint right, GLint bottom, GLint top, GLfloat near, GLfloat far)
+// glm::ortho(0.0f, 800.0f, 0.0f, 600.0f, 0.1f, 100.0f);
+
+// An ortographic projection matrix directly maps coordinates to the 2D plane that is the screen
+// This produces unrealistic results since the projection doesn't take perspective into account
+
+// 2) Perspective projection:
+// Objects that are far away are smaller than objects that are nearby
+// Parallel lines seem to converge at infinity
+// A projection matrix maps a given frustum range to clip space, but it also manipulates the W component
+// of each vertex coordinate in such a way that the further away a vertex coordinate is from the viewer,
+// the higher this W component becomes.
+// Once the coordinates are transformed to the clip space, they are in the range -W to W
+// Anything outside this range is clipped.
+// OpenGL requires that the visible coordinates fall between -1.0 and 1.0, thus once the coordinates are
+// in the clip space, perspective division is applied
+// Each component of the each vertex coordinate is divided by its W component, resulting in smaller vertex
+// coordinates the further away a vertex is from the viewer
+// This is another reason why the W component is important, aside from the fact that it enables translations
+// The resulting coordinates are then in normalized device space
+
+// glm::mat4 proj = glm::perspective(glm::radians(45.0f),          // FoV
+//                                   (float)width / (float)height, // Aspect ratio
+//                                   0.1f,                         // Near
+//                                   100.0f);                      // Far
+
+// Whenever the near value of your perspective matrix is set a bit too high (like 10.0f),
+// OpenGL will clip all coordinates close to the camera (between 0.0f and 10.0f),
+// which gives a familiar visual result in videogames where you can see through certain objects
+// if you move too close to them.
+
+// Ortographic projection -> Each of the vertex coordinates is directly mapped to clip space
+//                           The W component is not manipulated, so perspective division has no effect
+//                           So objects far away do not seem smaller
+//                           Good for 2D renderings and architectural and engineering applications
+
+// V_clip = M_proj * M_view * M_model * V_local
+// Result should be assigned to gl_Position in the vertex shader
+// OpenGL handles the perspective division and clipping
+
+// So vertex shader outputs clip space coordinates
+// OpenGL then transforms those coordinates to NDC by doing the perspective division
+// Finally, OpenGL uses the parameters from glViewport to map the NDC to screen coordinates, where each
+// coordinate corresponds to a point on the screen. This process is called the viewport transform.
+
+// Going 3D
+
+// Say we want to move the camera backwards
+// This the same as moving the scene forward
+// Which is exactly what the view matrix does
+// Because we want to move backwards and because OpenGL uses a right-handed coordinate system,
+// we need to move the camera in the positive Z-axis direction.
+// So the scene must move in the negative Z-axis direction.
+// Note that in NDC OpenGL actually uses a left-handed coordinate system (the projection matrix switches the handedness)
+
+// Z-buffer
+
+// OpenGL stores all its depth information in what is called the z-buffer.
+// GLFW automatically creates a z-buffer, just like it creates a color-buffer to store the colors of the output image
+// The depth is stored within each fragment
+// When a fragment is going to be displayed, OpenGL compares the depth of the fragment with the depth stored in the z-buffer
+// If the depth of the current fragment is greater than the depth stored in the z-buffer, the fragment is discarded
+// If it is smaller, the fragment is displayed
+// This process is called depth testing
+
+// If we want OpenGL to perform depth testing, we need to enable it (it is disabled by default)
+// We can enable depth testing using glEnable:
+
+// glEnable(GL_DEPTH_TEST);
+
+// We must also clear the z-buffer for each iteration:
+
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+// Camera
+
+// The view matrix transforms all the world coordinates into view coordinates,
+// which are specified relative to the camera's position and orientation
+
+// A) From point:
+// glm::vec3 cameraPos = glm::vec3(0.0f, 0.0f, 3.0f); 
+
+// B) At point:
+// glm::vec3 cameraTarget = glm::vec3(0.0f, 0.0f, 0.0f);
+
+// C) Direction:
+// glm::vec3 cameraDirection = glm::normalize(cameraPos - cameraTarget);
+
+// Why is the direction pointing towards the camera?
+
+// D) Right axis:
+
+// glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f);
+// glm::vec3 cameraRight = glm::normalize(glm::cross(up, cameraDirection));
+
+// E) Up axis:
+
+// glm::vec3 cameraUp = glm::cross(cameraDirection, cameraRight);
+
+// We just built a coordinate frame! This process is known as the Gram-Schmidt process.
+
+// The function glm::lookAt does all this for us:
+
+// glm::mat4 view = glm::lookAt(from,
+//                              at,
+//                              up);
+
+// Movement speed
+
+// Using a constant value for movement speed results in different speeds on different systems
+// A fast system draws more frames than a slow one
+// Each time a frame is drawn, the position of the camera is updated
+// So a system that draws more frames also updates the position of the camera more often,
+// resulting in faster movement
+
+// We want the speed to be the same on all systems
+// To do this, we can keep track of a deltatime variable that stores the time it takes to render the
+// last frame, and we can multiply all the velocities with this deltatime value
+// The result is that when we have a large deltaTime in a frame, meaning that the last frame took longer
+// than average to render, the velocity for the current frame will be faster to balance things out
+
+// To do this, we use two global variables:
+
+// float deltaTime = 0.0f; // Time between current frame and last frame
+// float lastFrame = 0.0f; // Time of last frame
+
+// We calculate the new deltaTime in each frame:
+
+// float currentFrame = glfwGetTime();
+// deltaTime          = currentFrame - lastFrame;
+// lastFrame          = currentFrame;
+
+// Lighting
+
+// What variables do we need to calculate the diffuse and specular lighting?
+// 1) The position of the light source
+// 2) The position of the fragment being considered
+// 3) The normal of the fragment being considered
+// 4) The position of the camera (for specular lighting only)
+
+
+// When doing the lighting calculations in world space, we need item 2 to be in world space
+// We can accomplish this by multiplying the vertex position attribute with the model matrix only,
+// and passing it to the fragment shader
+
+// So our vertex shader would look like this:
+
+// out vec3 FragPos;
+// out vec3 Normal;
+//
+// void main()
+// {
+//    gl_Position = projection * view * model * vec4(aPos, 1.0);
+//    FragPos = vec3(model * vec4(aPos, 1.0));
+//    Normal = aNormal;
+// }
+
+// And our fragment shader would look like this:
+
+// in vec3 Normal;
+// in vec3 FragPos;
+// uniform vec3 lightPos;
+
+// vec3 norm     = normalize(Normal);
+// vec3 lightDir = normalize(lightPos - FragPos);
+// float diff    = max(dot(norm, lightDir), 0.0);
+// vec3 diffuse  = diff * lightColor;
+// vec3 result   = (ambient + diffuse) * objectColor;
+// FragColor     = vec4(result, 1.0);
+
+// When doing lighting calculations, make sure you normalize the relevant vectors
+
+// Note:
+// 1) Translations should not affect normal vectors.
+// 2) If the model matrix contains a non-uniform scale,
+//    the normal vectors would be transformed incorrectly by it.
+
+// So we can't apply the model matrix to normal vectors directly
+// We must first remove the translation part from the model matrix by taking the upper-left 3x3 part,
+// and we must also take care of the non-uniform scale
+// The resulting matrix is called the normal matrix
+// It is defined as: "the transpose of the inverse of the upper-left 3x3 part of the model matrix"
+
+// Normal = mat3(transpose(inverse(model))) * aNormal;
+
+// Inverting matrices is very expensive
+// Always try to avoid doing inversions in shaders
+// Do the inverse on the GPU, and pass it to the shaders via a uniform
+
+// Most people do lighting calculations in the view space instead of the world space
+// The advantage of doing calculations in the view space is that the camera's position is always at
+// (0, 0, 0), which means that we get this variable for free
+
+// For specular lighting:
+
+// uniform vec3 viewPos;
+// float specularStrength = 0.5;
+// vec3 viewDir    = normalize(viewPos - FragPos);
+// vec3 reflectDir = reflect(-lightDir, norm); // The reflect function expects the vector to point from
+                                               // the light source to the fragment, which is the opposite of what we have
+// float spec    = pow(max(dot(viewDir, reflectDir), 0.0), 32);
+// vec3 specular = specularStrength * spec * lightColor;
+// vec3 result   = (ambient + diffuse + specular) * objectColor;
+// FragColor     = vec4(result, 1.0);
+
+// Developers used to implement the Phong lighting model in the vertex shader
+// This was advantageous because there are normally less vertices that fragments,
+// so the lighting calculations would be performed less times
+// But the colors of the fragments would then be interpolated from the colors of the vertices,
+// resulting in an unrealistic look unless many vertices were used
+// When the Phong lighting model is implemented in the vertex shader it is called Gourad Shading
+
+// Lighting maps
+
+// We have been defining materials for entire objects
+// But objects are composed of many different materials
+// The diffuse and specular components vary over the surface of an object
+// This is what we want to simulate using diffuse and specular maps
+
+// 1) Diffuse map:
+// We want to set the diffuse color of an object for each individual fragment
+// So we want to retrieve the diffuse color based on a fragment's position on the object -> Use a texture!
+// Using a diffuse map is just like using a texture
+
+// We will replace the diffuse vec3 with a sampler2D
+// Keep in mind that sampler2D is an opaque type, which means it can't be instantiated
+// It can only be defined as a uniform
+// Since we will put the sampler2D inside a struct, the struct must be a uniform
+
+// 2) Specular map:
+// We want to set the specular color of an object for each individual fragment
+// So we want to retrieve the specular color based on a fragment's position on the object -> Use a texture!
+// Using a specular map is just like using a texture
+
+// We will replace the specular vec3 with a sampler2D
+// No highlights can appear in the black parts of a specular map
+// Use Photoshop or Gimp to modify a diffuse texture and turn it into a specular map
+
+// Using a specular map we can specify what parts of an object are shiny
+// You can use colors in the specular map to also determine the color of the specular highlights
+
+// 3) Emission map:
+// An emission map is a texture that stores emission values per fragment
+// Emission values are colors an object emits as if it contained a light source
+
+// Light sources
+
+// 1) Directional light
+// In lighting calculations the light direction points from the fragment to the light source
+// The direction of a directional light is usually specified in the opposite way:
+// The light direction points from the light source to the fragment
+// So we need to invert the direction of a directional light when doing lighting calculations
+
+// Note: We've been passing the light's position and direction vectors as vec3s, but some people
+//       prefer to keep all vectors defined as vec4s.
+//       If you decide to do this, remember that position vectors must have a w component equal to 1.0 so
+//       that translations and projections apply to them, and that direction vectors must have a w
+//       component equal to 0.0 so that translations don't affect them
+//       A cool use case of this is:
+//       if (lightVector.w == 0.0)      { // Do directional light calculations }
+//       else if (lightVector.w == 1.0) { // Do point light calculations }
+
+// 2) Point light
+
+// The light emitted by a point light can be attenuated
+
+// Att = 1.0 / (Kc + (Kl * d) + (Kq * d^2))
+
+// Stencil Testing
+
+// ...
+
+// Blending
+
+// Alpha = Opaqueness
+// Alpha = 1.0 = Fully opaque
+// Alpha = 0.0 = Fully transparent
+
+// OpenGL doesn't know what to do with alpha values, nor when to discard a fragment based on its alpha value.
+// This is something we need to do manually using the discard command.
+
+// #version 330 core
+// out vec4 FragColor;
+//
+// in vec2 TexCoords;
+// 
+// uniform sampler2D texture1;
+// 
+// void main()
+// {
+//     vec4 texColor = texture(texture1, TexCoords);
+//     if(texColor.a < 0.1)
+//         discard;
+//     FragColor = texColor;
+// }
+
+// Note that when sampling textures at their borders, OpenGL interpolates the border values with the
+// next repeated value of the texture if we set the wrapping parameters of the texture to GL_REPEAT).
+// This is usually okay, but if the texture has a fully transparent part at one border, and a fully opaque
+// part at the opposite border, then the transparent part will be interpolated with the opaque one, losing its
+// transparency. To prevent this, set the texture wrapping method to GL_CLAMP_TO_EDGE whenever you
+// use alpha textures.
+
+// glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+// glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+// To enable blending:
+
+// glEnable(GL_BLEND);
+
+// Blending is done with the following equation:
+
+// Color_result = Color_src * Factor_src + Color_dest * Factor_dest
+
+// Csrc:  the source color vector. This is the color vector that originates from the texture.
+// Cdest: the destination color vector. This is the color vector that is currently stored in the color buffer.
+// Fsrc:  the source factor value. Sets the impact of the alpha value on the source color.
+// Fdest: the destination factor value. Sets the impact of the alpha value on the destination color.
+
+// After the fragment shader has run and all the tests have passed, the result of this blend equation is
+// calculated using the fragment shader's color output and whatever is currently in the color buffer
+// (the previous fragment color). The source and destination colors will automatically be set by OpenGL,
+// but the source and destination factors can be set by us.
+
+// Set the factors with:
+
+// glBlendFunc(GLenum sfactor, GLenum dfactor)
+
+// GL_ZERO                      Factor is equal to 0.
+// GL_ONE                       Factor is equal to 1.
+// GL_SRC_COLOR                 Factor is equal to the source color vector Csource.
+// GL_ONE_MINUS_SRC_COLOR       Factor is equal to 1 minus the source color vector: 1-Csource.
+// GL_DST_COLOR                 Factor is equal to the destination color vector Cdestination
+// GL_ONE_MINUS_DST_COLOR       Factor is equal to 1 minus the destination color vector: 1-Cdestination.
+// GL_SRC_ALPHA                 Factor is equal to the alpha component of the source color vector Csource.
+// GL_ONE_MINUS_SRC_ALPHA       Factor is equal to 1-alpha of the source color vector Csource.
+// GL_DST_ALPHA                 Factor is equal to the alpha component of the destination color vector Cdestination.
+// GL_ONE_MINUS_DST_ALPHA       Factor is equal to 1-alpha of the destination color vector Cdestination.
+// GL_CONSTANT_COLOR            Factor is equal to the constant color vector Cconstant.
+// GL_ONE_MINUS_CONSTANT_COLOR  Factor is equal to 1 - the constant color vector Cconstant.
+// GL_CONSTANT_ALPHA            Factor is equal to the alpha component of the constant color vector Cconstant.
+// GL_ONE_MINUS_CONSTANT_ALPHA  Factor is equal to 1-alpha of the constant color vector Cconstant.
+
+// Example:
+// Fully opaque red (destination) is in the buffer (alpha = 1.0)
+// Transparent green (source) needs to be drawn in the same place (alpha = 0.6)
+// Fsrc  = 0.6     = 60% green
+// Fdest = 1 - 0.6 = 40% red
+// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+// It is also possible to set different options for the RGB and alpha channels individually
+// using glBlendFuncSeparate:
+// glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
+
+// OpenGL gives us even more flexibility by allowing us to change the operator between the source
+// and destination part of the equation. Right now, the source and destination components are added together,
+// but we could also subtract them if we want. glBlendEquation(GLenum mode) allows us to set this operation
+// and has 3 possible options:
+
+// GL_FUNC_ADD:              the default, adds both components to each other: Cresult=Src+Dst.
+// GL_FUNC_SUBTRACT:         subtracts both components from each other: Cresult=Src-Dst.
+// GL_FUNC_REVERSE_SUBTRACT: subtracts both components, but reverses order: Cresult=Dst-Src.
+
+// When drawing a scene with opaque and transparent objects, the general outline is usually as follows:
+
+// 1) Draw all opaque objects first.
+// 2) Sort all the transparent objects.
+// 3) Draw all the transparent objects in sorted order.
+
+// The transparent objects must be sorted based on their distance from the camera:
+
+// Sort in ascending order
+// std::map<float, glm::vec3> sorted;
+// for (unsigned int i = 0; i < windows.size(); i++)
+// {
+//     float distance = glm::length(camera.Position - windows[i]);
+//     sorted[distance] = windows[i];
+// }
+
+// Retrieve from farthest to nearest
+// for(std::map<float,glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it) 
+// {
+//     model = glm::mat4(1.0f);
+//     model = glm::translate(model, it->second);
+//     shader.setMat4("model", model);
+//     glDrawArrays(GL_TRIANGLES, 0, 6);
+// } 
+
+// Note that using glm::length2 is more efficient (no square root)
+
+// Note that with fully transparent objects like grass leaves, we have the option to simply discard
+// the transparent fragments instead of blending them, which means we don't have to order them (no depth issues).
+
+// Face Culling
+
+// If we imagine any closed shape, each of its faces has two sides. Each side would either face the user or
+// show its back to the user. What if we could only render the faces that are facing the viewer?
+// This is exactly what face culling does. OpenGL renders all the faces that are front-facing
+// and discards all the faces that are back-facing, saving us a lot of fragment shader calls.
+
+// We need to tell OpenGL which of the faces we use are front-facing and which faces are the back-facing.
+// We do this through the winding order of the vertex data.
+
+// By default, triangles defined with counter-clockwise vertices are processed as front-facing triangles.
+
+// When defining the vertex order of a triangle, you visualize it as if it was facing you,
+// so the vertices of each triangle you specify should be counter-clockwise.
+// The cool thing about specifying all your vertices like this is that the actual winding order is calculated
+// at the rasterization stage (when the vertex shader has already run). The vertices are then seen as from
+// the viewer's point of view.
+
+// All the triangle vertices that the viewer is facing are indeed in the correct winding order, as we specified them,
+// but the vertices of the triangles at the other side of the cube are now rendered in such a way
+// that their winding order becomes reversed. The result is that the triangles we're facing are seen as
+// front-facing triangles, and the triangles at the back are seen as back-facing.
+
+// glEnable(GL_CULL_FACE); // From this point on, all the faces that are not front-faces are discarded
+
+// Note that we would have to disable face culling when we draw the grass leaves from the previous tutorial,
+// for example, since their front and back faces should be visible.
+
+// glCullFace(GL_FRONT); // Select which face you want to cull: GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
+
+// glFrontFace(GL_CCW); // Define which vertex ordering corresponds to a front-facing triangle
+
+
+// Framebuffers
+
+// So far we have used:
+// Color buffer for writing color values
+// Depth buffer for writing depth information
+// Stencil buffer for discarding certain fragments based on some condition
+
+// The combination of these buffers is called a framebuffer and is stored somewhere in memory.
+// OpenGL gives us the flexibility to define our own framebuffers 
+
+// The rendering operations we've done so far were all done on top of the render buffers
+// that are attached to the default framebuffer.
+// The default framebuffer is created and configured when you create your window (GLFW does this for us).
+
+// To create a framebuffer object (FBO):
+
+// unsigned int fbo;
+// glGenFramebuffers(1, &fbo);
+
+// To bind a framebuffer object:
+
+   // There are 3 framebuffer targets:
+   // GL_FRAMEBUFFER:      By binding to this target, all read and write framebuffer operations will affect
+   //                      the currently bound framebuffer.
+   // GL_READ_FRAMEBUFFER: Only the read operations affect the framebuffer bound to this target.
+   //                      Example: glReadPixels()
+   // GL_DRAW_FRAMEBUFFER: Only the write operations affect the framebuffer bound to this target.
+   //                      Example: Destination for rendering, clearning and other write operations.
+// glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+// Unfortunately, we can't use our framebuffer yet because it is not complete.
+// For a framebuffer to be complete the following requirements have to be satisfied:
+
+// 1) We have to attach at least one buffer (color, depth or stencil buffer).
+// 2) There should be at least one color attachment.
+// 3)All attachments should be complete as well (reserved memory).
+// 4) Each buffer should have the same number of samples.
+
+// For a definition of samples, take a look at the Anti Aliasing section.
+
+// After we have met all the requirements, we can check if we successfully completed the framebuffer
+// by calling glCheckFramebufferStatus with GL_FRAMEBUFFER, which checks the framebuffer that is currently
+// bound to GL_FRAMEBUFFER and returns GL_FRAMEBUFFER_COMPLETE if everything is good.
+
+// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
+
+// All subsequent rendering operations will now render to the attachments of the currently bound framebuffer.
+// Since our framebuffer is not the default framebuffer, the rendering commands will have no impact
+// on the visual output of the window. For this reason it is called off-screen rendering when we render
+// to a framebuffer that is not the default one.
+
+// To make sure all rendering operations will have a visual impact on the main window,
+// we need to make the default framebuffer active again by binding to 0:
+
+// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+// When we're done with all framebuffer operations, do not forget to delete the framebuffer object:
+
+// glDeleteFramebuffers(1, &fbo);
+
+// Now, before the completeness check is executed we need to attach one or more attachments to the framebuffer.
+// An attachment is a memory location that can act as a buffer for the framebuffer. Think of it as an image.
+// When creating an attachment we have two options to take: textures or renderbuffer objects.
+
+// Texture attachments:
+// -------------------
+
+// When attaching a texture to a framebuffer, all rendering commands will write to the texture as if it was
+// a normal color/depth/stencil buffer.
+// The advantage of using textures is that the result of all rendering operations will be stored as a texture
+// image that we can then easily use in our shaders.
+
+// Creating a texture for a framebuffer is roughly the same as creating a normal texture:
+
+// unsigned int texture;
+// glGenTextures(1, &texture);
+// glBindTexture(GL_TEXTURE_2D, texture);
+
+// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+
+// The main differences here are that we set the dimensions equal to the screen size (although this is not required),
+// and we pass NULL as the texture's data parameter. For this texture, we're only allocating memory and not
+// actually filling it. The texture will be filled as soon as we render to the framebuffer.
+// Also note that we do not care about any of the wrapping methods or mipmapping since we won't be needing
+// those in most cases.
+
+// If you want to render your whole screen to a texture of a smaller or larger size, you need to call
+// glViewport again (before rendering to your framebuffer) with the new dimensions of your texture.
+// Otherwise only a small part of the texture or screen will be drawn onto the texture.
+
+// Now that we've created a texture the last thing we need to do is actually attach it to the framebuffer:
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER,       // target:     framebuffer type we are targeting (R, W, RW)
+//                        GL_COLOR_ATTACHMENT0, // attachment: type of attachment we are attaching. Options:
+                                                //             GL_COLOR_ATTACHMENTi
+                                                //             GL_DEPTH_ATTACHMENT
+                                                //             GL_STENCIL_ATTACHMENT
+                                                //             GL_DEPTH_STENCIL_ATTACHMENT
+//                        GL_TEXTURE_2D,        // textarget:  type of texture you want to attach.
+//                        texture,              // texture     texture to attach.
+//                        0);                   // level:      mipmap level.
+
+// When creating a depth texture, the texture's format and internalformat should be GL_DEPTH_COMPONENT.
+// In the case of a stencil texture, they should be GL_STENCIL_INDEX.
+
+// It is also possible to attach both a depth buffer and a stencil buffer as a single texture.
+// Each 32 bit value of the texture then consists of 24 bits of depth information and 8 bits of
+// stencil information. To attach a depth and stencil buffer as one texture we use the
+// GL_DEPTH_STENCIL_ATTACHMENT type and configure the texture's formats to contain combined depth and stencil
+// values. Example:
+
+// glTexImage2D(GL_TEXTURE_2D,
+//              0,
+//              GL_DEPTH24_STENCIL8,
+//              800,
+//              600,
+//              0,
+//              GL_DEPTH_STENCIL,
+//              GL_UNSIGNED_INT_24_8,
+//              NULL);
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
+
+// Renderbuffer object attachments:
+// -------------------------------
+
+// Just like a texture image, a renderbuffer object is an actual buffer e.g. an array of bytes, integers,
+// pixels or whatever. A renderbuffer object has the added advantage though that it stores its data in OpenGL's
+// native rendering format making it optimized for off-screen rendering to a framebuffer.
+
+// Renderbuffer objects store all the render data directly into their buffer without any conversions
+// to texture-specific formats, thus making them faster as a writeable storage medium.
+// However, renderbuffer objects are generally write-only, thus you cannot read from them
+// (like with texture-access). It is possible to read from them via glReadPixels, though that returns
+// a specified area of pixels from the currently bound framebuffer, but not directly from the attachment itself.
+
+// Because their data is already in its native format, they are quite fast when writing data or simply
+// copying their data to other buffers. Operations like switching buffers are thus quite fast when using
+// renderbuffer objects. The glfwSwapBuffers function we've been using at the end of each render iteration
+// might as well be implemented with renderbuffer objects: we simply write to a renderbuffer image,
+// and swap to the other one at the end. Renderbuffer objects are perfect for these kind of operations.
+
+// To create a renderbuffer object (RBO) and bind it so that all subsequent renderbuffer operations affect it:
+
+// unsigned int rbo;
+// glGenRenderbuffers(1, &rbo);
+// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+
+// Since renderbuffer objects are generally write-only they are often used as depth and stencil attachments,
+// since most of the time we don't really need to read values from the depth and stencil buffers but still care
+// about depth and stencil testing. We need the depth and stencil values for testing, but we don't need to
+// sample these values so a renderbuffer object suits this perfectly. When we're not sampling from these
+// buffers, a renderbuffer object is generally preferred since it's more optimized.
+
+// Creating a depth and stencil RBO is done by calling the glRenderbufferStorage function.
+// This function establishes the data storage, format and dimensions of an RBO's image.
+// It only allocates memory, it doesn't fill the buffer.
+
+// glRenderbufferStorage(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target
+                                              //         is the one that is configured.
+//                       GL_DEPTH24_STENCIL8, // internalformat: specifies the internal format to be used for
+                                              //                 the RBO's image.
+//                       800,                 // width: width of RBO's image in pixels.
+//                       600);                // height: height of RBO's image in pixels.
+
+// Finally, to attach an RBO to the currently bound framebuffer object:
+
+// glFramebufferRenderbuffer(GL_FRAMEBUFFER,              // target: framebuffer target.
+//                           GL_DEPTH_STENCIL_ATTACHMENT, // attachment: attachment point of FB.
+//                           GL_RENDERBUFFER,             // renderbuffertarget: RB target.
+//                           rbo);                        // renderbuffer: actual RB to attach.
+
+// Renderbuffer objects could provide some optimizations in your framebuffer projects, but it is important
+// to realize when to use renderbuffer objects and when to use textures. The general rule is that if you
+// never need to sample data from a specific buffer, it is wise to use a renderbuffer object for that
+// specific buffer. If you need to someday sample data from a specific buffer like colors or depth values,
+// you should use a texture attachment instead.
+
+// Rendering to a texture:
+// ----------------------
+
+// To render the scene into a color texture attached to a FBO we created:
+
+// unsigned int framebuffer;
+// glGenFramebuffers(1, &framebuffer);
+// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+
+   // Create a texture image to be used as a color attachment
+// unsigned int texColorBuffer;
+// glGenTextures(1, &texColorBuffer);
+// glBindTexture(GL_TEXTURE_2D, texColorBuffer);
+// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
+// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// glBindTexture(GL_TEXTURE_2D, 0);
+
+   // Attach the texture image to the currently bound FBO as a color attachment
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); 
+
+   // Create a RBO to be used as a depth/stencil attachment
+   // We use a RBO instead of a texture image because we won't be sampling the depth/stencil buffers
+// unsigned int rbo;
+// glGenRenderbuffers(1, &rbo);
+// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
+// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
+// glBindRenderbuffer(GL_RENDERBUFFER, 0);
+
+   // Attach the RBO to the currently bound FBO as a depth/stencil attachment
+// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
+
+   // Finally, check that the FBO is complete and we unbind it
+// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+//    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
+// glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+// Now that the framebuffer is complete all we need to do to render to the framebuffer's buffers instead
+// of the default framebuffer's buffers is to simply bind the framebuffer object. All subsequent rendering
+// commands will then influence the currently bound framebuffer. All the depth and stencil operations will
+// also read from the currently bound framebuffer's depth and stencil attachments if they're available.
+// If you were to omit a depth buffer for example, all depth testing operations will no longer work,
+// because there isn't a depth buffer present in the currently bound framebuffer.
+
+// So, to draw the scene to a single texture we'll have to complete the following steps:
+
+// 1) Render the scene as usual with the new framebuffer bound as the active framebuffer.
+// 2) Bind the default framebuffer.
+// 3) Draw a quad that spans the entire screen with the new framebuffer's color buffer as its texture.
+
+// When drawing to the quad the spans the entire screen, there is no need for a projection matrix if we
+// specify the vertex coordinates of the quad as Normalized Device Coordinates, which allows us to output
+// them from the vertex shader directly.
+
+// Our rendering loop looks like this:
+
+   // first pass
+// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
+// glEnable(GL_DEPTH_TEST);
+// DrawScene();
+
+   // second pass
+// glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default framebuffer
+// glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
+// glClear(GL_COLOR_BUFFER_BIT); // we'are not using the depth buffer since we are working with a single quad
+
+// screenShader.use();
+// glBindVertexArray(quadVAO);
+// glDisable(GL_DEPTH_TEST);
+// glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
+// glDrawArrays(GL_TRIANGLES, 0, 6);
 

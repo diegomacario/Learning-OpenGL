@@ -1,38 +1,5 @@
-﻿  texture.cpp
-  stb_image.cpp
-  sprite_renderer.cpp
-  shader.cpp
-  resource_manager.cpp
-  main.cpp
-c:\opengl\projects\breakout\breakout\breakout\src\main.cpp(67): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
-  game_object.cpp
-  game_level.cpp
-c:\opengl\projects\breakout\breakout\breakout\src\game_level.cpp(63): warning C4244: 'initializing': conversion from 'GLuint' to 'GLfloat', possible loss of data
-  game.cpp
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(60): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(61): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(62): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(63): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(146): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(148): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(150): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(152): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
-  ball_object.cpp
-  Generating Code...
-  glad.c
-glfw3.lib(context.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(context.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(init.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(init.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(input.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(input.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(monitor.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(monitor.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(vulkan.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(vulkan.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(window.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(window.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_init.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_init.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_joystick.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_joystick.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_monitor.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_monitor.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_time.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_time.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_tls.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_tls.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(win32_window.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(win32_window.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(wgl_context.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(wgl_context.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
-glfw3.lib(egl_context.obj) : warning LNK4099: PDB 'glfw.pdb' was not found with 'glfw3.lib(egl_context.obj)' or at 'C:\OpenGL\Projects\Breakout\Breakout\Debug\glfw.pdb'; linking object as if no debug info
+﻿  particle_generator.cpp
+c:\opengl\projects\breakout\breakout\breakout\src\particle_generator.cpp(69): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\particle_generator.cpp(126): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.exe
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.pdb (Partial PDB)
