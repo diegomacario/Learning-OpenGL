@@ -1620,12 +1620,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Anti-Aliasing
 
 // Saw-like jagged edges appear because of how the rasterizer transforms vertex data into fragments behind the scenes.
-// This effect, of clearly seeing the pixel formations an edge is composed of, is called aliasing.
+// This effect, of clearly seeing the pixels that compose an edge, is called aliasing.
 
 // One technique to solve this problem is called Super-Sample Anti-Aliasing (SSAA)
-// This technique temporarily uses a much higher resolution to render the scene in (super-sampling), and when it came time to update
-// the visual output in the framebuffer, the resolution would be down-sampled back to the normal resolution. The extra resolution
-// was used to prevent the jagged edges.
+// This technique temporarily uses a high resolution to render the scene (super-sampling), and it down-samples the resolution when
+// it is time to update the visual output in the framebuffer. The extra resolution is used to eliminate the saw-like jagged edges.
 // The only problem is that this technique comes with a major performance drawback, since it requires us to draw a lot more fragments
 // than we normally would.
 
@@ -1672,3 +1671,5 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // we store stencil values per subsample, instead of per pixel. This does mean that the size of the depth and stencil buffers
 // are now also increased by the number of subsamples per pixel.
 
+// MSAA in OpenGL
+// +++++++++++++
