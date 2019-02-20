@@ -1,13 +1,13 @@
 ﻿  main.cpp
 c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(27): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
 c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(28): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(252): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(363): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(364): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(368): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(369): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(371): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(372): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(381): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(257): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(368): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(369): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(373): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(374): warning C4244: 'initializing': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(376): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(377): warning C4244: '=': conversion from 'double' to 'float', possible loss of data
+c:\opengl\projects\breakout\breakout\learnopengl_1\src\main.cpp(386): warning C4244: 'argument': conversion from 'double' to 'float', possible loss of data
   LearnOpenGL_1.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\LearnOpenGL_1.exe
   LearnOpenGL_1.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\LearnOpenGL_1.pdb (Partial PDB)

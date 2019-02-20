@@ -84,7 +84,12 @@ int main()
     //Shader screenShader("../LearnOpenGL_1/shader/10.1.framebuffers_screen.vs", "../LearnOpenGL_1/shader/10.1.framebuffers_screen.fs");
 
     Shader shader("shader/10.1.framebuffers.vs", "shader/10.1.framebuffers.fs");
-    Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen.fs");
+    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen.fs");
+    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_inversion.fs");
+    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_grayscale.fs");
+    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_sharpen_kernel.fs");
+    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_blur_kernel.fs");
+    Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_edge_detection_kernel.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
@@ -241,7 +246,7 @@ int main()
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 
     // draw as wireframe
-    glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+    //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
     // render loop
     // -----------
@@ -1831,4 +1836,101 @@ unsigned int loadTexture(char const *path)
 // glDisable(GL_DEPTH_TEST);
 // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 // glDrawArrays(GL_TRIANGLES, 0, 6);
+
+// Post-processing:
+// ---------------
+
+// Now that the entire scene is rendered to a single texture we can create some interesting effects simply by manipulating
+// the texture data.
+
+// Inversion:
+// +++++++++
+
+// void main()
+// {
+//     FragColor = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
+// }
+
+// Grayscale:
+// +++++++++
+
+// void main()
+// {
+//     FragColor = texture(screenTexture, TexCoords);
+//     float average = (FragColor.r + FragColor.g + FragColor.b) / 3.0;
+//     FragColor = vec4(average, average, average, 1.0);
+// }
+
+// The human eye tends to be more sensitive to green colors and less sensitive to blue colors, so to get the most physically
+// accurate results we must use weighted channels:
+
+// void main()
+// {
+//     FragColor = texture(screenTexture, TexCoords);
+//     float average = 0.2126 * FragColor.r + 0.7152 * FragColor.g + 0.0722 * FragColor.b;
+//     FragColor = vec4(average, average, average, 1.0);
+// }
+
+// Kernel effects:
+// ++++++++++++++
+
+// We could for example take a small area around the current texture coordinate and sample multiple texture values around it.
+
+// A kernel (or convolution matrix) is a small matrix-like array of values centered on the current pixel that multiplies
+// surrounding pixel values by its kernel values and adds them all together to form a single value.
+
+// Most kernels add up to 1 if you add all the weights together. If they don't add up to 1 it means that the resulting texture color
+// is brighter or darker than the original texture value.
+
+// Sharpen kernel:
+
+// const float offset = 1.0 / 300.0;
+// 
+// void main()
+// {
+//     vec2 offsets[9] = vec2[](
+//         vec2(-offset,  offset), // top-left
+//         vec2( 0.0f,    offset), // top-center
+//         vec2( offset,  offset), // top-right
+//         vec2(-offset,  0.0f),   // center-left
+//         vec2( 0.0f,    0.0f),   // center-center
+//         vec2( offset,  0.0f),   // center-right
+//         vec2(-offset, -offset), // bottom-left
+//         vec2( 0.0f,   -offset), // bottom-center
+//         vec2( offset, -offset)  // bottom-right
+//         );
+// 
+//     float kernel[9] = float[](
+//         -1, -1, -1,
+//         -1,  9, -1,
+//         -1, -1, -1
+//         );
+// 
+//     vec3 sampleTex[9];
+//     for(int i = 0; i < 9; i++)
+//     {
+//         sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
+//     }
+//     vec3 col = vec3(0.0);
+//     for(int i = 0; i < 9; i++)
+//         col += sampleTex[i] * kernel[i];
+// 
+//     FragColor = vec4(col, 1.0);
+// }
+
+// Blur kernel:
+
+// float kernel[9] = float[](
+//     1.0 / 16, 2.0 / 16, 1.0 / 16,
+//     2.0 / 16, 4.0 / 16, 2.0 / 16,
+//     1.0 / 16, 2.0 / 16, 1.0 / 16
+//     );
+
+// Edge detection:
+
+// float kernel[9] = float[](
+//     1.0,  1.0, 1.0,
+//     1.0, -8.0, 1.0,
+//     1.0,  1.0, 1.0
+//     );
 

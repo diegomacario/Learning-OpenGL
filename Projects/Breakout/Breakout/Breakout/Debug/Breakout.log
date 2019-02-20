@@ -1,5 +1,11 @@
-﻿  particle_generator.cpp
-c:\opengl\projects\breakout\breakout\breakout\src\particle_generator.cpp(69): warning C4244: '-=': conversion from 'double' to 'float', possible loss of data
-c:\opengl\projects\breakout\breakout\breakout\src\particle_generator.cpp(126): warning C4244: 'initializing': conversion from 'double' to 'GLfloat', possible loss of data
+﻿  game.cpp
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(68): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(69): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(70): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(71): warning C4244: 'argument': conversion from 'double' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(159): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(161): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(163): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
+c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(165): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.exe
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.pdb (Partial PDB)

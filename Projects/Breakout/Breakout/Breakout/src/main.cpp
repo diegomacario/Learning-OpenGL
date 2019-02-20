@@ -1520,3 +1520,155 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
 // glDrawArrays(GL_TRIANGLES, 0, 6);
 
+// Post-processing:
+// ---------------
+
+// Now that the entire scene is rendered to a single texture we can create some interesting effects simply by manipulating
+// the texture data.
+
+// Inversion:
+// +++++++++
+
+// void main()
+// {
+//     FragColor = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
+// }
+
+// Grayscale:
+// +++++++++
+
+// void main()
+// {
+//     FragColor = texture(screenTexture, TexCoords);
+//     float average = (FragColor.r + FragColor.g + FragColor.b) / 3.0;
+//     FragColor = vec4(average, average, average, 1.0);
+// }
+
+// The human eye tends to be more sensitive to green colors and less sensitive to blue colors, so to get the most physically
+// accurate results we must use weighted channels:
+
+// void main()
+// {
+//     FragColor = texture(screenTexture, TexCoords);
+//     float average = 0.2126 * FragColor.r + 0.7152 * FragColor.g + 0.0722 * FragColor.b;
+//     FragColor = vec4(average, average, average, 1.0);
+// }
+
+// Kernel effects:
+// ++++++++++++++
+
+// We could for example take a small area around the current texture coordinate and sample multiple texture values around it.
+
+// A kernel (or convolution matrix) is a small matrix-like array of values centered on the current pixel that multiplies
+// surrounding pixel values by its kernel values and adds them all together to form a single value.
+
+// Most kernels add up to 1 if you add all the weights together. If they don't add up to 1 it means that the resulting texture color
+// is brighter or darker than the original texture value.
+
+// Sharpen kernel:
+
+// const float offset = 1.0 / 300.0;
+// 
+// void main()
+// {
+//     vec2 offsets[9] = vec2[](
+//         vec2(-offset,  offset), // top-left
+//         vec2( 0.0f,    offset), // top-center
+//         vec2( offset,  offset), // top-right
+//         vec2(-offset,  0.0f),   // center-left
+//         vec2( 0.0f,    0.0f),   // center-center
+//         vec2( offset,  0.0f),   // center-right
+//         vec2(-offset, -offset), // bottom-left
+//         vec2( 0.0f,   -offset), // bottom-center
+//         vec2( offset, -offset)  // bottom-right
+//         );
+// 
+//     float kernel[9] = float[](
+//         -1, -1, -1,
+//         -1,  9, -1,
+//         -1, -1, -1
+//         );
+// 
+//     vec3 sampleTex[9];
+//     for(int i = 0; i < 9; i++)
+//     {
+//         sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
+//     }
+//     vec3 col = vec3(0.0);
+//     for(int i = 0; i < 9; i++)
+//         col += sampleTex[i] * kernel[i];
+// 
+//     FragColor = vec4(col, 1.0);
+// }
+
+// Blur kernel:
+
+// float kernel[9] = float[](
+//     1.0 / 16, 2.0 / 16, 1.0 / 16,
+//     2.0 / 16, 4.0 / 16, 2.0 / 16,
+//     1.0 / 16, 2.0 / 16, 1.0 / 16
+//     );
+
+// Edge detection:
+
+// float kernel[9] = float[](
+//     1.0,  1.0, 1.0,
+//     1.0, -8.0, 1.0,
+//     1.0,  1.0, 1.0
+//     );
+
+// Anti-Aliasing
+
+// Saw-like jagged edges appear because of how the rasterizer transforms vertex data into fragments behind the scenes.
+// This effect, of clearly seeing the pixel formations an edge is composed of, is called aliasing.
+
+// One technique to solve this problem is called Super-Sample Anti-Aliasing (SSAA)
+// This technique temporarily uses a much higher resolution to render the scene in (super-sampling), and when it came time to update
+// the visual output in the framebuffer, the resolution would be down-sampled back to the normal resolution. The extra resolution
+// was used to prevent the jagged edges.
+// The only problem is that this technique comes with a major performance drawback, since it requires us to draw a lot more fragments
+// than we normally would.
+
+// SSAA gave birth to a more modern technique called Multisample Anti-Aliasing (MSAA), which implements a much more efficient approach.
+
+// Multisampling
+// +++++++++++++
+
+// The rasterizer is the combination of all the algorithms and processes that sit between your final processed vertices
+// and the fragment shader. The rasterizer takes all the vertices that belong to a single primitive and transforms the primitive
+// to a set of fragments. Vertex coordinates can theoretically be any coordinate, but fragments can't since they are limited
+// by the resolution of your window. There will almost never be a one-to-one mapping between vertex coordinates and fragments,
+// so the rasterizer has to determine in some way at what fragment/screen-coordinate each specific vertex will end up at.
+
+// Sample points are used to determine if a pixel is covered by a primitive or not.
+// Due to the limited number of pixels in a screen, some pixels will be rendered along an edge and some won't.
+// The result is that we're rendering primitives with non-smooth edges, giving rise to the jagged saw-like edges we've seen before.
+
+// What multisampling does is use multiple sampling points to determine if a pixel is covered by a triangle.
+// So instead of using a single sample point at the center of each pixel, it places 4 subsamples in a general pattern and uses them
+// to determine pixel coverage.
+// This means that the size of the color buffer is increased by the number of subsamples we're using per pixel.
+
+// The number of sample points per pixel can be any number we like, with more samples giving us better coverage precision.
+
+// Let's say we are using 4 sample points per pixel, and that we have a pixel with 2 of its 4 samples covered by a triangle.
+// The next step is to determine a color for this specific pixel.
+// Our initial guess would be that we run the fragment shader for each covered subsample and later average the colors of each subsample
+// per pixel. In this case we'd run the fragment shader twice on the interpolated vertex data at each subsample, and store
+// the resulting color in those sample points. This is, however, not how things work, because this basically means we need to run
+// a lot more fragment shaders than without multisampling, drastically reducing performance.
+
+// How MSAA really works is that the fragment shader is only run once per pixel (for each primitive), regardless of how many subsamples
+// the triangle covers. The fragment shader is run with the vertex data interpolated to the center of the pixel, and the resulting
+// color is then stored inside each of the covered subsamples. Once the color buffer's subsamples are filled with all the colors
+// of the primitives we've rendered, all these colors are then averaged per pixel resulting in a single color per pixel.
+// Because only 2 of the 4 samples are covered in our example, the color of the pixel is averaged with the triangle's color
+// and the color stored at the other 2 sample points (in this case the clear color), resulting in a light blue-ish color.
+
+// The result is a color buffer where all the primitive edges now produce a smoother pattern.
+
+// Not only color values are affected by multisampling. The depth and stencil tests now make use of the multiple sample points.
+// For depth testing, a vertex's depth value is interpolated to each subsample before running the depth test, and for stencil testing
+// we store stencil values per subsample, instead of per pixel. This does mean that the size of the depth and stencil buffers
+// are now also increased by the number of subsamples per pixel.
+
