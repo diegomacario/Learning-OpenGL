@@ -1673,3 +1673,97 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // MSAA in OpenGL
 // +++++++++++++
+
+// If we want to use MSAA in OpenGL we need to use a color buffer that is able to store more than one color value per pixel
+// (since multisampling requires us to store a color per sample point). We thus need a new type of buffer called a multisample buffer.
+
+// Most windowing systems are able to provide us with a multisample buffer instead of a normal color buffer.
+// GLFW also gives us this functionality and all we need to do is hint to GLFW that we'd like to use a multisample buffer with
+// N samples instead of a normal color buffer by calling glfwWindowHint before creating the window:
+
+// glfwWindowHint(GLFW_SAMPLES, 4);
+
+// When we now call glfwCreateWindow the rendering window is created, this time with a color buffer containing 4 subsamples
+// per screen coordinate. GLFW also automatically creates a depth and stencil buffer with 4 subsamples per pixel.
+// This does mean that the size of all the buffers is increased by 4.
+
+// Now that we asked GLFW for multisampled buffers we need to enable multisampling by calling glEnable and enabling GL_MULTISAMPLE.
+// On most OpenGL drivers, multisampling is enabled by default so this call is then a bit redundant, but it's usually a good idea
+// to enable it anyways. This way all OpenGL implementations have multisampling enabled.
+
+// glEnable(GL_MULTISAMPLE);
+
+// Now the default framebuffer has multisampled buffer attachments, so we are done.
+// The multisampling algorithms are implemented in the rasterizer of our OpenGL drivers.
+
+// Off-screen MSAA
+// +++++++++++++++
+
+// Because GLFW takes care of creating the multisampled buffers, enabling MSAA is quite easy.
+// If we want to use our own framebuffers however, for some off-screen rendering, we have to generate the
+// multisampled buffers ourselves.
+
+// Multisampled texture attachments
+// ++++++++++++++++++++++++++++++++
+
+// To create a texture that supports storage of multiple sample points we use glTexImage2DMultisample instead of glTexImage2D.
+// glTexImage2DMultisample accepts GL_TEXTURE_2D_MULTISAPLE as its texture target:
+
+// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
+
+   // Generates a multisampled texture image on the currently bound texture object
+   // This function differs from glTexImage2D in that the resulting texture will mainly be used as a multisampled buffer,
+   // so we no longer provide the image data, the format of the image, or mipmap levels.
+// glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, // target:               specifies the texture target. Examples:
+                                                      //                       GL_TEXTURE_2D_MULTISAMPLE or GL_PROXY_TEXTURE_2D_MULTISAMPLE
+//                         samples,                   // samples:              specifies the number of samples we want
+//                         GL_RGB,                    // internalformat:       specifies the internal format to be used to store the
+                                                      //                       multisample texture's image. It must specify a color-renderable,
+                                                      //                       depth-renderable, or stencil-renderable format.
+//                         width,                     // width:                width of the multisample texture's image, in texels.
+//                         height,                    // height                height of the multisample texture's image, in texels.
+//                         GL_TRUE);                  // fixedsamplelocations: specifies wether the image will use identical sample
+                                                      //                       locations and the same number of samples for all texels
+                                                      //                       in the image.
+
+// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER,            // target:     framebuffer type we are targeting (R, W, RW)
+//                        GL_COLOR_ATTACHMENT0,      // attachment: type of attachment we are attaching. Options:
+                                                     //             GL_COLOR_ATTACHMENTi
+                                                     //             GL_DEPTH_ATTACHMENT
+                                                     //             GL_STENCIL_ATTACHMENT
+                                                     //             GL_DEPTH_STENCIL_ATTACHMENT
+//                        GL_TEXTURE_2D_MULTISAMPLE, // textarget:  type of texture you want to attach.
+//                        tex,                       // texture     texture to attach.
+//                        0);                        // level:      mipmap level.
+
+// To attach a multisampled texture to a framebuffer we use glFramebufferTexture2D, but this time with
+// GL_TEXTURE_2D_MULTISAMPLE as the texture type:
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0); 
+
+// The currently bound framebuffer now has a multisampled color buffer in the form of a texture image.
+
+// Multisampled renderbuffer objects
+// +++++++++++++++++++++++++++++++++
+
+// Like textures, creating a multisampled renderbuffer object isn't difficult. All we need to change is
+// the call to glRenderbufferStorage to glRenderbufferStorageMultisample when we specify the memory storage of the currently
+// bound renderbuffer object:
+
+   // The function glRenderbufferStorageMultisample establishes data storage for a renderbuffer object.
+   // When allocating memory, a multisampled renderbuffer is created storing memory equal to the
+   // normal buffer's size times the number of samples.
+// glRenderbufferStorageMultisample(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target is configured
+//                                  4,                   // samples:        num of samples to be used for the RBO's storage
+//                                  GL_DEPTH24_STENCIL8, // internalformat: internal format to use for the RBO's image
+//                                  width,               // width:          width in pixels
+//                                  height);             // height:         height in pixels
+
+// The one thing that changed here is the extra parameter after the renderbuffer target where we set the
+// amount of samples we'd like to use which is 4 in this particular case.
+
+// Rendering to a multisampled framebuffer
+// +++++++++++++++++++++++++++++++++++++++
+
