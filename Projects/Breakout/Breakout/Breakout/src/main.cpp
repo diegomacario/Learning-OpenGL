@@ -1767,3 +1767,88 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // Rendering to a multisampled framebuffer
 // +++++++++++++++++++++++++++++++++++++++
 
+// Rendering to a multisampled framebuffer happens automatically. Whenever we draw anything while the framebuffer object is bound,
+// the rasterizer takes care of all the multisample operations.
+
+// We then end up with a multisampled color/depth/stencil buffer. Because a multisampled buffer is different from a normal buffer,
+// we can't sample its buffer image directly in a shader.
+
+// A multisampled image contains much more information than a normal image, so what we need to do is downscale or resolve the image.
+// Resolving a multisampled framebuffer is generally done via the glBlitFramebuffer function, which copies a region from one
+// framebuffer to the other while also resolving any multisampled buffers.
+
+// glBlitFramebuffer copies a block of pixels from the read framebuffer to the draw framebuffer.
+
+// glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, // Bounds of the src rectangle within the read buffer of the
+                                                                         // read framebuffer
+//                  GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,  // Bounds of the dst rectangle within the write buffer of the
+                                                                         // write framebuffer
+//                  GLbitfield mask,                                     // Bitwise OR of the flags that indicate which buffers are to
+                                                                         // be copied. The allowed flags are:
+                                                                         // GL_COLOR_BUFFER_BIT
+                                                                         // GL_DEPTH_BUFFER_BIT
+                                                                         // GL_STENCIL_BUFFER_BIT
+//                  GLenum filter)                                       // Interpolation to be applied if the image is stretched.
+                                                                         // Must be GL_NEAREST or GL_LINEAR
+
+// Remember that if we bind to GL_FRAMEBUFFER we're binding to both the read and the draw framebuffer targets.
+// We could also bind to those targets individually by binding the framebuffers to GL_READ_FRAMEBUFFER and GL_DRAW_FRAMEBUFFER.
+// glBlitFramebuffer reads from those two targets to determine which is the source and which is the destination framebuffer.
+// We could then transfer the multisampled framebuffer output to the screen by blitting the image to the default framebuffer:
+
+// glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
+// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+// glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST); 
+
+// But what if we wanted to use the texture result of a multisampled framebuffer to do stuff like post-processing?
+// We can't directly use the multisampled texture(s) in the fragment shader.
+// What we can do is blit the multisampled buffer(s) to a different FBO with a non-multisampled texture attachment, and use this
+// ordinary color attachment texture for post-processing, effectively post-processing an image rendered via multisampling.
+// This does mean we have to generate a new FBO that acts solely as an intermediate framebuffer object to resolve the multisampled buffer
+// into a normal 2D texture we can use in the fragment shader.
+// This process looks like this:
+
+// unsigned int msFBO = CreateFBOWithMultiSampledAttachments();
+// then create another FBO with a normal texture color attachment
+// ...
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
+// ...
+// while(!glfwWindowShouldClose(window))
+// {
+//     ...
+
+//     glBindFramebuffer(msFBO);
+//     ClearFrameBuffer();
+//     DrawScene();
+//     // now resolve multisampled buffer(s) into intermediate FBO
+//     glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
+//     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+//     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+//     // now scene is stored as 2D texture image, so use that image for post-processing
+//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//     ClearFramebuffer();
+//     glBindTexture(GL_TEXTURE_2D, screenTexture);
+//     DrawPostProcessingQuad();
+
+//     ...
+// }
+
+// After this process, because the screen texture is a normal texture again with just a single sample point, some post-processing
+// filters like edge-detection will introduce jagged edges again. To accommodate for this, you could blur the texture afterwards or
+// create your own anti-aliasing algorithm.
+
+// Custom Anti-Aliasing algorithm
+// ++++++++++++++++++++++++++++++
+
+// It is also possible to directly pass a multisampled texture image to the shaders instead of first resolving them.
+// GLSL then gives us the option to sample the texture images per subsample so we can create our own anti-aliasing algorithms,
+// which is commonly done by large graphics applications.
+
+// To retrieve the color value per subsample you'd have to define the texture uniform sampler as a sampler2DMS
+// instead of the usual sampler2D:
+
+// uniform sampler2DMS screenTextureMS;
+
+// Using the texelFetch function it is then possible to retrieve the color value per sample:
+
+// vec4 colorSample = texelFetch(screenTextureMS, TexCoords, 3); // 4th subsample
