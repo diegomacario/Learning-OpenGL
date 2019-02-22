@@ -1781,14 +1781,14 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, // Bounds of the src rectangle within the read buffer of the
                                                                          // read framebuffer
-//                  GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1,  // Bounds of the dst rectangle within the write buffer of the
+//                   GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, // Bounds of the dst rectangle within the write buffer of the
                                                                          // write framebuffer
-//                  GLbitfield mask,                                     // Bitwise OR of the flags that indicate which buffers are to
+//                   GLbitfield mask,                                    // Bitwise OR of the flags that indicate which buffers are to
                                                                          // be copied. The allowed flags are:
                                                                          // GL_COLOR_BUFFER_BIT
                                                                          // GL_DEPTH_BUFFER_BIT
                                                                          // GL_STENCIL_BUFFER_BIT
-//                  GLenum filter)                                       // Interpolation to be applied if the image is stretched.
+//                   GLenum filter)                                      // Interpolation to be applied if the image is stretched.
                                                                          // Must be GL_NEAREST or GL_LINEAR
 
 // Remember that if we bind to GL_FRAMEBUFFER we're binding to both the read and the draw framebuffer targets.

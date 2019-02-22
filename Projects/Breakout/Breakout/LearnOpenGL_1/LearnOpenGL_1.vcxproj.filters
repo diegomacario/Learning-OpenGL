@@ -267,5 +267,17 @@
     <None Include="shader\10.1.framebuffers_screen_sharpen_kernel.fs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\11.1.anti_aliasing_in_opengl.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\11.1.anti_aliasing_in_opengl.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\11.1.anti_aliasing_in_opengl_screen.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\11.1.anti_aliasing_in_opengl_screen.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

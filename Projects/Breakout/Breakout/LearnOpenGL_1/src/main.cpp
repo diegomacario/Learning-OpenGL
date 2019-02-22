@@ -1,6 +1,5 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include <stb_image.h>
 
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -16,7 +15,6 @@ void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void mouse_callback(GLFWwindow* window, double xpos, double ypos);
 void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void processInput(GLFWwindow *window);
-unsigned int loadTexture(const char *path);
 
 // settings
 const unsigned int SCR_WIDTH = 1280;
@@ -80,73 +78,57 @@ int main()
     // Note: The two commented lines below are needed if you want to launch this application by double-clicking LearnOpenGL_1.exe
     //       To launch it by pressing F5 in Visual Studio, the two uncommented lines below are needed.
 
-    //Shader shader("../LearnOpenGL_1/shader/10.1.framebuffers.vs", "../LearnOpenGL_1/shader/10.1.framebuffers.fs");
-    //Shader screenShader("../LearnOpenGL_1/shader/10.1.framebuffers_screen.vs", "../LearnOpenGL_1/shader/10.1.framebuffers_screen.fs");
+    //Shader shader("../LearnOpenGL_1/shader/11.1.anti_aliasing_in_opengl.vs", "../LearnOpenGL_1/shader/11.1.anti_aliasing_in_opengl.fs");
+    //Shader screenShader("../LearnOpenGL_1/shader/11.1.anti_aliasing_in_opengl_screen.vs", "../LearnOpenGL_1/shader/11.1.anti_aliasing_in_opengl_screen.fs");
 
-    Shader shader("shader/10.1.framebuffers.vs", "shader/10.1.framebuffers.fs");
-    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen.fs");
-    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_inversion.fs");
-    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_grayscale.fs");
-    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_sharpen_kernel.fs");
-    //Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_blur_kernel.fs");
-    Shader screenShader("shader/10.1.framebuffers_screen.vs", "shader/10.1.framebuffers_screen_edge_detection_kernel.fs");
+    Shader shader("shader/11.1.anti_aliasing_in_opengl.vs", "shader/11.1.anti_aliasing_in_opengl.fs");
+    Shader screenShader("shader/11.1.anti_aliasing_in_opengl_screen.vs", "shader/11.1.anti_aliasing_in_opengl_screen.fs");
 
     // set up vertex data (and buffer(s)) and configure vertex attributes
     // ------------------------------------------------------------------
-    float cubeVertices[] = {
-        // positions          // texture Coords
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 0.0f,
+    GLfloat cubeVertices[] = {
+        // Positions
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 1.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
+        -0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
 
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f, -0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
 
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
 
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f, -0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f, -0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f, -0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f, -0.5f, -0.5f,  0.0f, 1.0f,
+        -0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f, -0.5f,
+         0.5f, -0.5f,  0.5f,
+         0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f,  0.5f,
+        -0.5f, -0.5f, -0.5f,
 
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f,
-         0.5f,  0.5f, -0.5f,  1.0f, 1.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-         0.5f,  0.5f,  0.5f,  1.0f, 0.0f,
-        -0.5f,  0.5f,  0.5f,  0.0f, 0.0f,
-        -0.5f,  0.5f, -0.5f,  0.0f, 1.0f
-    };
-
-    float planeVertices[] = {
-        // positions          // texture Coords (note we set these higher than 1 (together with GL_REPEAT as texture wrapping mode). this will cause the floor texture to repeat)
-         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f,  5.0f,  0.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-
-         5.0f, -0.5f,  5.0f,  2.0f, 0.0f,
-        -5.0f, -0.5f, -5.0f,  0.0f, 2.0f,
-         5.0f, -0.5f, -5.0f,  2.0f, 2.0f
+        -0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f, -0.5f,
+         0.5f,  0.5f,  0.5f,
+         0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f,  0.5f,
+        -0.5f,  0.5f, -0.5f
     };
 
     // vertex attributes for a quad that fills the entire screen in Normalized Device Coordinates.
@@ -169,25 +151,10 @@ int main()
     glBindBuffer(GL_ARRAY_BUFFER, cubeVBO);
     glBufferData(GL_ARRAY_BUFFER, sizeof(cubeVertices), &cubeVertices, GL_STATIC_DRAW);
     glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
     glBindVertexArray(0);
 
-    // plane VAO
-    unsigned int planeVAO, planeVBO;
-    glGenVertexArrays(1, &planeVAO);
-    glGenBuffers(1, &planeVBO);
-    glBindVertexArray(planeVAO);
-    glBindBuffer(GL_ARRAY_BUFFER, planeVBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(planeVertices), &planeVertices, GL_STATIC_DRAW);
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)0);
-    glEnableVertexAttribArray(1);
-    glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(float), (void*)(3 * sizeof(float)));
-    glBindVertexArray(0);
-
-    // screen quad VAO
+    // quad VAO
     unsigned int quadVAO, quadVBO;
     glGenVertexArrays(1, &quadVAO);
     glGenBuffers(1, &quadVBO);
@@ -199,51 +166,55 @@ int main()
     glEnableVertexAttribArray(1);
     glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)(2 * sizeof(float)));
 
-    // load textures
-    // -------------
-    unsigned int cubeTexture  = loadTexture("tex/container.jpg");
-    unsigned int floorTexture = loadTexture("tex/metal.png");
-
-    // shader configuration
-    // --------------------
-
-    shader.use();
-    shader.setInt("texture1", 0);
-
-    screenShader.use();
-    screenShader.setInt("screenTexture", 0);
-
-    // framebuffer configuration
-    // -------------------------
+    // configure MSAA framebuffer
+    // --------------------------
 
     unsigned int framebuffer;
     glGenFramebuffers(1, &framebuffer);
     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
 
-    // create a color attachment texture
-    unsigned int textureColorbuffer;
-    glGenTextures(1, &textureColorbuffer);
-    glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, textureColorbuffer, 0);
+    // create a multisampled color attachment texture
+    unsigned int textureColorBufferMultiSampled;
+    glGenTextures(1, &textureColorBufferMultiSampled);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
+    glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
+    glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
 
-    // create a renderbuffer object for depth and stencil attachment (we won't be sampling these)
+    // create a multisampled renderbuffer object for depth and stencil attachments
     unsigned int rbo;
     glGenRenderbuffers(1, &rbo);
     glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-    // use a single renderbuffer object for both the depth and the stencil buffer
-    glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
+    glBindRenderbuffer(GL_RENDERBUFFER, 0);
     glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
 
-    // now that we created the framebuffer and added all the attachments to it, we can check if it is complete
     if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-    {
         cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-    }
-
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // configure second post-processing framebuffer
+    unsigned int intermediateFBO;
+    glGenFramebuffers(1, &intermediateFBO);
+    glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
+
+    // create a color attachment texture
+    unsigned int screenTexture;
+    glGenTextures(1, &screenTexture);
+    glBindTexture(GL_TEXTURE_2D, screenTexture);
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0); // we only need a color buffer
+
+    if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
+        cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
+
+    // shader configuration
+    // --------------------
+    shader.use();
+    screenShader.setInt("screenTexture", 0);
 
     // draw as wireframe
     //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -265,53 +236,43 @@ int main()
         // render
         // ------
 
-        // bind framebuffer and draw scene as we normally would to its color texture
-        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-        // enable depth testing (it is disabled when rendering the screen-space quad)
-        glEnable(GL_DEPTH_TEST);
-
-        // clear the framebuffer's content
+        // clear the default framebuffer's content
         glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // 1) draw scene as normal in multisampled buffers
+        glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
+        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        glEnable(GL_DEPTH_TEST);
+
+        // set transformation matrices
+
         shader.use();
-        glm::mat4 model = glm::mat4(1.0f);
-        glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        shader.setMat4("view", view);
+        shader.setMat4("model", glm::mat4(1.0f));
+        shader.setMat4("view", camera.GetViewMatrix());
         shader.setMat4("projection", projection);
 
-        // cubes
         glBindVertexArray(cubeVAO);
-        glActiveTexture(GL_TEXTURE0);
-        glBindTexture(GL_TEXTURE_2D, cubeTexture);
-        model = glm::translate(model, glm::vec3(-1.0f, 0.0f, -1.0f));
-        shader.setMat4("model", model);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        model = glm::mat4(1.0f);
-        model = glm::translate(model, glm::vec3(2.0f, 0.0f, 0.0f));
-        shader.setMat4("model", model);
         glDrawArrays(GL_TRIANGLES, 0, 36);
 
-        // floor
-        glBindVertexArray(planeVAO);
-        glBindTexture(GL_TEXTURE_2D, floorTexture);
-        shader.setMat4("model", glm::mat4(1.0f));
-        glDrawArrays(GL_TRIANGLES, 0, 6);
-        glBindVertexArray(0);
+        // 2) now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
+        glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
+        glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+        glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
-        // now bind the default framebuffer and draw a quad plane with our framebuffer's color texture
+        // 3) now render quad with scene's visuals as its texture image
         glBindFramebuffer(GL_FRAMEBUFFER, 0);
-        // disable depth test so screen-space quad isn't discarded due to depth test
-        glDisable(GL_DEPTH_TEST);
-        // clear the content of the default renderbuffer's color buffer
-        // we set the clear color to white, but this is not necessary since we won't be able to see behind the quad
         glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT);
+        glDisable(GL_DEPTH_TEST);
 
+        // draw Screen quad
         screenShader.use();
         glBindVertexArray(quadVAO);
-        glBindTexture(GL_TEXTURE_2D, textureColorbuffer); // use the color attachment texture as the texture of the quad plane
+        glActiveTexture(GL_TEXTURE0);
+        glBindTexture(GL_TEXTURE_2D, screenTexture); // use the now resolved color attachment as the quad's texture
         glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // glfw: swap buffers and poll IO events (keys pressed/released, mouse moved etc.)
@@ -323,10 +284,8 @@ int main()
     // optional: de-allocate all resources once they've outlived their purpose:
     // ------------------------------------------------------------------------
     glDeleteVertexArrays(1, &cubeVAO);
-    glDeleteVertexArrays(1, &planeVAO);
-    glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &cubeVBO);
-    glDeleteBuffers(1, &planeVBO);
+    glDeleteVertexArrays(1, &quadVAO);
     glDeleteBuffers(1, &quadVBO);
 
     glfwTerminate();
@@ -1934,3 +1893,238 @@ unsigned int loadTexture(char const *path)
 //     1.0,  1.0, 1.0
 //     );
 
+// Anti-Aliasing
+
+// Saw-like jagged edges appear because of how the rasterizer transforms vertex data into fragments behind the scenes.
+// This effect, of clearly seeing the pixels that compose an edge, is called aliasing.
+
+// One technique to solve this problem is called Super-Sample Anti-Aliasing (SSAA)
+// This technique temporarily uses a high resolution to render the scene (super-sampling), and it down-samples the resolution when
+// it is time to update the visual output in the framebuffer. The extra resolution is used to eliminate the saw-like jagged edges.
+// The only problem is that this technique comes with a major performance drawback, since it requires us to draw a lot more fragments
+// than we normally would.
+
+// SSAA gave birth to a more modern technique called Multisample Anti-Aliasing (MSAA), which implements a much more efficient approach.
+
+// Multisampling
+// +++++++++++++
+
+// The rasterizer is the combination of all the algorithms and processes that sit between your final processed vertices
+// and the fragment shader. The rasterizer takes all the vertices that belong to a single primitive and transforms the primitive
+// to a set of fragments. Vertex coordinates can theoretically be any coordinate, but fragments can't since they are limited
+// by the resolution of your window. There will almost never be a one-to-one mapping between vertex coordinates and fragments,
+// so the rasterizer has to determine in some way at what fragment/screen-coordinate each specific vertex will end up at.
+
+// Sample points are used to determine if a pixel is covered by a primitive or not.
+// Due to the limited number of pixels in a screen, some pixels will be rendered along an edge and some won't.
+// The result is that we're rendering primitives with non-smooth edges, giving rise to the jagged saw-like edges we've seen before.
+
+// What multisampling does is use multiple sampling points to determine if a pixel is covered by a triangle.
+// So instead of using a single sample point at the center of each pixel, it places 4 subsamples in a general pattern and uses them
+// to determine pixel coverage.
+// This means that the size of the color buffer is increased by the number of subsamples we're using per pixel.
+
+// The number of sample points per pixel can be any number we like, with more samples giving us better coverage precision.
+
+// Let's say we are using 4 sample points per pixel, and that we have a pixel with 2 of its 4 samples covered by a triangle.
+// The next step is to determine a color for this specific pixel.
+// Our initial guess would be that we run the fragment shader for each covered subsample and later average the colors of each subsample
+// per pixel. In this case we'd run the fragment shader twice on the interpolated vertex data at each subsample, and store
+// the resulting color in those sample points. This is, however, not how things work, because this basically means we need to run
+// a lot more fragment shaders than without multisampling, drastically reducing performance.
+
+// How MSAA really works is that the fragment shader is only run once per pixel (for each primitive), regardless of how many subsamples
+// the triangle covers. The fragment shader is run with the vertex data interpolated to the center of the pixel, and the resulting
+// color is then stored inside each of the covered subsamples. Once the color buffer's subsamples are filled with all the colors
+// of the primitives we've rendered, all these colors are then averaged per pixel resulting in a single color per pixel.
+// Because only 2 of the 4 samples are covered in our example, the color of the pixel is averaged with the triangle's color
+// and the color stored at the other 2 sample points (in this case the clear color), resulting in a light blue-ish color.
+
+// The result is a color buffer where all the primitive edges now produce a smoother pattern.
+
+// Not only color values are affected by multisampling. The depth and stencil tests now make use of the multiple sample points.
+// For depth testing, a vertex's depth value is interpolated to each subsample before running the depth test, and for stencil testing
+// we store stencil values per subsample, instead of per pixel. This does mean that the size of the depth and stencil buffers
+// are now also increased by the number of subsamples per pixel.
+
+// MSAA in OpenGL
+// +++++++++++++
+
+// If we want to use MSAA in OpenGL we need to use a color buffer that is able to store more than one color value per pixel
+// (since multisampling requires us to store a color per sample point). We thus need a new type of buffer called a multisample buffer.
+
+// Most windowing systems are able to provide us with a multisample buffer instead of a normal color buffer.
+// GLFW also gives us this functionality and all we need to do is hint to GLFW that we'd like to use a multisample buffer with
+// N samples instead of a normal color buffer by calling glfwWindowHint before creating the window:
+
+// glfwWindowHint(GLFW_SAMPLES, 4);
+
+// When we now call glfwCreateWindow the rendering window is created, this time with a color buffer containing 4 subsamples
+// per screen coordinate. GLFW also automatically creates a depth and stencil buffer with 4 subsamples per pixel.
+// This does mean that the size of all the buffers is increased by 4.
+
+// Now that we asked GLFW for multisampled buffers we need to enable multisampling by calling glEnable and enabling GL_MULTISAMPLE.
+// On most OpenGL drivers, multisampling is enabled by default so this call is then a bit redundant, but it's usually a good idea
+// to enable it anyways. This way all OpenGL implementations have multisampling enabled.
+
+// glEnable(GL_MULTISAMPLE);
+
+// Now the default framebuffer has multisampled buffer attachments, so we are done.
+// The multisampling algorithms are implemented in the rasterizer of our OpenGL drivers.
+
+// Off-screen MSAA
+// +++++++++++++++
+
+// Because GLFW takes care of creating the multisampled buffers, enabling MSAA is quite easy.
+// If we want to use our own framebuffers however, for some off-screen rendering, we have to generate the
+// multisampled buffers ourselves.
+
+// Multisampled texture attachments
+// ++++++++++++++++++++++++++++++++
+
+// To create a texture that supports storage of multiple sample points we use glTexImage2DMultisample instead of glTexImage2D.
+// glTexImage2DMultisample accepts GL_TEXTURE_2D_MULTISAPLE as its texture target:
+
+// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
+
+   // Generates a multisampled texture image on the currently bound texture object
+   // This function differs from glTexImage2D in that the resulting texture will mainly be used as a multisampled buffer,
+   // so we no longer provide the image data, the format of the image, or mipmap levels.
+// glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, // target:               specifies the texture target. Examples:
+                                                      //                       GL_TEXTURE_2D_MULTISAMPLE or GL_PROXY_TEXTURE_2D_MULTISAMPLE
+//                         samples,                   // samples:              specifies the number of samples we want
+//                         GL_RGB,                    // internalformat:       specifies the internal format to be used to store the
+                                                      //                       multisample texture's image. It must specify a color-renderable,
+                                                      //                       depth-renderable, or stencil-renderable format.
+//                         width,                     // width:                width of the multisample texture's image, in texels.
+//                         height,                    // height                height of the multisample texture's image, in texels.
+//                         GL_TRUE);                  // fixedsamplelocations: specifies wether the image will use identical sample
+                                                      //                       locations and the same number of samples for all texels
+                                                      //                       in the image.
+
+// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER,            // target:     framebuffer type we are targeting (R, W, RW)
+//                        GL_COLOR_ATTACHMENT0,      // attachment: type of attachment we are attaching. Options:
+                                                     //             GL_COLOR_ATTACHMENTi
+                                                     //             GL_DEPTH_ATTACHMENT
+                                                     //             GL_STENCIL_ATTACHMENT
+                                                     //             GL_DEPTH_STENCIL_ATTACHMENT
+//                        GL_TEXTURE_2D_MULTISAMPLE, // textarget:  type of texture you want to attach.
+//                        tex,                       // texture     texture to attach.
+//                        0);                        // level:      mipmap level.
+
+// To attach a multisampled texture to a framebuffer we use glFramebufferTexture2D, but this time with
+// GL_TEXTURE_2D_MULTISAMPLE as the texture type:
+
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0); 
+
+// The currently bound framebuffer now has a multisampled color buffer in the form of a texture image.
+
+// Multisampled renderbuffer objects
+// +++++++++++++++++++++++++++++++++
+
+// Like textures, creating a multisampled renderbuffer object isn't difficult. All we need to change is
+// the call to glRenderbufferStorage to glRenderbufferStorageMultisample when we specify the memory storage of the currently
+// bound renderbuffer object:
+
+   // The function glRenderbufferStorageMultisample establishes data storage for a renderbuffer object.
+   // When allocating memory, a multisampled renderbuffer is created storing memory equal to the
+   // normal buffer's size times the number of samples.
+// glRenderbufferStorageMultisample(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target is configured
+//                                  4,                   // samples:        num of samples to be used for the RBO's storage
+//                                  GL_DEPTH24_STENCIL8, // internalformat: internal format to use for the RBO's image
+//                                  width,               // width:          width in pixels
+//                                  height);             // height:         height in pixels
+
+// The one thing that changed here is the extra parameter after the renderbuffer target where we set the
+// amount of samples we'd like to use which is 4 in this particular case.
+
+// Rendering to a multisampled framebuffer
+// +++++++++++++++++++++++++++++++++++++++
+
+// Rendering to a multisampled framebuffer happens automatically. Whenever we draw anything while the framebuffer object is bound,
+// the rasterizer takes care of all the multisample operations.
+
+// We then end up with a multisampled color/depth/stencil buffer. Because a multisampled buffer is different from a normal buffer,
+// we can't sample its buffer image directly in a shader.
+
+// A multisampled image contains much more information than a normal image, so what we need to do is downscale or resolve the image.
+// Resolving a multisampled framebuffer is generally done via the glBlitFramebuffer function, which copies a region from one
+// framebuffer to the other while also resolving any multisampled buffers.
+
+// glBlitFramebuffer copies a block of pixels from the read framebuffer to the draw framebuffer.
+
+// glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, // Bounds of the src rectangle within the read buffer of the
+                                                                         // read framebuffer
+//                   GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, // Bounds of the dst rectangle within the write buffer of the
+                                                                         // write framebuffer
+//                   GLbitfield mask,                                    // Bitwise OR of the flags that indicate which buffers are to
+                                                                         // be copied. The allowed flags are:
+                                                                         // GL_COLOR_BUFFER_BIT
+                                                                         // GL_DEPTH_BUFFER_BIT
+                                                                         // GL_STENCIL_BUFFER_BIT
+//                   GLenum filter)                                      // Interpolation to be applied if the image is stretched.
+                                                                         // Must be GL_NEAREST or GL_LINEAR
+
+// Remember that if we bind to GL_FRAMEBUFFER we're binding to both the read and the draw framebuffer targets.
+// We could also bind to those targets individually by binding the framebuffers to GL_READ_FRAMEBUFFER and GL_DRAW_FRAMEBUFFER.
+// glBlitFramebuffer reads from those two targets to determine which is the source and which is the destination framebuffer.
+// We could then transfer the multisampled framebuffer output to the screen by blitting the image to the default framebuffer:
+
+// glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
+// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
+// glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST); 
+
+// But what if we wanted to use the texture result of a multisampled framebuffer to do stuff like post-processing?
+// We can't directly use the multisampled texture(s) in the fragment shader.
+// What we can do is blit the multisampled buffer(s) to a different FBO with a non-multisampled texture attachment, and use this
+// ordinary color attachment texture for post-processing, effectively post-processing an image rendered via multisampling.
+// This does mean we have to generate a new FBO that acts solely as an intermediate framebuffer object to resolve the multisampled buffer
+// into a normal 2D texture we can use in the fragment shader.
+// This process looks like this:
+
+// unsigned int msFBO = CreateFBOWithMultiSampledAttachments();
+// then create another FBO with a normal texture color attachment
+// ...
+// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
+// ...
+// while(!glfwWindowShouldClose(window))
+// {
+//     ...
+
+//     glBindFramebuffer(msFBO);
+//     ClearFrameBuffer();
+//     DrawScene();
+//     // now resolve multisampled buffer(s) into intermediate FBO
+//     glBindFramebuffer(GL_READ_FRAMEBUFFER, msFBO);
+//     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
+//     glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+//     // now scene is stored as 2D texture image, so use that image for post-processing
+//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
+//     ClearFramebuffer();
+//     glBindTexture(GL_TEXTURE_2D, screenTexture);
+//     DrawPostProcessingQuad();
+
+//     ...
+// }
+
+// After this process, because the screen texture is a normal texture again with just a single sample point, some post-processing
+// filters like edge-detection will introduce jagged edges again. To accommodate for this, you could blur the texture afterwards or
+// create your own anti-aliasing algorithm.
+
+// Custom Anti-Aliasing algorithm
+// ++++++++++++++++++++++++++++++
+
+// It is also possible to directly pass a multisampled texture image to the shaders instead of first resolving them.
+// GLSL then gives us the option to sample the texture images per subsample so we can create our own anti-aliasing algorithms,
+// which is commonly done by large graphics applications.
+
+// To retrieve the color value per subsample you'd have to define the texture uniform sampler as a sampler2DMS
+// instead of the usual sampler2D:
+
+// uniform sampler2DMS screenTextureMS;
+
+// Using the texelFetch function it is then possible to retrieve the color value per sample:
+
+// vec4 colorSample = texelFetch(screenTextureMS, TexCoords, 3); // 4th subsample
