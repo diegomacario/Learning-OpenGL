@@ -2084,12 +2084,6 @@ unsigned int loadTexture(char const *path)
 // into a normal 2D texture we can use in the fragment shader.
 // This process looks like this:
 
-// unsigned int msFBO = CreateFBOWithMultiSampledAttachments();
-// then create another FBO with a normal texture color attachment
-// ...
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0);
-// ...
-
    // Create FBO with multisampled attachments
 // unsigned int framebuffer;
 // glGenFramebuffers(1, &framebuffer);
