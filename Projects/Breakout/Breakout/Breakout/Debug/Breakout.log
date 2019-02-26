@@ -7,5 +7,10 @@ c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(159): warning C4244: 
 c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(161): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
 c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(163): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
 c:\opengl\projects\breakout\breakout\breakout\src\game.cpp(165): warning C4244: 'argument': conversion from 'float' to 'GLuint', possible loss of data
+  Generating Code...
+  Skipping... (no relevant changes detected)
+  particle_generator.cpp
+  main.cpp
+  glad.c
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.exe
   Breakout.vcxproj -> C:\OpenGL\Projects\Breakout\Breakout\Debug\Breakout.pdb (Partial PDB)
