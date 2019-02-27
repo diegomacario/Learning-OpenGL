@@ -345,5 +345,5 @@ healthchecksdb
 MigrationBackup/
 
 # Exceptions
-!Projects/Breakout/Breakout/LearnOpenGL_1/objects/
-!Projects/LearnOpenGL_1/LearnOpenGL_1/LearnOpenGL_1/objects/
+#!Projects/Breakout/Breakout/LearnOpenGL_1/objects/*.obj
+#!Projects/LearnOpenGL_1/LearnOpenGL_1/LearnOpenGL_1/objects/*.obj
