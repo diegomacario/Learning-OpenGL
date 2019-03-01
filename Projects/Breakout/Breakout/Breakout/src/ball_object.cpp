@@ -11,7 +11,9 @@
 BallObject::BallObject()
     : GameObject(),
       Radius(12.5f),
-      Stuck(true)
+      Stuck(true),
+      Sticky(GL_FALSE),
+      PassThrough(GL_FALSE)
 {
 
 }
@@ -19,7 +21,9 @@ BallObject::BallObject()
 BallObject::BallObject(glm::vec2 pos, GLfloat radius, glm::vec2 velocity, Texture2D sprite)
     :  GameObject(pos, glm::vec2(radius * 2, radius * 2), sprite, glm::vec3(1.0f), velocity),
        Radius(radius),
-       Stuck(true)
+       Stuck(true),
+       Sticky(GL_FALSE),
+       PassThrough(GL_FALSE)
 {
 
 }
@@ -59,4 +63,6 @@ void BallObject::Reset(glm::vec2 position, glm::vec2 velocity)
     this->Position = position;
     this->Velocity = velocity;
     this->Stuck = true;
+    this->Sticky = GL_FALSE;
+    this->PassThrough = GL_FALSE;
 }

@@ -15,6 +15,7 @@
 #include <GLFW/glfw3.h>
 
 #include "game_level.h"
+#include "power_up.h"
 
 // Represents the current state of the game
 enum GameState
@@ -54,30 +55,35 @@ const glm::vec2 INITIAL_BALL_VELOCITY(100.0f, -350.0f);
 class Game
 {
 public:
-   // Game state
-   GameState              State;
-   GLboolean              Keys[1024];
-   GLuint                 Width, Height;
-   std::vector<GameLevel> Levels;
-   GLuint                 Level;
+    // Game state
+    GameState              State;
+    GLboolean              Keys[1024];
+    GLuint                 Width, Height;
+    std::vector<GameLevel> Levels;
+    GLuint                 Level;
+    std::vector<PowerUp>   PowerUps;
 
-   // Constructor/Destructor
-   Game(GLuint width, GLuint height);
-   ~Game();
+    // Constructor/Destructor
+    Game(GLuint width, GLuint height);
+    ~Game();
 
-   // Initialize game state (load all shaders/textures/levels)
-   void Init();
+    // Initialize game state (load all shaders/textures/levels)
+    void Init();
 
-   // GameLoop
-   void ProcessInput(GLfloat dt);
-   void Update(GLfloat dt);
-   void Render();
+    // GameLoop
+    void ProcessInput(GLfloat dt);
+    void Update(GLfloat dt);
+    void Render();
 
-   void DoCollisions();
+    void DoCollisions();
 
-   // Reset
-   void ResetLevel();
-   void ResetPlayer();
+    // Reset
+    void ResetLevel();
+    void ResetPlayer();
+
+    // Powerups
+    void SpawnPowerUps(GameObject &block);
+    void UpdatePowerUps(GLfloat dt);
 };
 
 #endif
