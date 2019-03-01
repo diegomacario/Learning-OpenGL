@@ -114,6 +114,9 @@ void Game::Update(GLfloat dt)
 
     // Update particles
     Particles->Update(dt, *Ball, 2, glm::vec2(Ball->Radius / 2));
+   
+    // Update PowerUps
+    this->UpdatePowerUps(dt);
 
     // Reduce shake time
     if (ShakeTime > 0.0f)
