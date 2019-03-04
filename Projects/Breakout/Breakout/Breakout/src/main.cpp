@@ -38,7 +38,6 @@ int main(int argc, char *argv[])
 
    glfwSetKeyCallback(window, key_callback);
 
-   // Replaced GLEW with GLAD
    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
    {
       std::cout << "Failed to initialize GLAD" << std::endl;
@@ -2209,4 +2208,3 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // The best solution would be to combine the two approaches by dynamically generating a bitmap font texture that features all the
 // characters glyphs that were loaded with FreeType. This saves the renderer from a significant amount of texture switches
 // and based on how tightly each glyph is packed, it could improve performance quite a bit.
-

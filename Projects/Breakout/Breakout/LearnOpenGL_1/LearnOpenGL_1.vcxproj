@@ -52,6 +52,8 @@
     <None Include="shader\11.1.anti_aliasing_in_opengl.vs" />
     <None Include="shader\11.1.anti_aliasing_in_opengl_screen.fs" />
     <None Include="shader\11.1.anti_aliasing_in_opengl_screen.vs" />
+    <None Include="shader\12.1.text_rendering.fs" />
+    <None Include="shader\12.1.text_rendering.vs" />
     <None Include="shader\2.2.basic_lighting.fs" />
     <None Include="shader\2.2.basic_lighting.vs" />
     <None Include="shader\2.2.lamp.fs" />

@@ -279,5 +279,11 @@
     <None Include="shader\11.1.anti_aliasing_in_opengl_screen.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\12.1.text_rendering.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\12.1.text_rendering.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
