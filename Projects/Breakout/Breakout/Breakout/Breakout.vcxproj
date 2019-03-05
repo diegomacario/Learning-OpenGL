@@ -130,6 +130,7 @@
     <ClCompile Include="src\sprite_renderer.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="src\text_renderer.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ball_object.h" />
@@ -144,6 +145,7 @@
     <ClInclude Include="inc\sprite_renderer.h" />
     <ClInclude Include="inc\stb_image.h" />
     <ClInclude Include="inc\texture.h" />
+    <ClInclude Include="inc\text_renderer.h" />
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\particle.frag" />
@@ -152,6 +154,8 @@
     <None Include="shaders\post_processing.vs" />
     <None Include="shaders\sprite.fs" />
     <None Include="shaders\sprite.vs" />
+    <None Include="shaders\text.fs" />
+    <None Include="shaders\text.vs" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

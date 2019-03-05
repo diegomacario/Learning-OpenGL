@@ -60,6 +60,9 @@
     <ClCompile Include="src\post_processor.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\text_renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\stb_image.h">
@@ -98,6 +101,9 @@
     <ClInclude Include="inc\power_up.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\text_renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <None Include="shaders\sprite.fs">
@@ -116,6 +122,12 @@
       <Filter>Shader Files</Filter>
     </None>
     <None Include="shaders\post_processing.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\text.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shaders\text.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

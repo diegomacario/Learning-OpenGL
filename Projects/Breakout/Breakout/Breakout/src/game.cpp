@@ -18,6 +18,7 @@ using namespace irrklang;
 #include "ball_object.h"
 #include "particle_generator.h"
 #include "post_processor.h"
+#include "text_renderer.h"
 
 // Game-related State data
 SpriteRenderer *    Renderer;
@@ -25,15 +26,18 @@ GameObject *        Player;
 BallObject *        Ball;
 ParticleGenerator * Particles;
 PostProcessor *     Effects;
-ISoundEngine *      SoundEngine = createIrrKlangDevice();
 GLfloat             ShakeTime = 0.0f;
+ISoundEngine *      SoundEngine = createIrrKlangDevice();
+TextRenderer *      Text;
 
 Game::Game(GLuint width, GLuint height)
-   : State(GAME_ACTIVE),
+   : State(GAME_MENU),
      Keys(),
      Width(width),
-     Height(height)
-{ 
+     Height(height),
+     Level(0),
+     Lives(3)
+{
 
 }
 
@@ -44,6 +48,7 @@ Game::~Game()
     delete Ball;
     delete Particles;
     delete Effects;
+    delete Text;
     SoundEngine->drop();
 }
 
@@ -84,6 +89,8 @@ void Game::Init()
     Renderer = new SpriteRenderer(ResourceManager::GetShader("sprite"));
     Particles = new ParticleGenerator(ResourceManager::GetShader("particle"), ResourceManager::GetTexture("particle"), 500);
     Effects = new PostProcessor(ResourceManager::GetShader("postprocessing"), this->Width, this->Height);
+    Text = new TextRenderer(this->Width, this->Height);
+    Text->Load("fonts/OCRAEXT.TTF", 24);
 
     // Load levels
     GameLevel one, two, three, four;
@@ -139,8 +146,24 @@ void Game::Update(GLfloat dt)
     // Check loss condition
     if (Ball->Position.y >= this->Height)
     {
+        --this->Lives;
+
+        // Game over
+        if (this->Lives == 0)
+        {
+            this->ResetLevel();
+            this->State = GAME_MENU;
+        }
+        this->ResetPlayer();
+    }
+
+    // Check win condition
+    if (this->State == GAME_ACTIVE && this->Levels[this->Level].IsCompleted())
+    {
         this->ResetLevel();
         this->ResetPlayer();
+        Effects->Chaos = GL_TRUE;
+        this->State = GAME_WIN;
     }
 }
 
