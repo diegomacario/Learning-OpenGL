@@ -12,10 +12,15 @@ Small graphics and physics experiments built with OpenGL.
 - https://gafferongames.com/post/integration_basics/
 - http://allenchou.net/game-physics-series/
 - https://github.com/RandyGaul/qu3e
+- https://gafferongames.com/post/fix_your_timestep/
 
 ### Linear Algebra
 
 - http://www.reedbeta.com/blog/on-vector-math-libraries/
+
+### Patterns
+
+http://gameprogrammingpatterns.com/contents.html
 
 ### Miscellanous
 
