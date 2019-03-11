@@ -22,7 +22,7 @@
 
 using namespace std;
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma = false);
+unsigned int TextureFromFile(const char *filename, const string &directory, bool gamma = false);
 
 class Model
 {
@@ -51,11 +51,11 @@ public:
 
 private:
    // Loads a model with supported ASSIMP extensions and stores the resulting meshes in the meshes vector
-   void loadModel(string const &path)
+   void loadModel(string const &filepath)
    {
       // Read file via ASSIMP
       Assimp::Importer importer;
-      const aiScene* scene = importer.ReadFile(path, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+      const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
       // Check for errors
       if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -65,7 +65,7 @@ private:
       }
 
       // Retrieve the directory part of the filepath
-      directory = path.substr(0, path.find_last_of('/'));
+      directory = filepath.substr(0, filepath.find_last_of('/'));
 
       // Process ASSIMP's root node recursively
       processNode(scene->mRootNode, scene);
@@ -123,7 +123,7 @@ private:
             // A vertex can contain up to 8 different sets of texture coordinates
             // We make the assumption that we won't use models that have more than a single set of texture coordinates per vertex
             // For this reason, we always take the first set
-            vec.x = mesh->mTextureCoords[0][i].x; 
+            vec.x = mesh->mTextureCoords[0][i].x;
             vec.y = mesh->mTextureCoords[0][i].y;
             vertex.TexCoords = vec;
          }
@@ -196,14 +196,14 @@ private:
       vector<Texture> textures;
       for (unsigned int i = 0; i < mat->GetTextureCount(type); i++)
       {
-         aiString str;
-         mat->GetTexture(type, i, &str);
+         aiString filename;
+         mat->GetTexture(type, i, &filename);
 
          // Check if the current texture was loaded before, and if so, do not load it
          bool skip = false;
          for (unsigned int j = 0; j < textures_loaded.size(); j++)
          {
-            if (std::strcmp(textures_loaded[j].path.data(), str.C_Str()) == 0)
+            if (std::strcmp(textures_loaded[j].filename.data(), filename.C_Str()) == 0)
             {
                textures.push_back(textures_loaded[j]);
                skip = true; // A texture with the same filepath has already been loaded, so we continue to next one
@@ -214,9 +214,9 @@ private:
          if (!skip) // If the current texture hasn't been loaded already, load it
          {
             Texture texture;
-            texture.id = TextureFromFile(str.C_Str(), this->directory);
+            texture.id = TextureFromFile(filename.C_Str(), this->directory);
             texture.type = typeName;
-            texture.path = str.C_Str();
+            texture.filename = filename.C_Str();
             textures.push_back(texture);
             textures_loaded.push_back(texture); // Store the current texture in the model so that we can avoid loading it again
          }
@@ -227,16 +227,16 @@ private:
 };
 
 
-unsigned int TextureFromFile(const char *path, const string &directory, bool gamma)
+unsigned int TextureFromFile(const char *filename, const string &directory, bool gamma)
 {
-   string filename = string(path);
-   filename = directory + '/' + filename;
+   string filepath = string(filename);
+   filepath = directory + '/' + filepath;
 
    unsigned int textureID;
    glGenTextures(1, &textureID);
 
    int width, height, nrComponents;
-   unsigned char *data = stbi_load(filename.c_str(), &width, &height, &nrComponents, 0);
+   unsigned char *data = stbi_load(filepath.c_str(), &width, &height, &nrComponents, 0);
    if (data)
    {
       GLenum format;
@@ -266,7 +266,7 @@ unsigned int TextureFromFile(const char *path, const string &directory, bool gam
    }
    else
    {
-      std::cout << "Texture failed to load at path: " << path << std::endl;
+      std::cout << "Texture failed to load: " << filepath << std::endl;
       stbi_image_free(data);
    }
 

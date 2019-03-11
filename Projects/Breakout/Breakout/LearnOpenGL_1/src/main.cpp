@@ -1,7 +1,3 @@
-#include <iostream>
-#include <map>
-#include <string>
-
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -9,202 +5,371 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-// FreeType
-#include <ft2build.h>
-#include FT_FREETYPE_H
+#include <shader.h>
+#include <camera.h>
+#include <model.h>
 
-#include "Shader.h"
+#include <iostream>
 
-const GLuint WIDTH = 800, HEIGHT = 600;
+void         framebuffer_size_callback(GLFWwindow* window, int width, int height);
+void         mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void         scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
+void         processInput(GLFWwindow* window);
 
-struct Character
-{
-    GLuint     TextureID; // ID handle of the glyph texture
-    glm::ivec2 Size;      // Size of glyph
-    glm::ivec2 Bearing;   // Offset from baseline to left/top of glyph
-    GLuint     Advance;   // Horizontal offset to advance to next glyph
-};
+// Window
+const unsigned int SCR_WIDTH = 800;
+const unsigned int SCR_HEIGHT = 600;
 
-std::map<GLchar, Character> Characters;
-GLuint VAO, VBO;
+// Camera
+Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
 
-void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color);
+// Mouse
+bool  firstMouse = true;
+float lastX = SCR_WIDTH / 2.0f;
+float lastY = SCR_HEIGHT / 2.0f;
+
+// Timing
+float deltaTime = 0.0f; // Time between the current frame and the last frame
+float lastFrame = 0.0f;
+
+// Lighting
+//glm::vec3 lightPos(1.2f, 1.0f, 2.0f);
+glm::vec3 lightPos(-1.0f, 1.0f, 0.5f);
 
 int main()
 {
-    glfwInit();
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-    glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+   // Initialize GLFW before calling any GLFW functions
+   // ****************************************************************************************************
+   glfwInit();
+   // Tell GLFW we want to use OpenGL version 3.3
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+   // Tell GLFW we want to use the OpenGL Core Profile
+   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-    GLFWwindow* window = glfwCreateWindow(WIDTH, HEIGHT, "LearnOpenGL", nullptr, nullptr);
-    glfwMakeContextCurrent(window);
+#ifdef __APPLE__
+   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+#endif
 
-    if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-    {
-        std::cout << "Failed to initialize GLAD" << std::endl;
-        return -1;
-    }
+   // Create a window
+   // ****************************************************************************************************
+   GLFWwindow* window = glfwCreateWindow(SCR_WIDTH, SCR_HEIGHT, "LearnOpenGL", NULL, NULL);
+   if (window == NULL)
+   {
+      std::cout << "Failed to create GLFW window" << std::endl;
+      // Destroy all remaining windows, free any allocated resources and set GLFW to an uninitialized state
+      glfwTerminate();
+      return -1;
+   }
 
-    glViewport(0, 0, WIDTH, HEIGHT);
+   // Make the context of the specified window current on the calling thread
+   // A context can only be made current on a single thread at a time, and each thread can only have a single current context at a time
+   glfwMakeContextCurrent(window);
 
-    // OpenGL configuration
-    glEnable(GL_CULL_FACE);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   // Specify the function that is called when the window is resized (the resize callback)
+   // When the window is first displayed, this function is also called
+   glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 
-    // Compile and setup the shader program
-    Shader shader("shader/12.1.text_rendering.vs", "shader/12.1.text_rendering.fs");
-    glm::mat4 projection = glm::ortho(0.0f, static_cast<GLfloat>(WIDTH), 0.0f, static_cast<GLfloat>(HEIGHT));
-    shader.use();
-    glUniformMatrix4fv(glGetUniformLocation(shader.ID, "projection"), 1, GL_FALSE, glm::value_ptr(projection));
+   // Specify the function that is called when the mouse is moved
+   glfwSetCursorPosCallback(window, mouse_callback);
 
-    // Initialize the FreeType library
-    // All FreeType functions return a non-zero value whenever an error occurs
-    FT_Library ft;
-    if (FT_Init_FreeType(&ft))
-        std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
+   // Specify the function that is called when the scroll wheel is moved
+   glfwSetScrollCallback(window, scroll_callback);
 
-    // Load font as face
-    FT_Face face;
-    if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
-        std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
+   // Tell GLFW to capture the mouse
+   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
-    // Set size to load glyphs as
-    FT_Set_Pixel_Sizes(face, 0, 48);
+   // Initialize GLAD before calling any OpenGL functions
+   // ****************************************************************************************************
+   // GLAD manages function pointers for OpenGL
+   // We pass it the function used to load the addresses of the OpenGL function pointers, which is OS-specific
+   // glfwGetProcAddress defines the correct function based on the OS we are compiling for
+   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+   {
+      std::cout << "Failed to initialize GLAD" << std::endl;
+      return -1;
+   }
 
-    // Disable byte-alignment restriction
-    glPixelStorei(GL_UNPACK_ALIGNMENT, 1); 
+   // Enable depth testing globally
+   glEnable(GL_DEPTH_TEST);
 
-    // Load first 128 characters of ASCII set
-    for (GLubyte c = 0; c < 128; c++)
-    {
-        // Load character glyph
-        if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-        {
-            std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-            continue;
-        }
+   // Read the vertex and fragment shaders, and create the vertex programs
+   // ****************************************************************************************************
 
-        // Generate texture
-        GLuint texture;
-        glGenTextures(1, &texture);
-        glBindTexture(GL_TEXTURE_2D, texture);
-        glTexImage2D(GL_TEXTURE_2D,
-                     0,
-                     GL_RED,
-                     face->glyph->bitmap.width,
-                     face->glyph->bitmap.rows,
-                     0,
-                     GL_RED,
-                     GL_UNSIGNED_BYTE,
-                     face->glyph->bitmap.buffer);
+   Shader ourShader("shader/6.2.model_loading.vs", "shader/6.2.model_loading.fs");
+   Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
 
-        // Set texture options
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+   // Initialize the relevant buffers with the data that we wish to render
+   // ****************************************************************************************************
+   //                     Positions            Normals              Texture coords
+   //                    <--------------->    <--------------->    <------->
+   float vertices[] = { -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+                         0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+                         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                         0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                        -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+                        -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
 
-        // Now store character for later use
-        Character character = { texture,
-                                glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-                                glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-                                face->glyph->advance.x };
+                        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+                         0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+                         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                         0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                        -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+                        -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
 
-        Characters.insert(std::pair<GLchar, Character>(c, character));
-    }
+                        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                        -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                        -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                        -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                        -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-    glBindTexture(GL_TEXTURE_2D, 0);
+                         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                         0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                         0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                         0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                         0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
 
-    // Destroy FreeType once we are done using it
-    FT_Done_Face(face);
-    FT_Done_FreeType(ft);
+                        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+                         0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+                         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                         0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                        -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+                        -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
 
-    // Configure VAO/VBO for texture quads
-    glGenVertexArrays(1, &VAO);
-    glGenBuffers(1, &VBO);
-    glBindVertexArray(VAO);
-    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW); // 6 vertices of 4 floats each to make a rectangle (2 floats for coords, 2 floats for tex coords)
-    glEnableVertexAttribArray(0);
-    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+                        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+                         0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+                         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                         0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                        -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+                        -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f };
 
-    // Game loop
-    while (!glfwWindowShouldClose(window))
-    {
-        // Check and call events
-        glfwPollEvents();
+   unsigned int VBO;
 
-        // Clear the colorbuffer
-        glClearColor(0.2f, 0.3f, 0.3f, 1.0f);
-        glClear(GL_COLOR_BUFFER_BIT);
+   // Create a VBO
+   glGenBuffers(1, &VBO);
 
-        RenderText(shader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-        RenderText(shader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
-       
-        // Swap the buffers
-        glfwSwapBuffers(window);
-    }
+   // Bind the VBO and store the vertex data inside of it
+   glBindBuffer(GL_ARRAY_BUFFER, VBO);
+   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-    glfwTerminate();
+   // Light
+   // ****************************************************************************************************
 
-    return 0;
+   unsigned int lightVAO;
+   glGenVertexArrays(1, &lightVAO);
+
+   // Bind the VAO
+   // From this point onward, the VAO will store the vertex attribute configuration
+   glBindVertexArray(lightVAO);
+
+   // Connect the vertex positions that are inside VBO with attribute 0 of the vertex shader
+   // The vertex shader of the light source does not use the normals or the texture coordinates,
+   // so we do not connect them with any attributes
+   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+   glEnableVertexAttribArray(0);
+
+   // Clean up
+   // ****************************************************************************************************
+
+   // The call to glVertexAttribPointer registered VBO as the VAOs' bound VBO, so we can safely unbind it now
+   glBindBuffer(GL_ARRAY_BUFFER, 0);
+   // We can also unbind the last VAO so that other VAO calls won't accidentally modify it
+   glBindVertexArray(0);
+
+   // Load the models
+   // ****************************************************************************************************
+
+   Model ourModel("objects/nanosuit/nanosuit.obj");
+
+   // Render loop
+   // ****************************************************************************************************
+
+   // Uncomment this call to draw in wireframe polygons.
+   //glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+   // The opposite is:
+   //glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
+   while(!glfwWindowShouldClose(window))
+   {
+      float currentFrame = (float) glfwGetTime();
+      deltaTime = currentFrame - lastFrame;
+      lastFrame = currentFrame;
+
+      // Process keyboard input
+      processInput(window);
+
+      // Set the color that OpenGL uses to reset the colorbuffer
+      glClearColor(0.05f, 0.05f, 0.05f, 1.0f);
+
+      // Clear the entire buffer of the current framebuffer
+      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+      // Model matrix
+      glm::mat4 model;
+      model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the nanosuit down so that it is at the center of the scene
+      model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));       // Scale the nanosuit down so that it fits in our scene
+
+      // View matrix
+      glm::mat4 view = camera.GetViewMatrix();
+
+      // Projection matrix
+      glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom),              // FoV
+                                              (float) SCR_WIDTH / (float) SCR_HEIGHT, // Aspect ratio
+                                              0.1f,                                   // Near
+                                              100.0f);                                // Far
+
+      // Nanosuit
+      // ****************************************************************************************************
+
+      // Note: A shader must be active when setting uniforms/drawing
+      ourShader.use();
+
+      // Pass the MVP to the vertex shader
+      // ---------------------------------
+      ourShader.setMat4("model", model);
+      ourShader.setMat4("view", view);
+      ourShader.setMat4("projection", projection);
+
+      // Pass the lighting parameters to the fragment shader (we calculate the lighting in world space)
+      // ----------------------------------------------------------------------------------------------
+
+      // Camera properties
+      ourShader.setVec3("viewPos", camera.Position);
+
+      // Light properties
+      ourShader.setVec3("pointLight.position", lightPos);
+      ourShader.setVec3("pointLight.ambient", 0.5f, 0.5f, 0.5f);
+      ourShader.setVec3("pointLight.diffuse", 0.5f, 0.5f, 0.5f);
+      ourShader.setVec3("pointLight.specular", 1.0f, 1.0f, 1.0f);
+      ourShader.setFloat("pointLight.constant", 1.0f);
+      ourShader.setFloat("pointLight.linear", 0.09f);
+      ourShader.setFloat("pointLight.quadratic", 0.032f);
+
+      // Material properties
+      ourShader.setFloat("shininess", 32.0f);
+
+      // Render the nanosuit (the draw function binds all the textures and tells the fragment shader where to find them)
+      ourModel.Draw(ourShader);
+
+      // Lamp
+      // ****************************************************************************************************
+
+      // Model matrix
+      model = glm::mat4();
+      model = glm::translate(model, lightPos);
+      model = glm::scale(model, glm::vec3(0.2f));
+
+      // Note: A shader must be active when setting uniforms/drawing
+      lampShader.use();
+
+      // Pass the MVP to the vertex shader
+      lampShader.setMat4("model", model);
+      lampShader.setMat4("view", view);
+      lampShader.setMat4("projection", projection);
+
+      // Draw the light cube
+      glBindVertexArray(lightVAO);
+      glDrawArrays(GL_TRIANGLES, 0, 36);
+
+      // Swap the front/back buffers
+      // The front buffer contains the final image that is displayed on the screen,
+      // while all the rendering commands draw to the back buffer
+      // When all the rendering commands are finished, the two buffers are swapped
+      glfwSwapBuffers(window);
+
+      // Process the events that have been received
+      // This will cause the window and input callbacks associated with those events to be called
+      glfwPollEvents();
+   }
+
+   // Destroy all remaining windows, free any allocated resources and set GLFW to an uninitialized state
+   glfwTerminate();
+
+   return 0;
 }
 
-void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
+// When the window is resized, the rendering window must also be resized
+// For this reason, we call glViewport in the resize callback with the new dimensions of the window
+void framebuffer_size_callback(GLFWwindow* window, int width, int height)
 {
-    // Activate corresponding render state
-    shader.use();
-    glUniform3f(glGetUniformLocation(shader.ID, "textColor"), color.x, color.y, color.z);
-    glActiveTexture(GL_TEXTURE0);
-    glBindVertexArray(VAO);
+   // glViewPort specifies the size of the rendering window
+   // The first two parameters (x, y) set the location of the lower left corner of the rendering window
+   // The third and fourth parameters set the width and the height of the rendering window
+   // The specified coordinates tell OpenGL how it should map its Normalized Device Coordinates (NDC),
+   // which range from -1 to 1, to window coordinates (whose range is defined here)
+   // We could make the rendering window smaller than GLFW's window, and use the extra space to display a menu
+   // In this case, glViewport maps 2D coordinates as illustrated below:
+   // Horizontally: (-1, 1) -> (0, 800)
+   // Vertically:   (-1, 1) -> (0, 600)
+   glViewport(0, 0, width, height);
+}
 
-    // Iterate through all characters
-    std::string::const_iterator c;
-    for (c = text.begin(); c != text.end(); c++) 
-    {
-        Character ch = Characters[*c];
+void mouse_callback(GLFWwindow* window, double xpos, double ypos)
+{
+   // Controlling an FPS camera with mouse input involves the following:
+   //    1) Calculate the mouse's offset with respect to the last frame
+   //    2) Add the offset values to the camera's yaw and pitch values
+   //    3) Add some constraints to the maximum and minimum pitch values
+   //    4) Calculate the direction vector
 
-        GLfloat xpos = x + ch.Bearing.x * scale;
-        GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
+   // Point (0, 0) is at the top left corner of the window
+   // Point (w, h) is at the upper right corner of the window
 
-        GLfloat w = ch.Size.x * scale;
-        GLfloat h = ch.Size.y * scale;
+   if (firstMouse)
+   {
+      lastX = static_cast<float>(xpos);
+      lastY = static_cast<float>(ypos);
+      firstMouse = false;
+   }
 
-        // Update VBO for each character
-        // The vertices are specified in ccwise order
-        // The texture coordinates are inverted vertically (origin at top left instead of bottom left)
-        GLfloat vertices[6][4] = {
-            { xpos,     ypos + h,   0.0, 0.0 }, // Top left
-            { xpos,     ypos,       0.0, 1.0 }, // Bottom left
-            { xpos + w, ypos,       1.0, 1.0 }, // Bottom right
+   float xoffset = static_cast<float>(xpos) - lastX;
+   float yoffset = lastY - static_cast<float>(ypos); // Reversed since y-coordinates range from bottom to top
 
-            { xpos,     ypos + h,   0.0, 0.0 }, // Top left
-            { xpos + w, ypos,       1.0, 1.0 }, // Bottom right
-            { xpos + w, ypos + h,   1.0, 0.0 }  // Top right
-        };
+   lastX = static_cast<float>(xpos);
+   lastY = static_cast<float>(ypos);
 
-        // Render glyph texture over quad
-        glBindTexture(GL_TEXTURE_2D, ch.TextureID);
+   camera.ProcessMouseMovement(xoffset, yoffset);
+}
 
-        // Update content of VBO memory
-        glBindBuffer(GL_ARRAY_BUFFER, VBO);
-        glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices); // Be sure to use glBufferSubData and not glBufferData
-        glBindBuffer(GL_ARRAY_BUFFER, 0);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset)
+{
+   camera.ProcessMouseScroll(static_cast<float>(yoffset));
+}
 
-        // Render quad
-        glDrawArrays(GL_TRIANGLES, 0, 6);
+// This function is used to exit the rendering the loop when the escape key is pressed
+// It is called in every iteration of the render loop
+void processInput(GLFWwindow* window)
+{
+   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
+   {
+      glfwSetWindowShouldClose(window, true);
+   }
 
-        // Now advance cursors for next glyph (note that advance is specified in 1/64 pixels)
-        x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64 (divide amount of 1/64th pixels by 64 to get amount of pixels))
-    }
+   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS) // Up
+   {
+      // Move in the -Z direction
+      camera.ProcessKeyboard(FORWARD, deltaTime);
+   }
 
-    glBindVertexArray(0);
-    glBindTexture(GL_TEXTURE_2D, 0);
+   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS) // Down
+   {
+      // Move in the +Z direction
+      camera.ProcessKeyboard(BACKWARD, deltaTime);
+   }
+
+   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS) // Left
+   {
+      // Move in the -X direction
+      camera.ProcessKeyboard(LEFT, deltaTime);
+   }
+
+   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS) // Right
+   {
+      // Move in the +X direction
+      camera.ProcessKeyboard(RIGHT, deltaTime);
+   }
 }
 
 // Additional information:
@@ -311,7 +476,7 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
 
 // glEnableVertexAttribArray(0);            // Enables a generic vertex attribute. A vertex attribute can be disabled by calling glDisableVertexAttribArray.
 
-// Another example of how the vertex data is connected with the vertex attributes:
+// Another example of the vertex data is connected with the vertex attributes:
 
    //                Position    Color             TexCoords
    //                <-------->  <-------------->  <-------->
@@ -340,7 +505,7 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
 //    glBindBuffer(GL_ARRAY_BUFFER, VBO);
 //    glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 //
-// B) Set the vertex attribute pointers.
+// B) Set the vertex attributes pointers.
 //
 //    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*) 0);
 //    glEnableVertexAttribArray(0);
@@ -1126,7 +1291,7 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
 
 // Inverting matrices is very expensive
 // Always try to avoid doing inversions in shaders
-// Do the inverse on the GPU, and pass it to the shaders via a uniform
+// Do the inverse on the CPU, and pass it to the shaders via a uniform
 
 // Most people do lighting calculations in the view space instead of the world space
 // The advantage of doing calculations in the view space is that the camera's position is always at
@@ -1206,1105 +1371,3 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
 // The light emitted by a point light can be attenuated
 
 // Att = 1.0 / (Kc + (Kl * d) + (Kq * d^2))
-
-// Stencil Testing
-
-// ...
-
-// Blending
-
-// Alpha = Opaqueness
-// Alpha = 1.0 = Fully opaque
-// Alpha = 0.0 = Fully transparent
-
-// OpenGL doesn't know what to do with alpha values, nor when to discard a fragment based on its alpha value.
-// This is something we need to do manually using the discard command.
-
-// #version 330 core
-// out vec4 FragColor;
-//
-// in vec2 TexCoords;
-// 
-// uniform sampler2D texture1;
-// 
-// void main()
-// {
-//     vec4 texColor = texture(texture1, TexCoords);
-//     if(texColor.a < 0.1)
-//         discard;
-//     FragColor = texColor;
-// }
-
-// Note that when sampling textures at their borders, OpenGL interpolates the border values with the
-// next repeated value of the texture if we set the wrapping parameters of the texture to GL_REPEAT).
-// This is usually okay, but if the texture has a fully transparent part at one border, and a fully opaque
-// part at the opposite border, then the transparent part will be interpolated with the opaque one, losing its
-// transparency. To prevent this, set the texture wrapping method to GL_CLAMP_TO_EDGE whenever you
-// use alpha textures.
-
-// glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-// glTexParameteri( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-
-// To enable blending:
-
-// glEnable(GL_BLEND);
-
-// Blending is done with the following equation:
-
-// Color_result = Color_src * Factor_src + Color_dest * Factor_dest
-
-// Csrc:  the source color vector. This is the color vector that originates from the texture.
-// Cdest: the destination color vector. This is the color vector that is currently stored in the color buffer.
-// Fsrc:  the source factor value. Sets the impact of the alpha value on the source color.
-// Fdest: the destination factor value. Sets the impact of the alpha value on the destination color.
-
-// After the fragment shader has run and all the tests have passed, the result of this blend equation is
-// calculated using the fragment shader's color output and whatever is currently in the color buffer
-// (the previous fragment color). The source and destination colors will automatically be set by OpenGL,
-// but the source and destination factors can be set by us.
-
-// Set the factors with:
-
-// glBlendFunc(GLenum sfactor, GLenum dfactor)
-
-// GL_ZERO                      Factor is equal to 0.
-// GL_ONE                       Factor is equal to 1.
-// GL_SRC_COLOR                 Factor is equal to the source color vector Csource.
-// GL_ONE_MINUS_SRC_COLOR       Factor is equal to 1 minus the source color vector: 1-Csource.
-// GL_DST_COLOR                 Factor is equal to the destination color vector Cdestination
-// GL_ONE_MINUS_DST_COLOR       Factor is equal to 1 minus the destination color vector: 1-Cdestination.
-// GL_SRC_ALPHA                 Factor is equal to the alpha component of the source color vector Csource.
-// GL_ONE_MINUS_SRC_ALPHA       Factor is equal to 1-alpha of the source color vector Csource.
-// GL_DST_ALPHA                 Factor is equal to the alpha component of the destination color vector Cdestination.
-// GL_ONE_MINUS_DST_ALPHA       Factor is equal to 1-alpha of the destination color vector Cdestination.
-// GL_CONSTANT_COLOR            Factor is equal to the constant color vector Cconstant.
-// GL_ONE_MINUS_CONSTANT_COLOR  Factor is equal to 1 - the constant color vector Cconstant.
-// GL_CONSTANT_ALPHA            Factor is equal to the alpha component of the constant color vector Cconstant.
-// GL_ONE_MINUS_CONSTANT_ALPHA  Factor is equal to 1-alpha of the constant color vector Cconstant.
-
-// Example:
-// Fully opaque red (destination) is in the buffer (alpha = 1.0)
-// Transparent green (source) needs to be drawn in the same place (alpha = 0.6)
-// Fsrc  = 0.6     = 60% green
-// Fdest = 1 - 0.6 = 40% red
-// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-// It is also possible to set different options for the RGB and alpha channels individually
-// using glBlendFuncSeparate:
-// glBlendFuncSeparate(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA, GL_ONE, GL_ZERO);
-
-// OpenGL gives us even more flexibility by allowing us to change the operator between the source
-// and destination part of the equation. Right now, the source and destination components are added together,
-// but we could also subtract them if we want. glBlendEquation(GLenum mode) allows us to set this operation
-// and has 3 possible options:
-
-// GL_FUNC_ADD:              the default, adds both components to each other: Cresult=Src+Dst.
-// GL_FUNC_SUBTRACT:         subtracts both components from each other: Cresult=Src-Dst.
-// GL_FUNC_REVERSE_SUBTRACT: subtracts both components, but reverses order: Cresult=Dst-Src.
-
-// When drawing a scene with opaque and transparent objects, the general outline is usually as follows:
-
-// 1) Draw all opaque objects first.
-// 2) Sort all the transparent objects.
-// 3) Draw all the transparent objects in sorted order.
-
-// The transparent objects must be sorted based on their distance from the camera:
-
-// Sort in ascending order
-// std::map<float, glm::vec3> sorted;
-// for (unsigned int i = 0; i < windows.size(); i++)
-// {
-//     float distance = glm::length(camera.Position - windows[i]);
-//     sorted[distance] = windows[i];
-// }
-
-// Retrieve from farthest to nearest
-// for(std::map<float,glm::vec3>::reverse_iterator it = sorted.rbegin(); it != sorted.rend(); ++it) 
-// {
-//     model = glm::mat4(1.0f);
-//     model = glm::translate(model, it->second);
-//     shader.setMat4("model", model);
-//     glDrawArrays(GL_TRIANGLES, 0, 6);
-// } 
-
-// Note that using glm::length2 is more efficient (no square root)
-
-// Note that with fully transparent objects like grass leaves, we have the option to simply discard
-// the transparent fragments instead of blending them, which means we don't have to order them (no depth issues).
-
-// Face Culling
-
-// If we imagine any closed shape, each of its faces has two sides. Each side would either face the user or
-// show its back to the user. What if we could only render the faces that are facing the viewer?
-// This is exactly what face culling does. OpenGL renders all the faces that are front-facing
-// and discards all the faces that are back-facing, saving us a lot of fragment shader calls.
-
-// We need to tell OpenGL which of the faces we use are front-facing and which faces are the back-facing.
-// We do this through the winding order of the vertex data.
-
-// By default, triangles defined with counter-clockwise vertices are processed as front-facing triangles.
-
-// When defining the vertex order of a triangle, you visualize it as if it was facing you,
-// so the vertices of each triangle you specify should be counter-clockwise.
-// The cool thing about specifying all your vertices like this is that the actual winding order is calculated
-// at the rasterization stage (when the vertex shader has already run). The vertices are then seen as from
-// the viewer's point of view.
-
-// All the triangle vertices that the viewer is facing are indeed in the correct winding order, as we specified them,
-// but the vertices of the triangles at the other side of the cube are now rendered in such a way
-// that their winding order becomes reversed. The result is that the triangles we're facing are seen as
-// front-facing triangles, and the triangles at the back are seen as back-facing.
-
-// glEnable(GL_CULL_FACE); // From this point on, all the faces that are not front-faces are discarded
-
-// Note that we would have to disable face culling when we draw the grass leaves from the previous tutorial,
-// for example, since their front and back faces should be visible.
-
-// glCullFace(GL_FRONT); // Select which face you want to cull: GL_FRONT, GL_BACK, GL_FRONT_AND_BACK
-
-// glFrontFace(GL_CCW); // Define which vertex ordering corresponds to a front-facing triangle
-
-
-// Framebuffers
-
-// So far we have used:
-// Color buffer for writing color values
-// Depth buffer for writing depth information
-// Stencil buffer for discarding certain fragments based on some condition
-
-// The combination of these buffers is called a framebuffer and is stored somewhere in memory.
-// OpenGL gives us the flexibility to define our own framebuffers 
-
-// The rendering operations we've done so far were all done on top of the render buffers
-// that are attached to the default framebuffer.
-// The default framebuffer is created and configured when you create your window (GLFW does this for us).
-
-// To create a framebuffer object (FBO):
-
-// unsigned int fbo;
-// glGenFramebuffers(1, &fbo);
-
-// To bind a framebuffer object:
-
-   // There are 3 framebuffer targets:
-   // GL_FRAMEBUFFER:      By binding to this target, all read and write framebuffer operations will affect
-   //                      the currently bound framebuffer.
-   // GL_READ_FRAMEBUFFER: Only the read operations affect the framebuffer bound to this target.
-   //                      Example: glReadPixels()
-   // GL_DRAW_FRAMEBUFFER: Only the write operations affect the framebuffer bound to this target.
-   //                      Example: Destination for rendering, clearning and other write operations.
-// glBindFramebuffer(GL_FRAMEBUFFER, fbo);
-
-// Unfortunately, we can't use our framebuffer yet because it is not complete.
-// For a framebuffer to be complete the following requirements have to be satisfied:
-
-// 1) We have to attach at least one buffer (color, depth or stencil buffer).
-// 2) There should be at least one color attachment.
-// 3)All attachments should be complete as well (reserved memory).
-// 4) Each buffer should have the same number of samples.
-
-// For a definition of samples, take a look at the Anti Aliasing section.
-
-// After we have met all the requirements, we can check if we successfully completed the framebuffer
-// by calling glCheckFramebufferStatus with GL_FRAMEBUFFER, which checks the framebuffer that is currently
-// bound to GL_FRAMEBUFFER and returns GL_FRAMEBUFFER_COMPLETE if everything is good.
-
-// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) == GL_FRAMEBUFFER_COMPLETE)
-
-// All subsequent rendering operations will now render to the attachments of the currently bound framebuffer.
-// Since our framebuffer is not the default framebuffer, the rendering commands will have no impact
-// on the visual output of the window. For this reason it is called off-screen rendering when we render
-// to a framebuffer that is not the default one.
-
-// To make sure all rendering operations will have a visual impact on the main window,
-// we need to make the default framebuffer active again by binding to 0:
-
-// glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-// When we're done with all framebuffer operations, do not forget to delete the framebuffer object:
-
-// glDeleteFramebuffers(1, &fbo);
-
-// Now, before the completeness check is executed we need to attach one or more attachments to the framebuffer.
-// An attachment is a memory location that can act as a buffer for the framebuffer. Think of it as an image.
-// When creating an attachment we have two options to take: textures or renderbuffer objects.
-
-// Texture attachments:
-// -------------------
-
-// When attaching a texture to a framebuffer, all rendering commands will write to the texture as if it was
-// a normal color/depth/stencil buffer.
-// The advantage of using textures is that the result of all rendering operations will be stored as a texture
-// image that we can then easily use in our shaders.
-
-// Creating a texture for a framebuffer is roughly the same as creating a normal texture:
-
-// unsigned int texture;
-// glGenTextures(1, &texture);
-// glBindTexture(GL_TEXTURE_2D, texture);
-
-// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-// The main differences here are that we set the dimensions equal to the screen size (although this is not required),
-// and we pass NULL as the texture's data parameter. For this texture, we're only allocating memory and not
-// actually filling it. The texture will be filled as soon as we render to the framebuffer.
-// Also note that we do not care about any of the wrapping methods or mipmapping since we won't be needing
-// those in most cases.
-
-// If you want to render your whole screen to a texture of a smaller or larger size, you need to call
-// glViewport again (before rendering to your framebuffer) with the new dimensions of your texture.
-// Otherwise only a small part of the texture or screen will be drawn onto the texture.
-
-// Now that we've created a texture the last thing we need to do is actually attach it to the framebuffer:
-
-// glFramebufferTexture2D(GL_FRAMEBUFFER,       // target:     framebuffer type we are targeting (R, W, RW)
-//                        GL_COLOR_ATTACHMENT0, // attachment: type of attachment we are attaching. Options:
-                                                //             GL_COLOR_ATTACHMENTi
-                                                //             GL_DEPTH_ATTACHMENT
-                                                //             GL_STENCIL_ATTACHMENT
-                                                //             GL_DEPTH_STENCIL_ATTACHMENT
-//                        GL_TEXTURE_2D,        // textarget:  type of texture you want to attach.
-//                        texture,              // texture     texture to attach.
-//                        0);                   // level:      mipmap level.
-
-// When creating a depth texture, the texture's format and internalformat should be GL_DEPTH_COMPONENT.
-// In the case of a stencil texture, they should be GL_STENCIL_INDEX.
-
-// It is also possible to attach both a depth buffer and a stencil buffer as a single texture.
-// Each 32 bit value of the texture then consists of 24 bits of depth information and 8 bits of
-// stencil information. To attach a depth and stencil buffer as one texture we use the
-// GL_DEPTH_STENCIL_ATTACHMENT type and configure the texture's formats to contain combined depth and stencil
-// values. Example:
-
-// glTexImage2D(GL_TEXTURE_2D,
-//              0,
-//              GL_DEPTH24_STENCIL8,
-//              800,
-//              600,
-//              0,
-//              GL_DEPTH_STENCIL,
-//              GL_UNSIGNED_INT_24_8,
-//              NULL);
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_TEXTURE_2D, texture, 0);
-
-// Renderbuffer object attachments:
-// -------------------------------
-
-// Just like a texture image, a renderbuffer object is an actual buffer e.g. an array of bytes, integers,
-// pixels or whatever. A renderbuffer object has the added advantage though that it stores its data in OpenGL's
-// native rendering format making it optimized for off-screen rendering to a framebuffer.
-
-// Renderbuffer objects store all the render data directly into their buffer without any conversions
-// to texture-specific formats, thus making them faster as a writeable storage medium.
-// However, renderbuffer objects are generally write-only, thus you cannot read from them
-// (like with texture-access). It is possible to read from them via glReadPixels, though that returns
-// a specified area of pixels from the currently bound framebuffer, but not directly from the attachment itself.
-
-// Because their data is already in its native format, they are quite fast when writing data or simply
-// copying their data to other buffers. Operations like switching buffers are thus quite fast when using
-// renderbuffer objects. The glfwSwapBuffers function we've been using at the end of each render iteration
-// might as well be implemented with renderbuffer objects: we simply write to a renderbuffer image,
-// and swap to the other one at the end. Renderbuffer objects are perfect for these kind of operations.
-
-// To create a renderbuffer object (RBO) and bind it so that all subsequent renderbuffer operations affect it:
-
-// unsigned int rbo;
-// glGenRenderbuffers(1, &rbo);
-// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-
-// Since renderbuffer objects are generally write-only they are often used as depth and stencil attachments,
-// since most of the time we don't really need to read values from the depth and stencil buffers but still care
-// about depth and stencil testing. We need the depth and stencil values for testing, but we don't need to
-// sample these values so a renderbuffer object suits this perfectly. When we're not sampling from these
-// buffers, a renderbuffer object is generally preferred since it's more optimized.
-
-// Creating a depth and stencil RBO is done by calling the glRenderbufferStorage function.
-// This function establishes the data storage, format and dimensions of an RBO's image.
-// It only allocates memory, it doesn't fill the buffer.
-
-// glRenderbufferStorage(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target
-                                              //         is the one that is configured.
-//                       GL_DEPTH24_STENCIL8, // internalformat: specifies the internal format to be used for
-                                              //                 the RBO's image.
-//                       800,                 // width: width of RBO's image in pixels.
-//                       600);                // height: height of RBO's image in pixels.
-
-// Finally, to attach an RBO to the currently bound framebuffer object:
-
-// glFramebufferRenderbuffer(GL_FRAMEBUFFER,              // target: framebuffer target.
-//                           GL_DEPTH_STENCIL_ATTACHMENT, // attachment: attachment point of FB.
-//                           GL_RENDERBUFFER,             // renderbuffertarget: RB target.
-//                           rbo);                        // renderbuffer: actual RB to attach.
-
-// Renderbuffer objects could provide some optimizations in your framebuffer projects, but it is important
-// to realize when to use renderbuffer objects and when to use textures. The general rule is that if you
-// never need to sample data from a specific buffer, it is wise to use a renderbuffer object for that
-// specific buffer. If you need to someday sample data from a specific buffer like colors or depth values,
-// you should use a texture attachment instead.
-
-// Rendering to a texture:
-// ----------------------
-
-// To render the scene into a color texture attached to a FBO we created:
-
-// unsigned int framebuffer;
-// glGenFramebuffers(1, &framebuffer);
-// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-   // Create a texture image to be used as a color attachment
-// unsigned int texColorBuffer;
-// glGenTextures(1, &texColorBuffer);
-// glBindTexture(GL_TEXTURE_2D, texColorBuffer);
-// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 800, 600, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR );
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-// glBindTexture(GL_TEXTURE_2D, 0);
-
-   // Attach the texture image to the currently bound FBO as a color attachment
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, texColorBuffer, 0); 
-
-   // Create a RBO to be used as a depth/stencil attachment
-   // We use a RBO instead of a texture image because we won't be sampling the depth/stencil buffers
-// unsigned int rbo;
-// glGenRenderbuffers(1, &rbo);
-// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-// glRenderbufferStorage(GL_RENDERBUFFER, GL_DEPTH24_STENCIL8, 800, 600);
-// glBindRenderbuffer(GL_RENDERBUFFER, 0);
-
-   // Attach the RBO to the currently bound FBO as a depth/stencil attachment
-// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-   // Finally, check that the FBO is complete and we unbind it
-// if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-//    std::cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << std::endl;
-// glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-// Now that the framebuffer is complete all we need to do to render to the framebuffer's buffers instead
-// of the default framebuffer's buffers is to simply bind the framebuffer object. All subsequent rendering
-// commands will then influence the currently bound framebuffer. All the depth and stencil operations will
-// also read from the currently bound framebuffer's depth and stencil attachments if they're available.
-// If you were to omit a depth buffer for example, all depth testing operations will no longer work,
-// because there isn't a depth buffer present in the currently bound framebuffer.
-
-// So, to draw the scene to a single texture we'll have to complete the following steps:
-
-// 1) Render the scene as usual with the new framebuffer bound as the active framebuffer.
-// 2) Bind the default framebuffer.
-// 3) Draw a quad that spans the entire screen with the new framebuffer's color buffer as its texture.
-
-// When drawing to the quad the spans the entire screen, there is no need for a projection matrix if we
-// specify the vertex coordinates of the quad as Normalized Device Coordinates, which allows us to output
-// them from the vertex shader directly.
-
-// Our rendering loop looks like this:
-
-   // first pass
-// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-// glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-// glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT); // we're not using the stencil buffer now
-// glEnable(GL_DEPTH_TEST);
-// DrawScene();
-
-   // second pass
-// glBindFramebuffer(GL_FRAMEBUFFER, 0); // back to default framebuffer
-// glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-// glClear(GL_COLOR_BUFFER_BIT); // we'are not using the depth buffer since we are working with a single quad
-
-// screenShader.use();
-// glBindVertexArray(quadVAO);
-// glDisable(GL_DEPTH_TEST);
-// glBindTexture(GL_TEXTURE_2D, textureColorbuffer);
-// glDrawArrays(GL_TRIANGLES, 0, 6);
-
-// Post-processing:
-// ---------------
-
-// Now that the entire scene is rendered to a single texture we can create some interesting effects simply by manipulating
-// the texture data.
-
-// Inversion:
-// +++++++++
-
-// void main()
-// {
-//     FragColor = vec4(vec3(1.0 - texture(screenTexture, TexCoords)), 1.0);
-// }
-
-// Grayscale:
-// +++++++++
-
-// void main()
-// {
-//     FragColor = texture(screenTexture, TexCoords);
-//     float average = (FragColor.r + FragColor.g + FragColor.b) / 3.0;
-//     FragColor = vec4(average, average, average, 1.0);
-// }
-
-// The human eye tends to be more sensitive to green colors and less sensitive to blue colors, so to get the most physically
-// accurate results we must use weighted channels:
-
-// void main()
-// {
-//     FragColor = texture(screenTexture, TexCoords);
-//     float average = 0.2126 * FragColor.r + 0.7152 * FragColor.g + 0.0722 * FragColor.b;
-//     FragColor = vec4(average, average, average, 1.0);
-// }
-
-// Kernel effects:
-// ++++++++++++++
-
-// We could for example take a small area around the current texture coordinate and sample multiple texture values around it.
-
-// A kernel (or convolution matrix) is a small matrix-like array of values centered on the current pixel that multiplies
-// surrounding pixel values by its kernel values and adds them all together to form a single value.
-
-// Most kernels add up to 1 if you add all the weights together. If they don't add up to 1 it means that the resulting texture color
-// is brighter or darker than the original texture value.
-
-// Sharpen kernel:
-
-// const float offset = 1.0 / 300.0;
-// 
-// void main()
-// {
-//     vec2 offsets[9] = vec2[](
-//         vec2(-offset,  offset), // top-left
-//         vec2( 0.0f,    offset), // top-center
-//         vec2( offset,  offset), // top-right
-//         vec2(-offset,  0.0f),   // center-left
-//         vec2( 0.0f,    0.0f),   // center-center
-//         vec2( offset,  0.0f),   // center-right
-//         vec2(-offset, -offset), // bottom-left
-//         vec2( 0.0f,   -offset), // bottom-center
-//         vec2( offset, -offset)  // bottom-right
-//         );
-// 
-//     float kernel[9] = float[](
-//         -1, -1, -1,
-//         -1,  9, -1,
-//         -1, -1, -1
-//         );
-// 
-//     vec3 sampleTex[9];
-//     for(int i = 0; i < 9; i++)
-//     {
-//         sampleTex[i] = vec3(texture(screenTexture, TexCoords.st + offsets[i]));
-//     }
-//     vec3 col = vec3(0.0);
-//     for(int i = 0; i < 9; i++)
-//         col += sampleTex[i] * kernel[i];
-// 
-//     FragColor = vec4(col, 1.0);
-// }
-
-// Blur kernel:
-
-// float kernel[9] = float[](
-//     1.0 / 16, 2.0 / 16, 1.0 / 16,
-//     2.0 / 16, 4.0 / 16, 2.0 / 16,
-//     1.0 / 16, 2.0 / 16, 1.0 / 16
-//     );
-
-// Edge detection:
-
-// float kernel[9] = float[](
-//     1.0,  1.0, 1.0,
-//     1.0, -8.0, 1.0,
-//     1.0,  1.0, 1.0
-//     );
-
-// Anti-Aliasing
-
-// Saw-like jagged edges appear because of how the rasterizer transforms vertex data into fragments behind the scenes.
-// This effect, of clearly seeing the pixels that compose an edge, is called aliasing.
-
-// One technique to solve this problem is called Super-Sample Anti-Aliasing (SSAA)
-// This technique temporarily uses a high resolution to render the scene (super-sampling), and it down-samples the resolution when
-// it is time to update the visual output in the framebuffer. The extra resolution is used to eliminate the saw-like jagged edges.
-// The only problem is that this technique comes with a major performance drawback, since it requires us to draw a lot more fragments
-// than we normally would.
-
-// SSAA gave birth to a more modern technique called Multisample Anti-Aliasing (MSAA), which implements a much more efficient approach.
-
-// Multisampling
-// +++++++++++++
-
-// The rasterizer is the combination of all the algorithms and processes that sit between your final processed vertices
-// and the fragment shader. The rasterizer takes all the vertices that belong to a single primitive and transforms the primitive
-// to a set of fragments. Vertex coordinates can theoretically be any coordinate, but fragments can't since they are limited
-// by the resolution of your window. There will almost never be a one-to-one mapping between vertex coordinates and fragments,
-// so the rasterizer has to determine in some way at what fragment/screen-coordinate each specific vertex will end up at.
-
-// Sample points are used to determine if a pixel is covered by a primitive or not.
-// Due to the limited number of pixels in a screen, some pixels will be rendered along an edge and some won't.
-// The result is that we're rendering primitives with non-smooth edges, giving rise to the jagged saw-like edges we've seen before.
-
-// What multisampling does is use multiple sampling points to determine if a pixel is covered by a triangle.
-// So instead of using a single sample point at the center of each pixel, it places 4 subsamples in a general pattern and uses them
-// to determine pixel coverage.
-// This means that the size of the color buffer is increased by the number of subsamples we're using per pixel.
-
-// The number of sample points per pixel can be any number we like, with more samples giving us better coverage precision.
-
-// Let's say we are using 4 sample points per pixel, and that we have a pixel with 2 of its 4 samples covered by a triangle.
-// The next step is to determine a color for this specific pixel.
-// Our initial guess would be that we run the fragment shader for each covered subsample and later average the colors of each subsample
-// per pixel. In this case we'd run the fragment shader twice on the interpolated vertex data at each subsample, and store
-// the resulting color in those sample points. This is, however, not how things work, because this basically means we need to run
-// a lot more fragment shaders than without multisampling, drastically reducing performance.
-
-// How MSAA really works is that the fragment shader is only run once per pixel (for each primitive), regardless of how many subsamples
-// the triangle covers. The fragment shader is run with the vertex data interpolated to the center of the pixel, and the resulting
-// color is then stored inside each of the covered subsamples. Once the color buffer's subsamples are filled with all the colors
-// of the primitives we've rendered, all these colors are then averaged per pixel resulting in a single color per pixel.
-// Because only 2 of the 4 samples are covered in our example, the color of the pixel is averaged with the triangle's color
-// and the color stored at the other 2 sample points (in this case the clear color), resulting in a light blue-ish color.
-
-// The result is a color buffer where all the primitive edges now produce a smoother pattern.
-
-// Not only color values are affected by multisampling. The depth and stencil tests now make use of the multiple sample points.
-// For depth testing, a vertex's depth value is interpolated to each subsample before running the depth test, and for stencil testing
-// we store stencil values per subsample, instead of per pixel. This does mean that the size of the depth and stencil buffers
-// are now also increased by the number of subsamples per pixel.
-
-// MSAA in OpenGL
-// +++++++++++++
-
-// If we want to use MSAA in OpenGL we need to use a color buffer that is able to store more than one color value per pixel
-// (since multisampling requires us to store a color per sample point). We thus need a new type of buffer called a multisample buffer.
-
-// Most windowing systems are able to provide us with a multisample buffer instead of a normal color buffer.
-// GLFW also gives us this functionality and all we need to do is hint to GLFW that we'd like to use a multisample buffer with
-// N samples instead of a normal color buffer by calling glfwWindowHint before creating the window:
-
-// glfwWindowHint(GLFW_SAMPLES, 4);
-
-// When we now call glfwCreateWindow the rendering window is created, this time with a color buffer containing 4 subsamples
-// per screen coordinate. GLFW also automatically creates a depth and stencil buffer with 4 subsamples per pixel.
-// This does mean that the size of all the buffers is increased by 4.
-
-// Now that we asked GLFW for multisampled buffers we need to enable multisampling by calling glEnable and enabling GL_MULTISAMPLE.
-// On most OpenGL drivers, multisampling is enabled by default so this call is then a bit redundant, but it's usually a good idea
-// to enable it anyways. This way all OpenGL implementations have multisampling enabled.
-
-// glEnable(GL_MULTISAMPLE);
-
-// Now the default framebuffer has multisampled buffer attachments, so we are done.
-// The multisampling algorithms are implemented in the rasterizer of our OpenGL drivers.
-
-// Off-screen MSAA
-// +++++++++++++++
-
-// Because GLFW takes care of creating the multisampled buffers, enabling MSAA is quite easy.
-// If we want to use our own framebuffers however, for some off-screen rendering, we have to generate the
-// multisampled buffers ourselves.
-
-// Multisampled texture attachments
-// ++++++++++++++++++++++++++++++++
-
-// To create a texture that supports storage of multiple sample points we use glTexImage2DMultisample instead of glTexImage2D.
-// glTexImage2DMultisample accepts GL_TEXTURE_2D_MULTISAPLE as its texture target:
-
-// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, tex);
-
-   // Generates a multisampled texture image on the currently bound texture object
-   // This function differs from glTexImage2D in that the resulting texture will mainly be used as a multisampled buffer,
-   // so we no longer provide the image data, the format of the image, or mipmap levels.
-// glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, // target:               specifies the texture target. Examples:
-                                                      //                       GL_TEXTURE_2D_MULTISAMPLE or GL_PROXY_TEXTURE_2D_MULTISAMPLE
-//                         samples,                   // samples:              specifies the number of samples we want
-//                         GL_RGB,                    // internalformat:       specifies the internal format to be used to store the
-                                                      //                       multisample texture's image. It must specify a color-renderable,
-                                                      //                       depth-renderable, or stencil-renderable format.
-//                         width,                     // width:                width of the multisample texture's image, in texels.
-//                         height,                    // height                height of the multisample texture's image, in texels.
-//                         GL_TRUE);                  // fixedsamplelocations: specifies wether the image will use identical sample
-                                                      //                       locations and the same number of samples for all texels
-                                                      //                       in the image.
-
-// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-
-// glFramebufferTexture2D(GL_FRAMEBUFFER,            // target:     framebuffer type we are targeting (R, W, RW)
-//                        GL_COLOR_ATTACHMENT0,      // attachment: type of attachment we are attaching. Options:
-                                                     //             GL_COLOR_ATTACHMENTi
-                                                     //             GL_DEPTH_ATTACHMENT
-                                                     //             GL_STENCIL_ATTACHMENT
-                                                     //             GL_DEPTH_STENCIL_ATTACHMENT
-//                        GL_TEXTURE_2D_MULTISAMPLE, // textarget:  type of texture you want to attach.
-//                        tex,                       // texture     texture to attach.
-//                        0);                        // level:      mipmap level.
-
-// To attach a multisampled texture to a framebuffer we use glFramebufferTexture2D, but this time with
-// GL_TEXTURE_2D_MULTISAMPLE as the texture type:
-
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, tex, 0); 
-
-// The currently bound framebuffer now has a multisampled color buffer in the form of a texture image.
-
-// Multisampled renderbuffer objects
-// +++++++++++++++++++++++++++++++++
-
-// Like textures, creating a multisampled renderbuffer object isn't difficult. All we need to change is
-// the call to glRenderbufferStorage to glRenderbufferStorageMultisample when we specify the memory storage of the currently
-// bound renderbuffer object:
-
-   // The function glRenderbufferStorageMultisample establishes data storage for a renderbuffer object.
-   // When allocating memory, a multisampled renderbuffer is created storing memory equal to the
-   // normal buffer's size times the number of samples.
-// glRenderbufferStorageMultisample(GL_RENDERBUFFER,     // target: the RBO that is currently bound to this target is configured
-//                                  4,                   // samples:        num of samples to be used for the RBO's storage
-//                                  GL_DEPTH24_STENCIL8, // internalformat: internal format to use for the RBO's image
-//                                  width,               // width:          width in pixels
-//                                  height);             // height:         height in pixels
-
-// The one thing that changed here is the extra parameter after the renderbuffer target where we set the
-// amount of samples we'd like to use which is 4 in this particular case.
-
-// Rendering to a multisampled framebuffer
-// +++++++++++++++++++++++++++++++++++++++
-
-// Rendering to a multisampled framebuffer happens automatically. Whenever we draw anything while the framebuffer object is bound,
-// the rasterizer takes care of all the multisample operations.
-
-// We then end up with a multisampled color/depth/stencil buffer. Because a multisampled buffer is different from a normal buffer,
-// we can't sample its buffer image directly in a shader.
-
-// A multisampled image contains much more information than a normal image, so what we need to do is downscale or resolve the image.
-// Resolving a multisampled framebuffer is generally done via the glBlitFramebuffer function, which copies a region from one
-// framebuffer to the other while also resolving any multisampled buffers.
-
-// glBlitFramebuffer copies a block of pixels from the read framebuffer to the draw framebuffer.
-
-// glBlitFramebuffer(GLint srcX0, GLint srcY0, GLint srcX1, GLint srcY1, // Bounds of the src rectangle within the read buffer of the
-                                                                         // read framebuffer
-//                   GLint dstX0, GLint dstY0, GLint dstX1, GLint dstY1, // Bounds of the dst rectangle within the write buffer of the
-                                                                         // write framebuffer
-//                   GLbitfield mask,                                    // Bitwise OR of the flags that indicate which buffers are to
-                                                                         // be copied. The allowed flags are:
-                                                                         // GL_COLOR_BUFFER_BIT
-                                                                         // GL_DEPTH_BUFFER_BIT
-                                                                         // GL_STENCIL_BUFFER_BIT
-//                   GLenum filter)                                      // Interpolation to be applied if the image is stretched.
-                                                                         // Must be GL_NEAREST or GL_LINEAR
-
-// Remember that if we bind to GL_FRAMEBUFFER we're binding to both the read and the draw framebuffer targets.
-// We could also bind to those targets individually by binding the framebuffers to GL_READ_FRAMEBUFFER and GL_DRAW_FRAMEBUFFER.
-// glBlitFramebuffer reads from those two targets to determine which is the source and which is the destination framebuffer.
-// We could then transfer the multisampled framebuffer output to the screen by blitting the image to the default framebuffer:
-
-// glBindFramebuffer(GL_READ_FRAMEBUFFER, multisampledFBO);
-// glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
-// glBlitFramebuffer(0, 0, width, height, 0, 0, width, height, GL_COLOR_BUFFER_BIT, GL_NEAREST); 
-
-// But what if we wanted to use the texture result of a multisampled framebuffer to do stuff like post-processing?
-// We can't directly use the multisampled texture(s) in the fragment shader.
-// What we can do is blit the multisampled buffer(s) to a different FBO with a non-multisampled texture attachment, and use this
-// ordinary color attachment texture for post-processing, effectively post-processing an image rendered via multisampling.
-// This does mean we have to generate a new FBO that acts solely as an intermediate framebuffer object to resolve the multisampled buffer
-// into a normal 2D texture we can use in the fragment shader.
-// This process looks like this:
-
-   // Create FBO with multisampled attachments
-// unsigned int framebuffer;
-// glGenFramebuffers(1, &framebuffer);
-// glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-
-   // Create a multisampled color attachment texture
-// unsigned int textureColorBufferMultiSampled;
-// glGenTextures(1, &textureColorBufferMultiSampled);
-// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled);
-// glTexImage2DMultisample(GL_TEXTURE_2D_MULTISAMPLE, 4, GL_RGB, SCR_WIDTH, SCR_HEIGHT, GL_TRUE);
-// glBindTexture(GL_TEXTURE_2D_MULTISAMPLE, 0);
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D_MULTISAMPLE, textureColorBufferMultiSampled, 0);
-
-   // Create a multisampled renderbuffer object for depth and stencil attachments
-// unsigned int rbo;
-// glGenRenderbuffers(1, &rbo);
-// glBindRenderbuffer(GL_RENDERBUFFER, rbo);
-// glRenderbufferStorageMultisample(GL_RENDERBUFFER, 4, GL_DEPTH24_STENCIL8, SCR_WIDTH, SCR_HEIGHT);
-// glBindRenderbuffer(GL_RENDERBUFFER, 0);
-// glFramebufferRenderbuffer(GL_FRAMEBUFFER, GL_DEPTH_STENCIL_ATTACHMENT, GL_RENDERBUFFER, rbo);
-
-// if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-// cout << "ERROR::FRAMEBUFFER:: Framebuffer is not complete!" << endl;
-// glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-   // Configure second post-processing framebuffer
-// unsigned int intermediateFBO;
-// glGenFramebuffers(1, &intermediateFBO);
-// glBindFramebuffer(GL_FRAMEBUFFER, intermediateFBO);
-
-   // Create a color attachment texture
-// unsigned int screenTexture;
-// glGenTextures(1, &screenTexture);
-// glBindTexture(GL_TEXTURE_2D, screenTexture);
-// glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, SCR_WIDTH, SCR_HEIGHT, 0, GL_RGB, GL_UNSIGNED_BYTE, NULL);
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-// glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-// glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, screenTexture, 0); // We only need a color buffer
-
-// if (glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-// cout << "ERROR::FRAMEBUFFER:: Intermediate framebuffer is not complete!" << endl;
-// glBindFramebuffer(GL_FRAMEBUFFER, 0);
-
-// while(!glfwWindowShouldClose(window))
-// {
-//     ...
-
-       // clear the default framebuffer's content
-//     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-       // 1) draw scene as normal in multisampled buffers
-//     glBindFramebuffer(GL_FRAMEBUFFER, framebuffer);
-//     glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-//     glEnable(GL_DEPTH_TEST);
-
-//     ...
-
-       // 2) now blit multisampled buffer(s) to normal colorbuffer of intermediate FBO. Image is stored in screenTexture
-//     glBindFramebuffer(GL_READ_FRAMEBUFFER, framebuffer);
-//     glBindFramebuffer(GL_DRAW_FRAMEBUFFER, intermediateFBO);
-//     glBlitFramebuffer(0, 0, SCR_WIDTH, SCR_HEIGHT, 0, 0, SCR_WIDTH, SCR_HEIGHT, GL_COLOR_BUFFER_BIT, GL_NEAREST);
-
-       // 3) now render quad with scene's visuals as its texture image into the default framebuffer
-//     glBindFramebuffer(GL_FRAMEBUFFER, 0);
-//     glClearColor(1.0f, 1.0f, 1.0f, 1.0f);
-//     glClear(GL_COLOR_BUFFER_BIT);
-//     glDisable(GL_DEPTH_TEST);
-
-//     ...
-// }
-
-// After this process, because the screen texture is a normal texture again with just a single sample point, some post-processing
-// filters like edge-detection will introduce jagged edges again. To accommodate for this, you could blur the texture afterwards or
-// create your own anti-aliasing algorithm.
-
-// Custom Anti-Aliasing algorithm
-// ++++++++++++++++++++++++++++++
-
-// It is also possible to directly pass a multisampled texture image to the shaders instead of first resolving them.
-// GLSL then gives us the option to sample the texture images per subsample so we can create our own anti-aliasing algorithms,
-// which is commonly done by large graphics applications.
-
-// To retrieve the color value per subsample you'd have to define the texture uniform sampler as a sampler2DMS
-// instead of the usual sampler2D:
-
-// uniform sampler2DMS screenTextureMS;
-
-// Using the texelFetch function it is then possible to retrieve the color value per sample:
-
-// vec4 colorSample = texelFetch(screenTextureMS, TexCoords, 3); // 4th subsample
-
-// Text Rendering
-
-// There are no graphical primitives for text characters in OpenGL
-// Some techniques for rendering text are:
-
-// - Drawing letter shapes via GL_LINES
-// - Creating 3D meshes of letters
-// - Rendering character textures to 2D quads in a 3D environment
-
-// The last one is the most popular.
-
-// In the early days of computer graphics, rendering text involved selecting a font and extracting all of its characters by
-// pasting them within a single large texture. Such a texture, known as a bitmap font, would then contain all the character symbols
-// in predefined regions of its surface.
-// These character symbols of the font are known as glyphs. Each glyph has a specific region of texture coordinates associated with it.
-// Whenever you want to render a character, you select the corresponding glyph by rendering its section of the bitmap font to a 2D quad.
-
-// This approach has several advantages and disadvantages.
-// Advantages:
-// - Easy to implement
-// - Because bitmap fonts are pre-rasterized, they are quite efficient.
-// Disadvantages:
-// - Unflexible.
-// - When you want to use a different font, you need to recompile a new bitmap font,
-// - The system is limited to a single resolution. Zooming in will show pixelated edges.
-// - Often limited to a small character set so Extended or Unicode characters are often unavailable.
-
-// More flexible approach: loading TrueType fonts using the FreeType library.
-
-// FreeType is library that is able to load fonts, render them to bitmaps and provide support for several font-related operations.
-// A TrueType font is a collection of character glyphs that are not defined by pixels or any other non-scalable parameters,
-// but instead by mathematical equations (combinations of splines).
-// Similar to vector images, the rasterized font images can be procedurally generated based on the font height you desire.
-// By using TrueType fonts you can easily render character glyphs of various sizes without any loss of quality.
-
-// What FreeType does is load a TrueType font, generate a bitmap image for each glyph and calculate several metrics.
-// We can extract these bitmap images for generating textures and we can position each character glyph
-// appropriately using the loaded metrics.
-
-// To load a font, all we have to do is initialize the FreeType library and load the font as a face.
-// Here we load the arial.ttf TrueType font file, which can be found in the Windows/Fonts directory.
-// Each of these FreeType functions returns a non-zero integer whenever an error occurred.
-
-// FT_Library ft;
-// if (FT_Init_FreeType(&ft))
-//     std::cout << "ERROR::FREETYPE: Could not init FreeType Library" << std::endl;
-
-// FT_Face face;
-// if (FT_New_Face(ft, "fonts/arial.ttf", 0, &face))
-//     std::cout << "ERROR::FREETYPE: Failed to load font" << std::endl;
-
-// Once we've loaded the face, we should define the font size we'd like to extract from this face.
-// The function below sets the font's width and height parameters. Setting the width to 0 lets the face dynamically calculate
-// the width based on the given height.
-
-// FT_Set_Pixel_Sizes(face, 0, 48);
-
-// A FreeType face hosts a collection of glyphs. We can set one of those glyphs as the active glyph by calling FT_Load_Char.
-// Here we choose to load the character glyph 'X':
-
-// if (FT_Load_Char(face, 'X', FT_LOAD_RENDER))
-//     std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-
-// By setting FT_LOAD_RENDER as one of the loading flags, we tell FreeType to create an 8-bit grayscale bitmap image
-// that we can access via face->glyph->bitmap.
-
-// The glyphs we load with FreeType do not have the same size, as was the case with bitmap fonts.
-// The bitmap image generated by FreeType is just large enough to contain the visible part of a character.
-// For example, the bitmap image of the dot character '.' is much smaller than the bitmap image of the character 'X'.
-// For this reason, FreeType also loads several metrics that specify how large each character should be and how to
-// properly position them.
-
-// Each of the glyphs reside on a horizontal baseline.
-// Some sit exactly on top of this baseline (like 'X'), while others sit slightly below it (like 'g' or 'p').
-// These metrics define:
-// - The necessary offsets to properly position each glyph on the baseline.
-// - How large each glyph should be.
-// - How many pixels we need to advance to render the next glyph.
-
-// Below is a small list of these metrics that are relevant to us:
-
-// width:    The width (in pixels) of the bitmap.
-//           This value is accessed via face->glyph->bitmap.width
-// height:   The height (in pixels) of the bitmap.
-//           This value is accessed via face->glyph->bitmap.rows.
-// bearingX: The horizontal bearing e.g. the horizontal position (in pixels) of the bitmap relative to the origin.
-//           This value is accessed via face->glyph->bitmap_left.
-// bearingY: The vertical bearing e.g. the vertical position (in pixels) of the bitmap relative to the baseline.
-//           This value is accessed via face->glyph->bitmap_top.
-// advance:  The horizontal advance e.g. the horizontal distance (in 1/64th pixels) from the origin to the origin of the next glyph.
-//           This value is accessed via face->glyph->advance.x.
-
-// We could load a character glyph, retrieve its metrics and generate a texture each time we want to render it to the screen,
-// but it would be inefficient to do this for each frame.
-// So instead, we will store the generated data somewhere in the application and query it whenever we want to render a character.
-// To do this we will need the following struct and map:
-
-// struct Character {
-//     GLuint     TextureID;  // ID handle of the glyph texture
-//     glm::ivec2 Size;       // Size of glyph
-//     glm::ivec2 Bearing;    // Offset from baseline to left/top of glyph
-//     GLuint     Advance;    // Offset to advance to next glyph
-// };
-
-// std::map<GLchar, Character> Characters;
-
-// For this tutorial we'll keep things simple by restricting ourselves to the first 128 characters of the ASCII character set.
-// For each character, we generate a texture and store its relevant data into a Character struct that we then add to the Characters map.
-// This way, all data required to render each character is stored for later use.
-
-
-// glPixelStorei(GL_UNPACK_ALIGNMENT, 1); // Disable byte-alignment restriction
-
-// for (GLubyte c = 0; c < 128; c++)
-// {
-//     // Load character glyph 
-//     if (FT_Load_Char(face, c, FT_LOAD_RENDER))
-//     {
-//         std::cout << "ERROR::FREETYTPE: Failed to load Glyph" << std::endl;
-//         continue;
-//     }
-
-       // Generate texture
-//     GLuint texture;
-//     glGenTextures(1, &texture);
-//     glBindTexture(GL_TEXTURE_2D, texture);
-//     glTexImage2D(GL_TEXTURE_2D,
-//                  0,
-//                  GL_RED,
-//                  face->glyph->bitmap.width,
-//                  face->glyph->bitmap.rows,
-//                  0,
-//                  GL_RED,
-//                  GL_UNSIGNED_BYTE,
-//                  face->glyph->bitmap.buffer);
-
-       // Set texture options
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-//     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-       // Now store character for later use
-//     Character character = { texture,
-//                             glm::ivec2(face->glyph->bitmap.width, face->glyph->bitmap.rows),
-//                             glm::ivec2(face->glyph->bitmap_left, face->glyph->bitmap_top),
-//                             face->glyph->advance.x };
-
-//     Characters.insert(std::pair<GLchar, Character>(c, character));
-// }
-
-// What is interesting to note here is that we use GL_RED as the texture's internalFormat and format arguments.
-// The bitmap generated from the glyph is a grayscale 8-bit image where each color is represented by a single byte.
-// For this reason we'd like to store each byte of the bitmap buffer as a texture's color value.
-// We accomplish this by creating a texture where each byte corresponds to the texture color's red component
-// (first byte of its color vector). If we use a single byte to represent the colors of a texture we do need to take care
-// of a restriction of OpenGL:
-
-// glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
-// OpenGL requires that textures have a 4-byte alignment e.g. that their size is always a multiple of 4 bytes.
-// Normally this won't be a problem since most textures have a width that is a multiple of 4 and/or use 4 bytes per pixel,
-// but since we now only use a single byte per pixel they can have any possible width.
-// By setting the unpack alignment equal to 1 we ensure there won't be any alignment issues (which could cause segmentation faults).
-
-// Also be sure to clear FreeType's resources once you're finished processing the glyphs:
-
-// FT_Done_Face(face);
-// FT_Done_FreeType(ft);
-
-// To render the glyphs we'll be using the following vertex shader:
-
-// #version 330 core
-//
-// layout (location = 0) in vec4 vertex; // <vec2 pos, vec2 tex>
-//
-// out vec2 TexCoords;
-//
-// uniform mat4 projection;
-//
-// void main()
-// {
-//     gl_Position = projection * vec4(vertex.xy, 0.0, 1.0);
-//     TexCoords = vertex.zw;
-// }
-
-// And the following fragment shader:
-
-// #version 330 core
-//
-// in vec2 TexCoords;
-//
-// out vec4 color;
-//
-// uniform sampler2D text;
-// uniform vec3 textColor;
-//
-// void main()
-// {
-//     vec4 sampled = vec4(1.0, 1.0, 1.0, texture(text, TexCoords).r);
-//     color = vec4(textColor, 1.0) * sampled;
-// }
-
-// The fragment shader takes two uniforms:
-// - The mono-colored bitmap image of the glyph.
-// - A color uniform for adjusting the text's final color.
-// We first sample the color value of the bitmap texture. Because the texture's data is stored in just its red component,
-// we sample the r component of the texture as the sampled alpha value. By varying the color's alpha value the resulting color
-// will be transparent for all the glyph's background colors and non-transparent for the actual character pixels.
-// We also multiply the RGB colors by the textColor uniform to vary the text color.
-// We do need to enable blending for this to work though:
-
-// glEnable(GL_BLEND);
-// glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-// For the projection matrix we'll be using an orthographic projection matrix.
-// For rendering text we (usually) do not need perspective and using an orthographic projection matrix also allows us
-// to specify all the vertex coordinates in screen coordinates if we set it up as follows:
-
-// glm::mat4 projection = glm::ortho(0.0f, 800.0f, 0.0f, 600.0f);
-
-// We set the projection matrix's bottom parameter to 0.0f and its top parameter equal to the window's height.
-// The result is that we can specify coordinates with y values ranging from the bottom part of the screen (0.0f)
-// to the top part of the screen (600.0f). This means that the point (0.0, 0.0) now corresponds to the bottom-left corner.
-
-// Finally we create a VBO and VAO for rendering the quads. For now we reserve enough memory when initializing the VBO so that
-// we can later update the VBO's memory when rendering characters.
-
-// GLuint VAO, VBO;
-// glGenVertexArrays(1, &VAO);
-// glGenBuffers(1, &VBO);
-// glBindVertexArray(VAO);
-// glBindBuffer(GL_ARRAY_BUFFER, VBO);
-// glBufferData(GL_ARRAY_BUFFER, sizeof(GLfloat) * 6 * 4, NULL, GL_DYNAMIC_DRAW);
-// glEnableVertexAttribArray(0);
-// glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), 0);
-// glBindBuffer(GL_ARRAY_BUFFER, 0);
-// glBindVertexArray(0);
-
-// The 2D quad requires 6 vertices of 4 floats each (2 floats for position and 2 for tex coords) so we reserve 6 * 4 floats of memory.
-// Because we'll be updating the content of the VBO's memory quite often we'll allocate the memory with GL_DYNAMIC_DRAW.
-
-// To render a character we extract the corresponding Character struct of the Characters map and calculate the quad's dimensions
-// using the character's metrics. With the quad's calculated dimensions we dynamically generate a set of 6 vertices
-// that we use to update the content of the memory managed by the VBO using glBufferSubData.
-
-// void RenderText(Shader &s, std::string text, GLfloat x, GLfloat y, GLfloat scale, glm::vec3 color)
-// {
-       // Activate corresponding render state
-//     s.Use();
-//     glUniform3f(glGetUniformLocation(s.Program, "textColor"), color.x, color.y, color.z);
-//     glActiveTexture(GL_TEXTURE0);
-//     glBindVertexArray(VAO);
-
-       // Iterate through all characters
-//     std::string::const_iterator c;
-//     for (c = text.begin(); c != text.end(); c++)
-//     {
-//         Character ch = Characters[*c];
-
-           // See Text Rendering tutorial to understand these calculations
-           // xpos and ypos correspond to the lower left corner of the glyph
-//         GLfloat xpos = x + ch.Bearing.x * scale;
-//         GLfloat ypos = y - (ch.Size.y - ch.Bearing.y) * scale;
-
-//         GLfloat w = ch.Size.x * scale;
-//         GLfloat h = ch.Size.y * scale;
-
-           // Update VBO for each character
-//         GLfloat vertices[6][4] = {
-//             { xpos,     ypos + h,   0.0, 0.0 }, // Top left
-//             { xpos,     ypos,       0.0, 1.0 }, // Bottom left
-//             { xpos + w, ypos,       1.0, 1.0 }, // Bottom right
-// 
-//             { xpos,     ypos + h,   0.0, 0.0 }, // Top left
-//             { xpos + w, ypos,       1.0, 1.0 }, // Bottom right
-//             { xpos + w, ypos + h,   1.0, 0.0 }  // Top right
-//         };
-
-           // Render glyph texture over quad
-//         glBindTexture(GL_TEXTURE_2D, ch.textureID);
-
-           // Update content of VBO memory
-//         glBindBuffer(GL_ARRAY_BUFFER, VBO);
-//         glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
-//         glBindBuffer(GL_ARRAY_BUFFER, 0);
-
-           // Render quad
-//         glDrawArrays(GL_TRIANGLES, 0, 6);
-
-           // Now advance cursors for next glyph (note that advance is number of 1/64 pixels)
-//         x += (ch.Advance >> 6) * scale; // Bitshift by 6 to get value in pixels (2^6 = 64)
-//     }
-
-//     glBindVertexArray(0);
-//     glBindTexture(GL_TEXTURE_2D, 0);
-// }
-
-// If you did everything correct you should now be able to successfully render strings of text with the following statements:
-
-// RenderText(shader, "This is sample text", 25.0f, 25.0f, 1.0f, glm::vec3(0.5, 0.8f, 0.2f));
-// RenderText(shader, "(C) LearnOpenGL.com", 540.0f, 570.0f, 0.5f, glm::vec3(0.3, 0.7f, 0.9f));
-
-// This approach is likely going to be overkill for your application as we generate and render textures for each glyph.
-// Performance-wise, bitmap fonts are preferable as we only need one texture for all our glyphs.
-// The best solution would be to combine the two approaches by dynamically generating a bitmap font texture that features all the
-// characters glyphs that were loaded with FreeType. This saves the renderer from a significant amount of texture switches
-// and based on how tightly each glyph is packed, it could improve performance quite a bit.
