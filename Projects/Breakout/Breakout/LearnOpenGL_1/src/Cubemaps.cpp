@@ -2438,10 +2438,100 @@ void RenderText(Shader &shader, std::string text, GLfloat x, GLfloat y, GLfloat 
 
 // Displaying a skybox
 
-// Because a skybox is drawn on a cube we'll need another VAO, VBO and a fresh set of vertices like for any other object.
+// Because a skybox is drawn on a cube we'll need another VAO, VBO and a set of vertices like for any other object.
 
 // A cubemap used to texture a 3D cube can be sampled using the positions of the cube as the texture coordinates.
 // When a cube is centered on the origin, each of its position vectors is also a direction vector from the origin.
 // These direction vectors are exactly what we need to get their corresponding texture values at their specific positions on the cube.
 // For this reason we only need to supply position vectors and no texture coordinates.
+
+// This is the vertex shader we need to render a skybox:
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+// 
+// out vec3 TexCoords;
+// 
+// uniform mat4 projection;
+// uniform mat4 view;
+// 
+// void main()
+// {
+//     TexCoords = aPos;
+//     gl_Position = projection * view * vec4(aPos, 1.0);
+// }
+
+// And this is the fragment shader that we need to render a skybox:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 TexCoords;
+// 
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     FragColor = texture(skybox, TexCoords);
+// }
+
+// Rendering the skybox is easy now that we have a cubemap texture. We simply bind the cubemap texture and the skybox sampler
+// is automatically filled with the skybox cubemap. To draw the skybox we're going to disable depth writing and we are going to
+// draw it as the first object in the scene. This way the skybox will always be drawn as the background of all the other objects.
+
+// glDepthMask(GL_FALSE);
+// skyboxShader.use();
+// ... set view and projection matrix
+// glBindVertexArray(skyboxVAO);
+// glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+// glDrawArrays(GL_TRIANGLES, 0, 36);
+// glDepthMask(GL_TRUE);
+// ... draw rest of the scene
+
+// If you run this you will get into difficulties though. We want the skybox to be centered around the player so that no matter
+// how far the player moves, the skybox won't get any closer, giving the impression that the surrounding environment is extremely large.
+// The current view matrix transforms all the skybox's positions by rotating, scaling and translating them, so if the player moves,
+// the cubemap moves as well. We want to remove the translation part of the view matrix so that movement doesn't affect
+// the skybox's position vectors.
+
+// We can remove the translation part of a transformation matrix by taking the upper-left 3x3 matrix of the 4x4 matrix.
+
+// glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+
+// This removes any translation, but keeps all the rotation so that the user can still look around the scene.
+
+// Optimizing skybox rendering
+
+// We have rendered the skybox before any of the other objects in the scene. This works great, but it isn't too efficient.
+// If we render the skybox first we're running the fragment shader for each pixel on the screen even though only a small part
+// of the skybox will eventually be visible. So we are rendering fragments that could have easily been discarded using
+// early depth testing.
+
+// So to give us a slight performance boost we're going to render the skybox last. This way, the depth buffer is completely filled
+// with all the other objects' depth values by the time we get to the skybox, so we only have to render the skybox's fragments
+// wherever the early depth test passes, which greatly reduces the number of calls to the fragment shader.
+
+// The problem is that the skybox will most likely be drawn over all the other objects since it's a 1x1x1 cube.
+// For this reason, we need to trick the depth buffer into believing that the skybox has the maximum depth value of 1.0,
+// so that it fails the depth test wherever there's a different object in front of it.
+
+// We know that perspective division is performed after the vertex shader has run, dividing the gl_Position's xyz coordinates by its
+// w component. We also know that the z component of the resulting division is equal to the vertex's depth value.
+// This means that we can set the z component of gl_Position equal to its w component, which will result in a z component
+// that is always equal to 1.0, because when the perspective division is performed its z component translates to w / w = 1.0
+
+// void main()
+// {
+//     TexCoords = aPos;
+//     vec4 pos = projection * view * vec4(aPos, 1.0);
+//     gl_Position = pos.xyww;
+// }
+
+// The resulting normalized device coordinates will then always have a z value equal to 1.0: the maximum depth value.
+// The skybox will as a result only be rendered wherever there are no objects visible (only then it will pass the depth test,
+// everything else is in front of the skybox).
+
+// We do have to change the depth function a little by setting it to GL_LEQUAL instead of the default GL_LESS.
+// The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure the skybox passes the depth tests
+// with values less than or equal to the depth buffer instead of less than.
 
