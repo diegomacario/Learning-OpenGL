@@ -285,5 +285,23 @@
     <None Include="shader\12.1.text_rendering.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\13.1.cubemaps_container.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.1.cubemaps_container.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.1.cubemaps_container_skybox.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.1.cubemaps_container_skybox.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.2.cubemaps_container_reflective.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.2.cubemaps_container_reflective.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
