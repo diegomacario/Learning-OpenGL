@@ -2710,6 +2710,9 @@ unsigned int loadCubemap(vector<std::string> faces)
 // glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
 
 // This removes any translation, but keeps all the rotation so that the user can still look around the scene.
+// Remember that a view matrix is the inverse of the translation and rotation that we would apply to the camera to position it
+// The translation part of the view matrix pushes back the world. So if we remove the translation part, the center of the skybox
+// is always at the location of the camera
 
 // Optimizing skybox rendering
 
@@ -2722,7 +2725,11 @@ unsigned int loadCubemap(vector<std::string> faces)
 // with all the other objects' depth values by the time we get to the skybox, so we only have to render the skybox's fragments
 // wherever the early depth test passes, which greatly reduces the number of calls to the fragment shader.
 
-// The problem is that the skybox will most likely be drawn over all the other objects since it's a 1x1x1 cube.
+// There is a problem though:
+// Imagine the skybox as a 1x1x1 cube whose center is always at the postion of the camera. This cube acts as a shell that prevents
+// you from the seeing the other objects in the scene, unless you get close enough to them so that they fall within the 1x1x1 range.
+
+// Simply rendering the skybox without depth testing is not a solution since the skybox will then overwrite all the other objects in the scene.
 // For this reason, we need to trick the depth buffer into believing that the skybox has the maximum depth value of 1.0,
 // so that it fails the depth test wherever there's a different object in front of it.
 
