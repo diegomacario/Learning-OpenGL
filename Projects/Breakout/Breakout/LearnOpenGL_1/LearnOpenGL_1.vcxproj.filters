@@ -291,16 +291,40 @@
     <None Include="shader\13.1.cubemaps_container.vs">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shader\13.1.cubemaps_container_skybox.fs">
-      <Filter>Shader Files</Filter>
-    </None>
-    <None Include="shader\13.1.cubemaps_container_skybox.vs">
-      <Filter>Shader Files</Filter>
-    </None>
     <None Include="shader\13.2.cubemaps_container_reflective.fs">
       <Filter>Shader Files</Filter>
     </None>
     <None Include="shader\13.2.cubemaps_container_reflective.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.4.cubemaps_model_reflective.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.4.cubemaps_model_reflective.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.1.cubemaps_skybox.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.1.cubemaps_skybox.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.5.cubemaps_model_refractive.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.5.cubemaps_model_refractive.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.6.cubemaps_model_with_reflective_map.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.6.cubemaps_model_with_reflective_map.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.3.cubemaps_model_diffuse.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\13.3.cubemaps_model_diffuse.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>

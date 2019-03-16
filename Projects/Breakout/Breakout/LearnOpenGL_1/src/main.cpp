@@ -79,8 +79,8 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("shader/13.3.cubemaps_model_loading_reflective.vs", "shader/13.3.cubemaps_model_loading_reflective.fs");
-    Shader skyboxShader("shader/13.1.cubemaps_container_skybox.vs", "shader/13.1.cubemaps_container_skybox.fs");
+    Shader modelShader("shader/13.6.cubemaps_model_with_reflective_map.vs", "shader/13.6.cubemaps_model_with_reflective_map.fs");
+    Shader skyboxShader("shader/13.1.cubemaps_skybox.vs", "shader/13.1.cubemaps_skybox.fs");
 
     float skyboxVertices[] = {
         // positions
@@ -138,7 +138,7 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     // load model
-    Model suitModel("objects/nanosuit/nanosuit.obj");
+    Model suitModel("objects/nanosuit_reflection/nanosuit.obj");
 
     // load textures
     // -------------
@@ -161,7 +161,7 @@ int main()
     //modelShader.setInt("skybox", 0);
 
     skyboxShader.use();
-    skyboxShader.setInt("skybox", 0);
+    skyboxShader.setInt("skybox", 3);
 
     // render loop
     // -----------
@@ -192,7 +192,7 @@ int main()
         modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
         modelShader.setMat4("projection", projection);
-        //modelShader.setVec3("cameraPos", camera.Position);
+        modelShader.setVec3("cameraPos", camera.Position);
 
         suitModel.Draw(modelShader);
 
@@ -205,9 +205,10 @@ int main()
 
         // skybox cube
         glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE0);
+        glActiveTexture(GL_TEXTURE3);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
@@ -2692,3 +2693,55 @@ unsigned int loadCubemap(vector<std::string> faces)
 // The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure the skybox passes the depth tests
 // with values less than or equal to the depth buffer instead of less than.
 
+// To achieve reflections with a skybox, use this fragment shader:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 Position;
+// in vec3 Normal;
+// 
+// uniform vec3 cameraPos;
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     vec3 I    = normalize(Position - cameraPos);
+//     vec3 R    = reflect(I, normalize(Normal));
+//     FragColor = vec4(texture(skybox, R).rgb, 1.0);
+// }
+
+// To achieve refractions with a skybox, use this fragment shader:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 Position;
+// in vec3 Normal;
+// 
+// uniform vec3 cameraPos;
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     float ratio = 1.00 / 1.52; // Refractive index of air divided by the refractive index of glass = N_src / N_dest
+//     vec3 I    = FragPos - cameraPos;
+//     vec3 R    = refract(I, normalize(Normal), ratio);
+//     FragColor = vec4(texture(skybox, R).rgb, 1.0);
+// }
+
+// Dynamic Environment Maps
+
+// So far we have used the skybox to create reflections and refractions. These look great, but only because we only have a single
+// object in our scene. If we had a reflective nanosuit surrounded by many containers, only the skybox would be reflected by the
+// nanosuit.
+
+// Using framebuffers, it is possible to create a texture of the scene for all 6 different views (right, left, top, bottom, near, far)
+// for a specific object, and store those in a cubemap in each render iteration.
+// We can then use this dynamically generated cubemap to create realistic reflective and refractive surfaces that reflect and refract
+// all the other objects in the scene. This is called Dynamic Environment Mapping, because we dynamically create a cubemap of an
+// object's surroundings and use that as its environment map.
+
+// While the results of DEM look great, this technique has one enormous disadvantage: we have to render the scene 6 times per object
+// using an environment map, which is an enormous performance penalty. Modern applications try to use skyboxes as much as possible, and
+// they also use pre-compiled cubemaps wherever they can to create Dynamic Environment Maps.

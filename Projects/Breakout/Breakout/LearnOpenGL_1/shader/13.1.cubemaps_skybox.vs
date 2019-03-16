@@ -9,7 +9,7 @@ uniform mat4 view;
 
 void main()
 {
-    TexCoords = aPos;
-    vec4 pos = projection * view * vec4(aPos, 1.0);
+    TexCoords   = aPos;
+    vec4 pos    = projection * view * vec4(aPos, 1.0);
     gl_Position = pos.xyww; // Trick OpenGL into thinking that the skybox has the largest depth in NDC (1.0)
 }
