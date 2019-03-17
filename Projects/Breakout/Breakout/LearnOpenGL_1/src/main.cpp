@@ -157,11 +157,11 @@ int main()
 
     // shader configuration
     // --------------------
-    //modelShader.use();
-    //modelShader.setInt("skybox", 0);
+    modelShader.use();
+    modelShader.setInt("skybox", 4); // Texture units 0, 1, 2 and 3 are occupied by the model
 
     skyboxShader.use();
-    skyboxShader.setInt("skybox", 3);
+    skyboxShader.setInt("skybox", 0);
 
     // render loop
     // -----------
@@ -194,7 +194,10 @@ int main()
         modelShader.setMat4("projection", projection);
         modelShader.setVec3("cameraPos", camera.Position);
 
+        glActiveTexture(GL_TEXTURE4);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         suitModel.Draw(modelShader);
+        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
 
         // draw skybox last
         glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
@@ -205,7 +208,7 @@ int main()
 
         // skybox cube
         glBindVertexArray(skyboxVAO);
-        glActiveTexture(GL_TEXTURE3);
+        glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
         glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindTexture(GL_TEXTURE_CUBE_MAP, 0);

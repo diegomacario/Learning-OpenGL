@@ -10,8 +10,8 @@ uniform sampler2D texture_diffuse1;
 //uniform sampler2D texture_normal1;
 uniform sampler2D texture_height1; // This is actually a reflection map. Assimp doesn't like reflection maps for some reason,
                                    // so it is stored as an ambient map. Search for aiTextureType_AMBIENT  in model.h to understand this.
-uniform vec3 cameraPos;
 uniform samplerCube skybox;
+uniform vec3 cameraPos;
 
 void main()
 {

@@ -157,9 +157,6 @@ int main()
 
     // shader configuration
     // --------------------
-    //modelShader.use();
-    //modelShader.setInt("skybox", 0);
-
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
