@@ -34,6 +34,9 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// lighting
+glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.25f;
+
 int main()
 {
     // glfw: initialize and configure
@@ -79,8 +82,53 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("shader/13.6.cubemaps_model_with_reflective_map.vs", "shader/13.6.cubemaps_model_with_reflective_map.fs");
+    Shader modelShader("shader/13.7.cubemaps_teapot.vs", "shader/13.7.cubemaps_teapot.fs");
+    Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
     Shader skyboxShader("shader/13.1.cubemaps_skybox.vs", "shader/13.1.cubemaps_skybox.fs");
+
+   //                     Positions            Normals              Texture coords
+   //                    <--------------->    <--------------->    <------->
+   float lampVertices[] = { -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+                             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+
+                            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+                            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+
+                            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            
+                             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            
+                            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+                            
+                            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f };
 
     float skyboxVertices[] = {
         // positions
@@ -127,6 +175,16 @@ int main()
          1.0f, -1.0f,  1.0f
     };
 
+    // lamp VAO
+    unsigned int lampVAO, lampVBO;
+    glGenVertexArrays(1, &lampVAO);
+    glGenBuffers(1, &lampVBO);
+    glBindVertexArray(lampVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lampVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lampVertices), lampVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
     // skybox VAO
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
@@ -138,7 +196,7 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     // load model
-    Model suitModel("objects/nanosuit_reflection/nanosuit.obj");
+    Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
 
     // load textures
     // -------------
@@ -157,9 +215,6 @@ int main()
 
     // shader configuration
     // --------------------
-    modelShader.use();
-    modelShader.setInt("skybox", 4); // Texture units 0, 1, 2 and 3 are occupied by the model
-
     skyboxShader.use();
     skyboxShader.setInt("skybox", 0);
 
@@ -179,29 +234,65 @@ int main()
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Rotate the light source
+        // -----------------------
+        glm::mat4 rotMatrixForLight;
+        glm::vec3 rotationAxis    = glm::normalize(glm::cross(lightPos, glm::vec3(0.0f, 1.0f, 0.0f)));
+        rotMatrixForLight         = glm::rotate(rotMatrixForLight, (float) glfwGetTime(), rotationAxis);
+        glm::vec3 rotatedLightPos = ((glm::mat3) (rotMatrixForLight)) * lightPos;
+
         // draw model
+        // ----------
         modelShader.use();
+
         glm::mat4 model;
-        model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the nanosuit down so that it is at the center of the scene
-        model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));       // Scale the nanosuit down so that it fits in our scene
+        //model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the teapot down so that it is at the center of the scene
+        model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));      // Scale the teapot down so that it fits in our scene
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
         modelShader.setMat4("projection", projection);
-        modelShader.setVec3("cameraPos", camera.Position);
 
-        glActiveTexture(GL_TEXTURE4);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        suitModel.Draw(modelShader);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        // Camera properties
+        modelShader.setVec3("viewPos", camera.Position);
 
-        // draw skybox last
+        // Light properties
+        modelShader.setVec3("pointLight.position", rotatedLightPos);
+        modelShader.setVec3("pointLight.color", 1.0f, 1.0f, 1.0f);
+        modelShader.setFloat("pointLight.constant", 1.0f);
+        modelShader.setFloat("pointLight.linear", 0.09f);
+        modelShader.setFloat("pointLight.quadratic", 0.032f);
+
+        teapotModel.Draw(modelShader);
+
+        // draw lamp
+        // ----------
+        lampShader.use();
+
+        model = glm::mat4();
+        model = glm::translate(model, rotatedLightPos);
+        model = glm::scale(model, glm::vec3(0.02f));
+
+        lampShader.setMat4("model", model);
+        lampShader.setMat4("view", view);
+        lampShader.setMat4("projection", projection);
+
+        // Draw the light cube
+        glBindVertexArray(lampVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // draw skybox
+        // -----------
+
         glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
         skyboxShader.use();
+
         view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
@@ -210,8 +301,7 @@ int main()
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
-        glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
@@ -2748,3 +2838,4 @@ unsigned int loadCubemap(vector<std::string> faces)
 // While the results of DEM look great, this technique has one enormous disadvantage: we have to render the scene 6 times per object
 // using an environment map, which is an enormous performance penalty. Modern applications try to use skyboxes as much as possible, and
 // they also use pre-compiled cubemaps wherever they can to create Dynamic Environment Maps.
+
