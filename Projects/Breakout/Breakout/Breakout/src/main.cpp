@@ -2209,3 +2209,408 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // The best solution would be to combine the two approaches by dynamically generating a bitmap font texture that features all the
 // characters glyphs that were loaded with FreeType. This saves the renderer from a significant amount of texture switches
 // and based on how tightly each glyph is packed, it could improve performance quite a bit.
+
+// Cubemaps
+
+// A cubemap is a texture that contains 6 individual 2D textures that each form one side of a cube.
+// Cubemaps have the useful property that they can be indexed/sampled using a direction vector.
+// If we imagine we have a cube shape that we attach a cubemap to, the direction vectors used to sample the cubemap
+// would be similar to the (interpolated) vertex positions of the cube.
+// This way we can sample the cubemap using the cube's actual position vectors as long as the cube is centered on the origin.
+// We can then retrieve the texture coordinates of all the vertices as the vertex positions of the cube.
+
+// To create a cubemap:
+
+// unsigned int textureID;
+// glGenTextures(1, &textureID);
+// glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+
+// Because a cubemap consists of 6 textures, one for each face, we have to call glTexImage2D six times.
+// This time however, we have to set the texture target parameter of each call to a specific face of the cubemap,
+// basically telling OpenGL which side of the cubemap we're creating a texture for.
+// These are the 6 special texture targets:
+
+// GL_TEXTURE_CUBE_MAP_POSITIVE_X - Right
+// GL_TEXTURE_CUBE_MAP_NEGATIVE_X - Left
+// GL_TEXTURE_CUBE_MAP_POSITIVE_Y - Top
+// GL_TEXTURE_CUBE_MAP_NEGATIVE_Y - Bottom
+// GL_TEXTURE_CUBE_MAP_POSITIVE_Z - Back
+// GL_TEXTURE_CUBE_MAP_NEGATIVE_Z - Front
+
+// Like many of OpenGL's enums, their behind-the-scenes int value is linearly incremented so if we were to have an array or vector
+// of texture locations, we could loop over them by starting with GL_TEXTURE_CUBE_MAP_POSITIVE_X and incrementing the enum by 1
+// each iteration, effectively looping through all the texture targets:
+
+// int width, height, nrChannels;
+// unsigned char *data;
+// for (GLuint i = 0; i < textures_faces.size(); i++)
+// {
+//     data = stbi_load(textures_faces[i].c_str(), &width, &height, &nrChannels, 0);
+//     glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i,
+//                  0,
+//                  GL_RGB,
+//                  width,
+//                  height,
+//                  0,
+//                  GL_RGB,
+//                  GL_UNSIGNED_BYTE,
+//                  data);
+// }
+
+// Here we have a vector called textures_faces that contains the locations of all the textures required for the cubemap
+// in the order of the table above.
+
+// Because a cubemap is a texture like any other texture we will also specify its wrapping and filtering methods:
+
+// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+// glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+
+// GL_TEXTURE_WRAP_R simply sets the wrapping method for the texture's R coordinate which corresponds to the texture's 3rd dimension
+// (like the z for positions). We set the wrapping method to GL_CLAMP_TO_EDGE since texture coordinates that are exactly between
+// two faces might not hit an exact face (due to some hardware limitations), so by using GL_CLAMP_TO_EDGE OpenGL always returns
+// their edge values whenever we sample between faces.
+
+// Then before drawing the objects that will use the cubemap, we activate the corresponding texture unit and bind the cubemap.
+
+// Within the fragment shader we also have to use a different sampler of the type samplerCube, which we can still sample using
+// the texture function, but this time using a vec3 direction vector instead of a vec2.
+
+// in vec3 textureDir; // direction vector representing a 3D texture coordinate
+// uniform samplerCube cubemap; // cubemap texture sampler
+//
+// void main()
+// {
+//     FragColor = texture(cubemap, textureDir);
+// }
+
+// Skybox
+
+// A skybox is a (large) cube that encompasses the entire scene and that contains 6 images of a surrounding environment.
+
+// Loading a skybox
+
+// unsigned int loadCubemap(vector<std::string> faces)
+// {
+//     unsigned int textureID;
+//     glGenTextures(1, &textureID);
+//     glBindTexture(GL_TEXTURE_CUBE_MAP, textureID);
+// 
+//     int width, height, nrChannels;
+//     for (unsigned int i = 0; i < faces.size(); i++)
+//     {
+//         unsigned char *data = stbi_load(faces[i].c_str(), &width, &height, &nrChannels, 0);
+//         if (data)
+//         {
+//             glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+//             stbi_image_free(data);
+//         }
+//         else
+//         {
+//             std::cout << "Cubemap texture failed to load at path: " << faces[i] << std::endl;
+//             stbi_image_free(data);
+//         }
+//     }
+//
+//     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+//     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+//     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+//     glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_WRAP_R, GL_CLAMP_TO_EDGE);
+// 
+//     return textureID;
+// }
+
+// Before we call this function we need load the appropriate texture paths in a vector in the order specified by the cubemap enums:
+
+// vector<std::string> faces;
+// {
+//     "right.jpg",
+//     "left.jpg",
+//     "top.jpg",
+//     "bottom.jpg",
+//     "front.jpg",
+//     "back.jpg"
+// };
+// 
+// unsigned int cubemapTexture = loadCubemap(faces); 
+
+// Displaying a skybox
+
+// Because a skybox is drawn on a cube we'll need another VAO, VBO and a set of vertices like for any other object.
+
+// A cubemap used to texture a 3D cube can be sampled using the positions of the cube as the texture coordinates.
+// When a cube is centered on the origin, each of its position vectors is also a direction vector from the origin.
+// These direction vectors are exactly what we need to get their corresponding texture values at their specific positions on the cube.
+// For this reason we only need to supply position vectors and no texture coordinates.
+
+// This is the vertex shader we need to render a skybox:
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+// 
+// out vec3 TexCoords;
+// 
+// uniform mat4 projection;
+// uniform mat4 view;
+// 
+// void main()
+// {
+//     TexCoords = aPos;
+//     gl_Position = projection * view * vec4(aPos, 1.0);
+// }
+
+// And this is the fragment shader that we need to render a skybox:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 TexCoords;
+// 
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     FragColor = texture(skybox, TexCoords);
+// }
+
+// Rendering the skybox is easy now that we have a cubemap texture. We simply bind the cubemap texture and the skybox sampler
+// is automatically filled with the skybox cubemap. To draw the skybox we're going to disable depth writing and we are going to
+// draw it as the first object in the scene. This way the skybox will always be drawn as the background of all the other objects.
+
+// glDepthMask(GL_FALSE);
+// skyboxShader.use();
+// ... set view and projection matrix
+// glBindVertexArray(skyboxVAO);
+// glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
+// glDrawArrays(GL_TRIANGLES, 0, 36);
+// glDepthMask(GL_TRUE);
+// ... draw rest of the scene
+
+// If you run this you will get into difficulties though. We want the skybox to be centered around the player so that no matter
+// how far the player moves, the skybox won't get any closer, giving the impression that the surrounding environment is extremely large.
+// The current view matrix transforms all the skybox's positions by rotating, scaling and translating them, so if the player moves,
+// the cubemap moves as well. We want to remove the translation part of the view matrix so that movement doesn't affect
+// the skybox's position vectors.
+
+// We can remove the translation part of a transformation matrix by taking the upper-left 3x3 matrix of the 4x4 matrix.
+
+// glm::mat4 view = glm::mat4(glm::mat3(camera.GetViewMatrix()));
+
+// This removes any translation, but keeps all the rotation so that the user can still look around the scene.
+// Remember that a view matrix is the inverse of the translation and rotation that we would apply to the camera to position it
+// The translation part of the view matrix pushes back the world. So if we remove the translation part, the center of the skybox
+// is always at the location of the camera
+
+// Optimizing skybox rendering
+
+// We have rendered the skybox before any of the other objects in the scene. This works great, but it isn't too efficient.
+// If we render the skybox first we're running the fragment shader for each pixel on the screen even though only a small part
+// of the skybox will eventually be visible. So we are rendering fragments that could have easily been discarded using
+// early depth testing.
+
+// So to give us a slight performance boost we're going to render the skybox last. This way, the depth buffer is completely filled
+// with all the other objects' depth values by the time we get to the skybox, so we only have to render the skybox's fragments
+// wherever the early depth test passes, which greatly reduces the number of calls to the fragment shader.
+
+// There is a problem though:
+// Imagine the skybox as a 1x1x1 cube whose center is always at the postion of the camera. This cube acts as a shell that prevents
+// you from the seeing the other objects in the scene, unless you get close enough to them so that they fall within the 1x1x1 range.
+
+// Simply rendering the skybox without depth testing is not a solution since the skybox will then overwrite all the other objects in the scene.
+// For this reason, we need to trick the depth buffer into believing that the skybox has the maximum depth value of 1.0,
+// so that it fails the depth test wherever there's a different object in front of it.
+
+// We know that perspective division is performed after the vertex shader has run, dividing the gl_Position's xyz coordinates by its
+// w component. We also know that the z component of the resulting division is equal to the vertex's depth value.
+// This means that we can set the z component of gl_Position equal to its w component, which will result in a z component
+// that is always equal to 1.0, because when the perspective division is performed its z component translates to w / w = 1.0
+
+// void main()
+// {
+//     TexCoords = aPos;
+//     vec4 pos = projection * view * vec4(aPos, 1.0);
+//     gl_Position = pos.xyww;
+// }
+
+// The resulting normalized device coordinates will then always have a z value equal to 1.0: the maximum depth value.
+// The skybox will as a result only be rendered wherever there are no objects visible (only then it will pass the depth test,
+// everything else is in front of the skybox).
+
+// We do have to change the depth function a little by setting it to GL_LEQUAL instead of the default GL_LESS.
+// The depth buffer will be filled with values of 1.0 for the skybox, so we need to make sure the skybox passes the depth tests
+// with values less than or equal to the depth buffer instead of less than.
+
+// To achieve reflections with a skybox, use this fragment shader:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 Position;
+// in vec3 Normal;
+// 
+// uniform vec3 cameraPos;
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     vec3 I    = normalize(Position - cameraPos);
+//     vec3 R    = reflect(I, normalize(Normal));
+//     FragColor = vec4(texture(skybox, R).rgb, 1.0);
+// }
+
+// To achieve refractions with a skybox, use this fragment shader:
+
+// #version 330 core
+// out vec4 FragColor;
+// 
+// in vec3 Position;
+// in vec3 Normal;
+// 
+// uniform vec3 cameraPos;
+// uniform samplerCube skybox;
+// 
+// void main()
+// {
+//     float ratio = 1.00 / 1.52; // Refractive index of air divided by the refractive index of glass = N_src / N_dest
+//     vec3 I    = FragPos - cameraPos;
+//     vec3 R    = refract(I, normalize(Normal), ratio);
+//     FragColor = vec4(texture(skybox, R).rgb, 1.0);
+// }
+
+// Dynamic Environment Maps
+
+// So far we have used the skybox to create reflections and refractions. These look great, but only because we only have a single
+// object in our scene. If we had a reflective nanosuit surrounded by many containers, only the skybox would be reflected by the
+// nanosuit.
+
+// Using framebuffers, it is possible to create a texture of the scene for all 6 different views (right, left, top, bottom, near, far)
+// for a specific object, and store those in a cubemap in each render iteration.
+// We can then use this dynamically generated cubemap to create realistic reflective and refractive surfaces that reflect and refract
+// all the other objects in the scene. This is called Dynamic Environment Mapping, because we dynamically create a cubemap of an
+// object's surroundings and use that as its environment map.
+
+// While the results of DEM look great, this technique has one enormous disadvantage: we have to render the scene 6 times per object
+// using an environment map, which is an enormous performance penalty. Modern applications try to use skyboxes as much as possible, and
+// they also use pre-compiled cubemaps wherever they can to create Dynamic Environment Maps.
+
+// Advanced Data
+
+// A buffer in OpenGL is only an object that manages a certain piece of memory and nothing more.
+// We give a meaning to a buffer when binding it to a specific buffer target. A buffer is only a vertex array buffer
+// when we bind it to GL_ARRAY_BUFFER, but we could just as easily bind it to GL_ELEMENT_ARRAY_BUFFER. OpenGL internally stores
+// a buffer per target and based on the target, processes the buffers differently.
+
+// So far we've been filling the memory managed by the buffer objects by calling glBufferData, which allocates a piece of memory
+// and adds data into this memory. If we were to pass NULL as its data argument, the function would only allocate memory
+// and not fill it. This is useful if we first want to reserve a specific amount of memory and later come back to this buffer
+// to fill it piece by piece.
+
+// Instead of filling the entire buffer with one function call we can also fill specific regions of the buffer by calling
+// glBufferSubData. This function expects a buffer target, an offset, the size of the data and the actual data as its arguments.
+// What's new with this function is that we can now give an offset that specifies from where we want to fill the buffer.
+// This allows us to insert/update only certain parts of the buffer's memory. Do note that the buffer should have enough allocated
+// memory, so a call to glBufferData is necessary before calling glBufferSubData on the buffer.
+
+// glBufferSubData(GL_ARRAY_BUFFER, // Target
+//                 24,              // Offset in bytes
+//                 sizeof(data),    // Size of data to write in bytes
+//                 &data);          // Data to write
+
+// Yet another method for getting data into a buffer is to ask for a pointer to the buffer's memory and directly copy the data
+// to the buffer by yourself. By calling glMapBuffer OpenGL returns a pointer to the currently bound buffer's memory
+// for us to operate on:
+
+// float data[] = {
+//     0.5f, 1.0f, -0.35f
+//     ...
+// };
+//
+// glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//
+   // get pointer
+// void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); // Options for the access value:
+                                                            // GL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITE
+//
+   // now copy data into memory
+// memcpy(ptr, data, sizeof(data));
+   // make sure to tell OpenGL we're done with the pointer
+// glUnmapBuffer(GL_ARRAY_BUFFER);
+
+// By telling OpenGL we're finished with the pointer operations via glUnmapBuffer OpenGL knows you're done. By unmapping,
+// the pointer becomes invalid and the function returns GL_TRUE if OpenGL was able to map your data successfully to the buffer.
+
+// Using glMapBuffer is useful to directly map data to a buffer, without first storing it in temporary memory.
+// Think of directly reading data from a file and copying it into a buffer's memory.
+
+// Batching vertex attributes
+
+// Using glVertexAttribPointer we were able to specify the attribute layout of a VAO's content. Within the VAO we interleaved
+// the attributes; that is, we placed the position, normal and/or texture coordinates next to each other for each vertex.
+// Now that we know a bit more about buffers we could take a different approach.
+
+// What we could do instead is batch all the vector data into large chunks per attribute type instead of interleaving them.
+// So instead of an interleaved layout 123123123123 we take a batched approach 111122223333.
+
+// When loading vertex data from a file you generally retrieve an array of positions, an array of normals and/or an array
+// of texture coordinates. It might cost some effort to combine these arrays into one large array of interleaved data.
+// Taking the batching approach is then an easier solution that we can easily implement using glBufferSubData:
+
+// float positions[] = { ... };
+// float normals[] = { ... };
+// float tex[] = { ... };
+   // fill buffer
+// glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions);
+// glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions), sizeof(normals), &normals);
+// glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions) + sizeof(normals), sizeof(tex), &tex);
+
+// This way we can directly transfer the attribute arrays as a whole into the buffer without first having to process them.
+// We could have also combined them into one large array and filled the buffer right away using glBufferData, but using
+// glBufferSubData lends itself perfectly for tasks like these.
+
+// We'll also have to update the vertex attribute pointers to reflect these changes:
+
+// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);  
+// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(positions)));  
+// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(sizeof(positions) + sizeof(normals)));
+
+// Copying buffers
+
+// Once a buffer is filled with your data you could want to share that data with other buffers, or perhaps copy the buffer's
+// content into another buffer. The function glCopyBufferSubData allows us to copy data from one buffer to another buffer.
+// The function's prototype is as follows:
+
+//void glCopyBufferSubData(GLenum readtarget,
+//                         GLenum writetarget,
+//                         GLintptr readoffset,
+//                         GLintptr writeoffset,
+//                         GLsizeiptr size);
+
+// We could for example copy from a VERTEX_ARRAY_BUFFER buffer to a VERTEX_ELEMENT_ARRAY_BUFFER buffer by specifying those
+// buffer targets as the read and write targets respectively. The buffers currently bound to those buffer targets will then
+// be affected.
+
+// But what if we wanted to read and write data into two different buffers that are both vertex array buffers?
+// We can't bind two buffers at the same time to the same buffer target. For this reason, and this reason alone, OpenGL gives us
+// two more buffer targets called GL_COPY_READ_BUFFER and GL_COPY_WRITE_BUFFER. We can then bind the buffers of our choice to
+// these new buffer targets and set those targets as the readtarget and writetarget arguments.
+
+// glCopyBufferSubData then reads data of a given size from a given readoffset and writes it into the writetarget buffer at
+// writeoffset. An example of copying the content of two vertex array buffers is shown below:
+
+// float vertexData[] = { ... };
+// glBindBuffer(GL_COPY_READ_BUFFER, vbo1);
+// glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2);
+// glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vertexData));
+
+// We could've also done this by only binding the writetarget buffer to one of the new buffer target types:
+
+// float vertexData[] = { ... };
+// glBindBuffer(GL_ARRAY_BUFFER, vbo1);
+// glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2);
+// glCopyBufferSubData(GL_ARRAY_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vertexData));
+
+// Advanced GLSL
+
