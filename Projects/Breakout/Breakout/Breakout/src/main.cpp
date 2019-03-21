@@ -2614,3 +2614,91 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // Advanced GLSL
 
+// Vertex shader variables
+
+// 1) glPosition: Clip-space output position vector of the vertex shader.
+//                Setting glPosition is required to render anything to the screen.
+
+// 2) gl_PointSize: Recall that using GL_POINTS with glDrawElements allows us to render each vertex primitive as a point.
+//                  It is possible to set the size of the points being rendered via OpenGL's glPointSize function, but we can
+//                  also influence this value in the vertex shader.
+//                  The output float variable gl_PointSize allows us to set the width and height of the points in pixels.
+//                  By describing the point's size in the vertex shader you can influence this point value per vertex.
+//                  Influencing the point sizes in the vertex shader is disabled by default, but you can enable this functionality
+//                  by enabling OpenGL's GL_PROGRAM_POINT_SIZE:
+
+//                  glEnable(GL_PROGRAM_POINT_SIZE);
+
+//                  A simple example of influencing the point sizes is by setting the point size equal to the
+//                  clip-space position's z value which is equal to the vertex's distance to the viewer.
+//                  The point size should then increase the further we are from the vertices as the viewer.
+
+//                  void main()
+//                  {
+//                      gl_Position = projection * view * model * vec4(aPos, 1.0);
+//                      gl_PointSize = gl_Position.z;
+//                  }
+
+//                  gl_PointSize is great for particle generation.
+
+// 3) gl_VertexID: gl_Position and gl_PointSize are output variables, which means that we can influence
+//                 the results of the vertex shader by writing to them.
+//                 The vertex shader also gives us an interesting input variable, that we can only read from, called gl_VertexID.
+//                 The integer input variable gl_VertexID holds the ID of the vertex we are currently drawing.
+//                 When doing indexed rendering (with glDrawElements), this variable holds the index
+//                 of the vertex we are currently drawing.
+//                 When drawing without indices (via glDrawArrays), this variable holds the number of vertices
+//                 that have been processed since the start of the render call.
+
+// Fragment shader variables
+
+// 1) gl_FragCoord: This vec3 input variable contains the window-space coordinates of the fragment we are currently processing,
+//                  as well as its depth.
+//                  It is particularly useful for depth testing because its Z component is equal to the depth of the fragment.
+//                  The X and Y window-space coordinates originate from the bottom-left corner of the window.
+//                  So if we specify a window of 800 x 600 pixels with glViewport, the X component will range from 0 to 800,
+//                  and the Y component will range from 0 to 600.
+//                  Using this variable we can perform different fragment shader calculations based
+//                  on the window coordinates of each fragment.
+//                  A common usage of the gl_FragCoord variable is for comparing the visual output of
+//                  different fragment calculations, as usually seen in tech demos.
+//                  We could for example split the screen in two by rendering one output to the left side of the window
+//                  and another output to the right side of the window.
+
+//                  void main()
+//                  {
+//                      if (gl_FragCoord.x < 400)
+//                          FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+//                      else
+//                          FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+//                  }
+
+// 2) gl_FrontFacing: In the face culling tutorial we mentioned that OpenGL is able to figure out if a face is a front or back face
+//                    based on the winding order of the vertices. If we're not using face culling (by enabling GL_FACE_CULL) then
+//                    the gl_FrontFacing input variable tells us if the current fragment is part of a front-facing or a back-facing face.
+//                    We could then decide to calculate different colors for front faces for example.
+
+//                    The gl_FrontFacing variable is a bool that is true if the fragment is part of a front face.
+//                    Using this variable we can create a cube with a different texture on the inside than on the outside:
+
+//                    #version 330 core
+//                    out vec4 FragColor;
+//                    
+//                    in vec2 TexCoords;
+//                    
+//                    uniform sampler2D frontTexture;
+//                    uniform sampler2D backTexture;
+//                    
+//                    void main()
+//                    {
+//                        if(gl_FrontFacing)
+//                            FragColor = texture(frontTexture, TexCoords);
+//                        else
+//                            FragColor = texture(backTexture, TexCoords);
+//                    }
+
+// 3) gl_FragDepth: The gl_FragCoord input variable allows us to read window-space coordinates and the depth value of the fragment
+//                  that is currently being processed, but it is a read-only variable. We can't influence the window-space
+//                  coordinates of the fragment, but it is possible to set its depth value.
+//                  GLSL gives us an output variable called gl_FragDepth that we can use to set the depth value of the fragment
+//                  within the shader.
