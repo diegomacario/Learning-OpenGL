@@ -2698,7 +2698,45 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 //                    }
 
 // 3) gl_FragDepth: The gl_FragCoord input variable allows us to read window-space coordinates and the depth value of the fragment
-//                  that is currently being processed, but it is a read-only variable. We can't influence the window-space
-//                  coordinates of the fragment, but it is possible to set its depth value.
-//                  GLSL gives us an output variable called gl_FragDepth that we can use to set the depth value of the fragment
-//                  within the shader.
+//                  that is currently being processed, but it is a read-only variable, so we can't use it to change the window-space
+//                  coordinates of the fragment or its depth value.
+//                  It is possible, however, to set the depth value of a fragment using an output variable called gl_FragDepth.
+//                  To do this, we simply write a float value between 0.0 and 1.0 to this variable in the fragment shader:
+
+//                  gl_FragDepth = 0.0; // this fragment now has a depth value of 0.0
+
+//                  If the fragment shader does not write a value to gl_FragDepth, this variable will automatically take its value from gl_FragCoord.z.
+
+//                  Modifying the depth value of a fragment through gl_FragDepth has a major disadvantage, however, because doing this causes OpenGL
+//                  to disable early depth testing, which means that the fragment shader will be executed for all fragments, regardless of whether
+//                  they are behind of other fragments or not. This occurs because OpenGL cannot know the depth value of a fragment before it runs
+//                  the fragment shader, since the fragment shader might change the depth value of the fragment.
+
+//                  Starting with OpenGL 4.2, however, we can still take advantage of early depth testing in certain situations by redeclaring
+//                  the gl_FragDepth variable at the top of the fragment shader with a depth condition:
+
+//                  layout (depth_<condition>) out float gl_FragDepth;
+
+//                  This condition can take the following values:
+
+//                  | any       | The default value. Early depth testing is disabled.                   |
+//                  | greater   | You can only make the depth value larger compared to gl_FragCoord.z.  |
+//                  | less      | You can only make the depth value smaller compared to gl_FragCoord.z. |
+//                  | unchanged | If you write to gl_FragDepth, you will write exactly gl_FragCoord.z.  |
+
+//                  Below is an example of a fragment shader that increments the depth value of fragments while preserving early depth testing:
+
+//                  #version 420 core // Note the GLSL version!
+//                  out vec4 FragColor;
+//                  layout (depth_greater) out float gl_FragDepth;
+
+//                  void main()
+//                  {
+//                      FragColor = vec4(1.0);
+//                      gl_FragDepth = gl_FragCoord.z + 0.1;
+//                  }
+
+
+
+
+
