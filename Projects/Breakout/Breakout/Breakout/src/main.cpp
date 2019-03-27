@@ -2736,7 +2736,88 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 //                      gl_FragDepth = gl_FragCoord.z + 0.1;
 //                  }
 
+// Uniform block layout
 
+// The content of a uniform block is stored in a buffer object, which is nothing more than a reserved piece of memory.
+// Because this piece of memory holds no information on what kind of data it holds, we need to tell OpenGL what parts of the memory
+// corresponds to which uniform variables in the shader.
 
+// Imagine you have the following uniform block in a shader:
 
+// layout (std140) uniform ExampleBlock
+// {
+//     float value;
+//     vec3  vector;
+//     mat4  matrix;
+//     float values[3];
+//     bool  boolean;
+//     int   integer;
+// };
+
+// What we want to know is the size (in bytes) and the offset (from the start of the block) of each of these variables
+// so we can place them in the buffer in the correct order. The size of each of the elements is clearly stated in OpenGL and
+// directly corresponds to C++ data types; vectors and matrices being (large) arrays of floats. What OpenGL doesn't clearly state
+// is the spacing between the variables. This allows the hardware to position variables as it sees fit.
+// Some hardware is able to place a vec3 adjacent to a float for example.
+// Other hardware pads the vec3 to an array of 4 floats before appending the float.
+
+// By default GLSL uses a uniform memory layout called a shared layout - shared because once the offsets are defined by the hardware,
+// they are consistently shared between multiple programs. With a shared layout GLSL is allowed to reposition the uniform variables
+// for optimization as long as the variables' order remains intact. Because we don't know at what offset each uniform variable will be
+// we don't know how to precisely fill our uniform buffer. We can query this information with functions like glGetUniformIndices,
+// but that is out of the scope of this discussion.
+
+// While a shared layout gives us some space-saving optimizations, we'd need to query each offset for each uniform variable,
+// which translates into a lot of work. The general practice is however to not use the shared layout, but to use the std140 layout instead.
+// The std140 layout explicitly states the memory layout for each variable type by calculating their respective offsets based on a set
+// of rules. Since this is explicitly mentioned we can manually figure out the offsets for each variable.
+
+// Each variable has a...
+// Base alignment: The space a variable takes (including padding) within a uniform block. This value is calculated using the std140 layout rules.
+// Aligned offset: The byte offset of a variable from the start of the block.
+// Note that the aligned offset of a variable must be equal to a multiple of its base alignment.
+
+// The exact layout rules can be found here: https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_uniform_buffer_object.txt
+// We'll list the most common rules below.
+// Each variable type in GLSL such as int, float and bool is defined to be a four-byte quantity with each entity of 4 bytes
+// being represented as N.
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// | Type                        | Layout rule
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// | Scalar e.g. int or bool     | Each scalar has a base alignment of N.
+// | Vector                      | Either 2N or 4N. This means that a vec3 has a base alignment of 4N.
+// | Array of scalars or vectors | Each element has a base alignment equal to that of a vec4.
+// | Matrices                    | Stored as a large array of column vectors, where each of those vectors has a base alignment of vec4.
+// | Struct                      | Equal to the computed size of its elements according to the previous rules, but padded to a multiple of the size of a vec4.
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Take for example the uniform block we introduced earlier:
+
+// layout (std140) uniform ExampleBlock
+// {
+//                      // base alignment                      // aligned offset
+//     float value;     // 4                                   // 0 
+//     vec3 vector;     // 16 (padded up to vec4)              // 16  (must be multiple of 16 so 4->16)
+//     mat4 matrix;     // 16 (each column treated as a vec4)  // 32  (column 0)
+//                      // 16                                  // 48  (column 1)
+//                      // 16                                  // 64  (column 2)
+//                      // 16                                  // 80  (column 3)
+//     float values[3]; // 16 (each element treated as a vec4) // 96  (values[0])
+//                      // 16                                  // 112 (values[1])
+//                      // 16                                  // 128 (values[2])
+//     bool boolean;    // 4                                   // 144
+//     int integer;     // 4                                   // 148
+// };
+
+// With the calculated offset values, based on the rules of the std140 layout, we can fill the buffer with the variable data
+// at each offset using functions like glBufferSubData. While not the most efficient, the std140 layout does guarantee us that
+// the memory layout remains the same over each program that declared this uniform block.
+
+// There are two other layouts to choose from that require us to query each offset before filling the buffers.
+// We've already seen the shared layout, so the remaining one is the packed layout. When using the packed layout,
+// there is no guarantee that the layout will remain the same between programs (not shared) because it allows the compiler to optimize
+// uniform variables away from the uniform block, which might differ per shader.
+
+// Using uniform buffers
 
