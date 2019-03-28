@@ -2821,3 +2821,65 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 
 // Using uniform buffers
 
+// First we need to create a uniform buffer object which is done via glGenBuffers. Then we need to bind it
+// to the GL_UNIFORM_BUFFER target. Finally, we need to allocate memory by calling glBufferData.
+
+// unsigned int uboExampleBlock;
+// glGenBuffers(1, &uboExampleBlock);
+// glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+// glBufferData(GL_UNIFORM_BUFFER, 152, NULL, GL_STATIC_DRAW); // allocate 152 bytes of memory
+// glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+// Now whenever we want to update or insert data into uboExampleBlock, we simply bind it to the GL_UNIFORM_BUFFER target and
+// use glBufferSubData to update its memory. We only have to update this uniform buffer once, and all the shaders that use it immediately
+// start using its updated data. But how does OpenGL know what uniform buffers correspond to which uniform blocks?
+
+// In OpenGL there is something called binding points, which can be used to link uniform buffers and uniform blocks.
+// When we create a uniform buffer, we can link it to a binding point. After doing this, we can link a uniform block in a shader
+// to the same binding point to connect it to the previously linked uniform buffer.
+
+// To link a uniform block to a specific binding point we must call glUniformBlockBinding. In the example below we are linking
+// a uniform block called "Lights" to binding point 2:
+
+// unsigned int lights_index = glGetUniformBlockIndex(shaderA.ID, // Shader program that contains the uniform block
+//                                                    "Lights");  // Name of the uniform block
+//
+// glUniformBlockBinding(shaderA.ID,                              // Shader program that contains the uniform block
+//                       lights_index,                            // Uniform block index (retrieved via glGetUniformBlockIndex)
+//                       2);                                      // Binding point
+
+// Note that we have to repeat this process for each shader.
+
+// Also note that from OpenGL version 4.2 and onwards it is also possible to store the binding point of a uniform block
+// explicitly in the shader by adding another layout specifier. This saves us the calls to glGetUniformBlockIndex and
+// glUniformBlockBinding. The following code sets the binding point of the "Lights" uniform block explicitly:
+
+// layout(std140, binding = 2) uniform Lights { ... };
+
+// After linking the uniform block to the binding point, we also need to link the uniform buffer object to the same binding point.
+// This can be accomplished with either glBindBufferBase or glBindBufferRange.
+
+// glBindBufferBase(GL_UNIFORM_BUFFER, // Target
+//                  2,                 // Binding point
+//                  uboExampleBlock);  // Uniform buffer object
+//
+// // or
+//
+// glBindBufferRange(GL_UNIFORM_BUFFER, // Target
+//                   2,                 // Binding point
+//                   uboExampleBlock,   // Uniform buffer object
+//                   0,                 // Offset
+//                   152);              // Size
+
+// The glBindBufferRange function allows us to only bind a specific region of a buffer to a binding point.
+// The region of our choice starts at offset and it covers the given size.
+// Using this function we could have multiple different uniform blocks linked to a single uniform buffer object.
+
+// Now that everything is set up, we can start adding data to the uniform buffer. We could add all the data as a single byte array,
+// or we could update specific parts of the buffer using glBufferSubData.
+// To update the boolean inside uboExampleBlock we could do the following:
+
+// glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+// int b = true; // bools in GLSL are represented as 4 bytes, so we store it in an integer
+// glBufferSubData(GL_UNIFORM_BUFFER, 144, 4, &b);
+// glBindBuffer(GL_UNIFORM_BUFFER, 0);
