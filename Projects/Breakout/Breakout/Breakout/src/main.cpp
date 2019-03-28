@@ -2736,6 +2736,98 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 //                      gl_FragDepth = gl_FragCoord.z + 0.1;
 //                  }
 
+// Interface blocks
+
+// So far, every time we wanted to send data from the vertex to the fragment shader we declared several matching input/output
+// variables. Declaring these one at a time is the easiest way to send data from one shader to another, but as your applications
+// become larger, you will probably want to send more than a few variables over, including arrays and/or structs.
+
+// To help us organize these variables GLSL offers us something called interface blocks, which allow us to group together variables.
+// The declaration of such an interface block looks a lot like a struct declaration, except that it is now declared using an
+// in or out keyword based on whether the block is being inputted or outputted.
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+// layout (location = 1) in vec2 aTexCoords;
+//
+// uniform mat4 model;
+// uniform mat4 view;
+// uniform mat4 projection;
+//
+// out VS_OUT
+// {
+//     vec2 TexCoords;
+// } vs_out;
+//
+// void main()
+// {
+//     gl_Position = projection * view * model * vec4(aPos, 1.0);
+//     vs_out.TexCoords = aTexCoords;
+// }
+
+// This is very useful when we want to group shader inputs and outputs into arrays (see the section on geometry shaders).
+
+// Now that we have declared the output interface block, we must also declare the input interface block in the next shader,
+// which in this case is the fragment shader. The block name (VS_OUT) should be the same in the fragment shader,
+// but the instance name (vs_out as used in the vertex shader) can be anything we like.
+
+// #version 330 core
+// out vec4 FragColor;
+//
+// in VS_OUT
+// {
+//     vec2 TexCoords;
+// } fs_in;
+//
+// uniform sampler2D texture;
+//
+// void main()
+// {
+//     FragColor = texture(texture, fs_in.TexCoords);
+// }
+
+// Uniform buffer objects
+
+// When using more than one shader, we continually set uniform variables for each one, even when most of them are
+// exactly the same for each shader.
+
+// OpenGL gives us a tool called uniform buffer objects that allow us to declare a set of global uniform variables
+// that remain the same over several shader programs. When using uniform buffer objects we thus have to set the relevant uniforms
+// only once. We do still have to manually set the uniforms that are unique per shader, however.
+
+// Because a uniform buffer object is a buffer like any other buffer, we can create one via glGenBuffers, bind it to the
+// GL_UNIFORM_BUFFER buffer target, and store all the relevant uniform data into the buffer.
+// Note that there are certain rules that define how the data for uniform buffer objects should be stored.
+
+// Take the following vertex shader, for example, in which we store the projection and view matrices in a uniform block:
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+//
+// layout (std140) uniform Matrices
+// {
+//     mat4 projection;
+//     mat4 view;
+// };
+//
+// uniform mat4 model;
+//
+// void main()
+// {
+//     gl_Position = projection * view * model * vec4(aPos, 1.0);
+// }
+
+// In most of our samples we set a projection and view uniform matrix each render iteration for each shader we're using.
+// This is a perfect example of where uniform buffer objects become useful since now we only have to store these matrices once.
+
+// Here we declared a uniform block called Matrices that stores two 4x4 matrices.
+// Variables in a uniform block can be directly accessed without the block name as a prefix.
+// Then we store these matrix values in a buffer somewhere in the OpenGL code and each shader that declared this uniform block has
+// access to the matrices.
+
+// What does "layout (std140)"" mean? This statement specifies the memory layout used to store the content of the uniform block.
+// In other words, it sets the uniform block layout.
+
 // Uniform block layout
 
 // The content of a uniform block is stored in a buffer object, which is nothing more than a reserved piece of memory.
