@@ -327,5 +327,20 @@
     <None Include="shader\13.3.cubemaps_model_diffuse.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\14.1.uniform_buffer_objects.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\14.1.uniform_buffer_objects_blue.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\14.1.uniform_buffer_objects_green.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\14.1.uniform_buffer_objects_red.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\14.1.uniform_buffer_objects_yellow.fs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

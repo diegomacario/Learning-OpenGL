@@ -2883,3 +2883,11 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 // int b = true; // bools in GLSL are represented as 4 bytes, so we store it in an integer
 // glBufferSubData(GL_UNIFORM_BUFFER, 144, 4, &b);
 // glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+// Uniform buffer objects have several advantages over single uniforms:
+// - Setting a lot of uniforms at once is faster than setting multiple uniforms one at a time.
+// - If you want to change the same uniform over several shaders, it is much easier to do this through a uniform buffer.
+// - You can use a lot more uniforms in shaders using uniform buffer objects.
+//   OpenGL has a limit to how much uniform data it can handle, which can be queried with GL_MAX_VERTEX_UNIFORM_COMPONENTS.
+//   When using uniform buffer objects, this limit is much higher. So whenever you reach the maximum number of uniforms,
+//   you can use uniform buffer objects.
