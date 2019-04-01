@@ -2983,3 +2983,367 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
 //   OpenGL has a limit to how much uniform data it can handle, which can be queried with GL_MAX_VERTEX_UNIFORM_COMPONENTS.
 //   When using uniform buffer objects, this limit is much higher. So whenever you reach the maximum number of uniforms,
 //   you can use uniform buffer objects.
+
+// Geometry Shader
+
+// Between the vertex and the fragment shader there is an optional shader stage called the geometry shader.
+// A geometry shader takes as input a set of vertices that form a single primitive, and it is able to transform them to generate
+// new primitives, possibly genearting new vertices in the process.
+
+// Below is an example of a geometry shader that takes a point primitive as its input and creates a horizontal line primitive
+// with the input point at its center.
+
+// #version 330 core
+//
+// layout (points) in;
+// layout (line_strip, max_vertices = 2) out;
+// 
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+//     EmitVertex();
+// 
+//     gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+// 
+//     EndPrimitive();
+// }
+
+// At the start of every geometry shader we need to declare the type of primitive we are receiving from the vertex shader.
+// We do this by declaring a layout specifier in front of the in keyword.
+// This input layout qualifier can take any of the following primitive values:
+
+// - points:              When drawing GL_POINTS (1).
+// - lines:               When drawing GL_LINES or GL_LINE_STRIP (2).
+// - lines_adjacency:     GL_LINES_ADJACENCY or GL_LINE_STRIP_ADJACENCY (4).
+// - triangles:           GL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN (3).
+// - triangles_adjacency: GL_TRIANGLES_ADJACENCY or GL_TRIANGLE_STRIP_ADJACENCY (6).
+
+// These are almost all the rendering primitives we are able to give to rendering calls like glDrawArrays.
+// If we had chosen to draw vertices as GL_TRIANGLES we would need to set the input qualifier to triangles.
+// The number within the parenthesis represents the minimum number of vertices that a single primitive can contain.
+
+// We also need to specify the type of primitive that the geometry shader will output.
+// We do this by declaring a layout specifier in front of the out keyword.
+// Like the input layout qualifier, the output layout qualifier can also take several primitive values:
+
+// - points
+// - line_strip
+// - triangle_strip
+
+// With just these 3 values we can create almost any shape we want from the input primitives.
+// To generate a single triangle, for example, we would need to specify triangle_strip as the output and then output 3 vertices.
+
+// The geometry shader also expects us to set the maximum number of vertices it can output (if you exceed this number,
+// OpenGL won't draw the extra vertices) which we can also do within the layout specifier of the out keyword.
+// In this particular case we're going to output a line_strip with a maximum number of 2 vertices.
+
+// In case you are wondering what a line strip is: a line strip binds together a set of points to form one continuous line between them,
+// with a minimum of 2 points. Each extra point given to the rendering call results in a new line between the new point and the previous one.
+// With the current shader we'll only output a single line since the maximum number of vertices is equal to 2.
+
+// To generate meaningful results we need some way to retrieve the output of the previous shader stage.
+// GLSL gives us a built-in variable called gl_in that looks like this internally:
+
+// in gl_Vertex
+// {
+//     vec4  gl_Position;
+//     float gl_PointSize;
+//     float gl_ClipDistance[];
+// } gl_in[];
+
+// There are 3 things to note about gl_in:
+// - It is declared as an interface block.
+// - It contains gl_Position, which is the output variable that we always set in the vertex shader.
+// - It is declared as an array, because most render primitives consist of more than 1 vertex and the geometry shader
+//   receives all vertices of a primitive as its input.
+
+// Using the vertex data from the vertex shader we can start generating new data, which is done via 2 geometry shader functions
+// called EmitVertex and EndPrimitive.
+// The geometry shader expects you to output at least one of the primitives you specified as output.
+// In our case we want to at least generate one line strip primitive.
+
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+//
+//     gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+//
+//     EndPrimitive();
+// }
+
+// Each time we call EmitVertex the vector currently set to gl_Position is added to the primitive.
+// Whenever EndPrimitive is called, all emitted vertices are combined into the specified output render primitive.
+// By repeatedly calling EndPrimitive after one or more EmitVertex calls, multiple primitives can be generated.
+// This particular case emits two vertices that were translated by a small offset from the original vertex position,
+// and then calls EndPrimitive, combining these two vertices into a single line strip of 2 vertices.
+
+// Pass-through geometry shader:
+
+// Let's render a scene where we just draw 4 points on the Z-plane in NDC.
+
+// The coordinates of the points are:
+
+// float points[] = {
+//     -0.5f,  0.5f, // top-left
+//      0.5f,  0.5f, // top-right
+//      0.5f, -0.5f, // bottom-right
+//     -0.5f, -0.5f  // bottom-left
+// };
+
+// The vertex shader looks like this:
+
+// #version 330 core
+// layout (location = 0) in vec2 aPos;
+//
+// void main()
+// {
+//     gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+// }
+
+// And the fragment shader, which outputs the color green for all the points, looks like this:
+
+// #version 330 core
+//
+// out vec4 FragColor;
+//
+// void main()
+// {
+//     FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+// }
+
+// After generating a VBO and a VAO for the points' vertex data, we can draw them using glDrawArrays:
+
+// shader.use();
+// glBindVertexArray(VAO);
+// glDrawArrays(GL_POINTS, 0, 4);
+
+// The result is a dark scene with 4 green points.
+
+// Now let's spice things up by adding a geometry shader to the scene.
+
+// For learning purposes we'll start with what is called a pass-through geometry shader, which simply takes a point primitive
+// as its input and passes it to the fragment shader unmodified:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (points, max_vertices = 1) out;
+// 
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position;
+//     EmitVertex();
+//     EndPrimitive();
+// }
+
+// A geometry shader needs to be compiled and linked to a program just like the vertex and fragment shader,
+// but this time we'll create the shader using GL_GEOMETRY_SHADER as the shader type:
+
+// geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+// glShaderSource(geometryShader, 1, &gShaderCode, NULL);
+// glCompileShader(geometryShader);
+// ...
+// glAttachShader(program, geometryShader);
+// glLinkProgram(program);
+
+// The geometry shader compilation code is basically the same as the vertex and fragment shader compilation code.
+// Be sure to check for compile or link errors!
+
+// House geometry shader:
+
+// Let's get creative by writing a geometry shader that draws a house at the location of each point we give it.
+// We can achieve this by setting the output of the geometry shader to triangle_strip and then drawing a total
+// of three triangles: two for a square and one for the roof.
+
+// A triangle strip in OpenGL is a more efficient way to draw triangles using less vertices. After the first triangle is drawn,
+// each subsequent vertex will generate another triangle next to the first triangle: every 3 adjacent vertices will form a triangle.
+// If we have a total of 6 vertices that form a triangle strip we'd get the following triangles: (1,2,3), (2,3,4), (3,4,5) and (4,5,6).
+// A triangle strip needs at least 3 vertices and will generate N-2 triangles; with 6 vertices we created 6-2 = 4 triangles.
+
+// Using a triangle strip as the output of the geometry shader we can easily create the house shape we're after by generating
+// 3 adjacent triangles in the correct order. The following image shows the order in which we need to draw the vertices to get the
+// triangles we want:
+
+//         5
+//        / \
+//       /   \
+//      /     \
+//     /       \
+//   3 --------- 4
+//     |\      |
+//     | \     |
+//     |  \    |
+//     |   *   | layout(points) in
+//     |    \  |
+//     |     \ |
+//     |      \|
+//   1 -------- 2
+
+// This translates to the following geometry shader:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (triangle_strip, max_vertices = 5) out;
+// 
+// void build_house(vec4 position)
+// {
+//     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1: bottom-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2: bottom-right
+//     EmitVertex();
+//     gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3: top-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4: top-right
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5: top
+//     EmitVertex();
+//     EndPrimitive();
+// }
+// 
+// void main()
+// {
+//     build_house(gl_in[0].gl_Position);
+// }
+
+// This geometry shader generates 5 vertices, with each vertex being the point's position plus an offset, to form one large
+// triangle strip. The resulting primitive is then rasterized and the fragment shader runs on the entire triangle strip,
+// resulting in a green house for each point we've drawn.
+
+// House geometry shader with different colours:
+
+// Let's give each house a unique colour.
+// To do this we're going to add an extra vertex attribute with color information to the vertex shader, and we will receive that value
+// in the geometry shader and forward it to the fragment shader.
+
+// The updated vertex data is given below:
+
+// float points[] = {
+//     -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
+//      0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
+//      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
+//     -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
+// };
+
+// The updated vertex shader is given below. It now forwards the color attribute to the geometry shader using an interface block:
+
+// #version 330 core
+//
+// layout (location = 0) in vec2 aPos;
+// layout (location = 1) in vec3 aColor;
+//
+// out VS_OUT
+// {
+//     vec3 color;
+// } vs_out;
+//
+// void main()
+// {
+//     gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+//     vs_out.color = aColor;
+// }
+
+// Then we also need to declare the same interface block (with a different interface name) in the geometry shader:
+
+// in VS_OUT
+// {
+//     vec3 color;
+// } gs_in[];
+
+// Because the geometry shader acts on a set of vertices as its input, its input data from the vertex shader is always received
+// in the form of arrays, even if we only receive a single vertex like we do right now.
+
+// Note that we don't have to use interface blocks to transfer data to the geometry shader. We could have also written it as:
+
+// in vec3 vColor[];
+
+// If the vertex shader had forwarded the color vector as:
+
+// out vec3 vColor;
+
+// However, interface blocks are much easier to work with in shaders like the geometry shader. In practice, geometry shader inputs
+// can get quite large and grouping them in one large interface block array makes things a lot easier to manage.
+
+// Then we should also declare an output color vector for the next fragment shader stage:
+
+// out vec3 fColor;
+
+// Because the fragment shader expects only a single (interpolated) color it doesn't make sense to forward multiple colors.
+// The fColor vector is thus not an array, but a single vector.
+// ----------------------------------------------------------------
+// When a vertex is emitted, it stores the current value of fColor.
+// ----------------------------------------------------------------
+// This happens because each vertex needs a colour so that it can be interpolated by the rasterizer and processed by the fragment shader.
+
+// Since we want all the vertices that form a house to have the same colour, we can simply set fColor once and not change it:
+
+// fColor = gs_in[0].color; // gs_in[0] since there's only one input vertex
+//
+// gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1: bottom-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2: bottom-right
+// EmitVertex();
+// gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3: top-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4: top-right
+// EmitVertex();
+// gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5: top
+// EmitVertex();
+// EndPrimitive();
+
+// Just for fun we could also pretend it's winter and give the roofs of the houses a little snow by giving the last vertex a color of its own:
+
+// fColor = gs_in[0].color;
+// 
+// gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1:bottom-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2:bottom-right
+// EmitVertex();
+// gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3:top-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4:top-right
+// EmitVertex();
+// gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5:top
+// fColor = vec3(1.0, 1.0, 1.0);
+// EmitVertex();
+// EndPrimitive();
+
+// The full geometry shader end up looking like this:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (triangle_strip, max_vertices = 5) out;
+// 
+// in VS_OUT
+// {
+//     vec3 color;
+// } gs_in[];
+// 
+// out vec3 fColor;
+// 
+// void build_house(vec4 position)
+// {
+//     fColor = gs_in[0].color; // gs_in[0] since there's only one input vertex
+//     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0); // 1:bottom-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0); // 2:bottom-right
+//     EmitVertex();
+//     gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0); // 3:top-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0); // 4:top-right
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0); // 5:top
+//     fColor = vec3(1.0, 1.0, 1.0);
+//     EmitVertex();
+//     EndPrimitive();
+// }
+// 
+// void main()
+// {
+//     build_house(gl_in[0].gl_Position);
+// }
+
