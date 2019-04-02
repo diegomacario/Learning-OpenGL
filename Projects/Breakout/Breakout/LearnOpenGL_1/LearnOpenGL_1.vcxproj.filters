@@ -342,5 +342,14 @@
     <None Include="shader\14.1.uniform_buffer_objects_yellow.fs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\15.1.geometry_shader_house.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.1.geometry_shader_house.gs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.1.geometry_shader_house.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>
