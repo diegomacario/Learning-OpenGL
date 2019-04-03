@@ -34,6 +34,11 @@ bool firstMouse = true;
 float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
+// lighting
+glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.25f;
+
+bool displayNormals = false;
+
 int main()
 {
     // glfw: initialize and configure
@@ -80,7 +85,55 @@ int main()
     // build and compile shaders
     // -------------------------
     Shader modelShader("shader/13.7.cubemaps_teapot.vs", "shader/13.7.cubemaps_teapot.fs");
+    Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
     Shader skyboxShader("shader/13.1.cubemaps_skybox.vs", "shader/13.1.cubemaps_skybox.fs");
+    Shader normalShader("shader/15.3.geometry_shader_normal_visualization_teapot.vs",
+                        "shader/15.3.geometry_shader_normal_visualization_teapot.fs",
+                        "shader/15.3.geometry_shader_normal_visualization_teapot.gs");
+
+   //                     Positions            Normals              Texture coords
+   //                    <--------------->    <--------------->    <------->
+   float lampVertices[] = { -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+                             0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  1.0f, 1.0f,
+                            -0.5f,  0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f,  0.0f,  0.0f, -1.0f,  0.0f, 0.0f,
+
+                            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   1.0f, 1.0f,
+                            -0.5f,  0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 1.0f,
+                            -0.5f, -0.5f,  0.5f,  0.0f,  0.0f, 1.0f,   0.0f, 0.0f,
+
+                            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f,  0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f, -0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                            -0.5f, -0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f,  0.5f,  0.5f, -1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            
+                             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  0.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  1.0f,  0.0f,  0.0f,  1.0f, 0.0f,
+                            
+                            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f, -0.5f,  0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,  0.0f, 1.0f,
+                            
+                            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f,
+                             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 1.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                             0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  1.0f, 0.0f,
+                            -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 0.0f,
+                            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,  0.0f, 1.0f };
 
     float skyboxVertices[] = {
         // positions
@@ -127,6 +180,16 @@ int main()
          1.0f, -1.0f,  1.0f
     };
 
+    // lamp VAO
+    unsigned int lampVAO, lampVBO;
+    glGenVertexArrays(1, &lampVAO);
+    glGenBuffers(1, &lampVBO);
+    glBindVertexArray(lampVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, lampVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(lampVertices), lampVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
+
     // skybox VAO
     unsigned int skyboxVAO, skyboxVBO;
     glGenVertexArrays(1, &skyboxVAO);
@@ -138,7 +201,7 @@ int main()
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
 
     // load model
-    Model teapotModel("objects/teapot/high_poly_without_mat/Teapot.obj");
+    Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
 
     // load textures
     // -------------
@@ -176,26 +239,77 @@ int main()
 
         // render
         // ------
-        glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        //glClearColor(0.1f, 0.1f, 0.1f, 1.0f);
+        glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+        // Rotate the light source
+        // -----------------------
+        glm::mat4 rotMatrixForLight;
+        glm::vec3 rotationAxis    = glm::normalize(glm::cross(lightPos, glm::vec3(0.0f, 1.0f, 0.0f)));
+        rotMatrixForLight         = glm::rotate(rotMatrixForLight, (float) glfwGetTime(), rotationAxis);
+        glm::vec3 rotatedLightPos = ((glm::mat3) (rotMatrixForLight)) * lightPos;
+
         // draw model
+        // ----------
         modelShader.use();
-        //glm::mat4 model;
-        //model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the nanosuit down so that it is at the center of the scene
-        //model = glm::scale(model, glm::vec3(0.2f, 0.2f, 0.2f));       // Scale the nanosuit down so that it fits in our scene
-        glm::mat4 model = glm::mat4(1.0f);
+
+        glm::mat4 model;
+        //model = glm::translate(model, glm::vec3(0.0f, -1.75f, 0.0f)); // Translate the teapot down so that it is at the center of the scene
+        model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));      // Scale the teapot down so that it fits in our scene
         glm::mat4 view = camera.GetViewMatrix();
         glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+
         modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
         modelShader.setMat4("projection", projection);
 
+        // Camera properties
+        modelShader.setVec3("viewPos", camera.Position);
+
+        // Light properties
+        modelShader.setVec3("pointLight.position", rotatedLightPos);
+        modelShader.setVec3("pointLight.color", 1.0f, 1.0f, 1.0f);
+        modelShader.setFloat("pointLight.constant", 1.0f);
+        modelShader.setFloat("pointLight.linear", 0.09f);
+        modelShader.setFloat("pointLight.quadratic", 0.032f);
+
         teapotModel.Draw(modelShader);
 
-        // draw skybox last
+        // Draw normals
+
+        if (displayNormals)
+        {
+            normalShader.use();
+            normalShader.setMat4("model", model);
+            normalShader.setMat4("view", view);
+            normalShader.setMat4("projection", projection);
+
+            teapotModel.Draw(normalShader);
+        }
+
+        // draw lamp
+        // ----------
+        lampShader.use();
+
+        model = glm::mat4();
+        model = glm::translate(model, rotatedLightPos);
+        model = glm::scale(model, glm::vec3(0.02f));
+
+        lampShader.setMat4("model", model);
+        lampShader.setMat4("view", view);
+        lampShader.setMat4("projection", projection);
+
+        // Draw the light cube
+        glBindVertexArray(lampVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 36);
+
+        // draw skybox
+        // -----------
+
         glDepthFunc(GL_LEQUAL); // change depth function so depth test passes when values are equal to depth buffer's content
         skyboxShader.use();
+
         view = glm::mat4(glm::mat3(camera.GetViewMatrix())); // remove translation from the view matrix
         skyboxShader.setMat4("view", view);
         skyboxShader.setMat4("projection", projection);
@@ -204,7 +318,7 @@ int main()
         glBindVertexArray(skyboxVAO);
         glActiveTexture(GL_TEXTURE0);
         glBindTexture(GL_TEXTURE_CUBE_MAP, cubemapTexture);
-        glDrawArrays(GL_TRIANGLES, 0, 36);
+        //glDrawArrays(GL_TRIANGLES, 0, 36);
         glBindVertexArray(0);
         glDepthFunc(GL_LESS); // set depth function back to default
 
@@ -238,6 +352,9 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
+
+    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
+        displayNormals = !displayNormals;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
@@ -2742,3 +2859,853 @@ unsigned int loadCubemap(vector<std::string> faces)
 // using an environment map, which is an enormous performance penalty. Modern applications try to use skyboxes as much as possible, and
 // they also use pre-compiled cubemaps wherever they can to create Dynamic Environment Maps.
 
+// Advanced Data
+
+// A buffer in OpenGL is only an object that manages a certain piece of memory and nothing more.
+// We give a meaning to a buffer when binding it to a specific buffer target. A buffer is only a vertex array buffer
+// when we bind it to GL_ARRAY_BUFFER, but we could just as easily bind it to GL_ELEMENT_ARRAY_BUFFER. OpenGL internally stores
+// a buffer per target and based on the target, processes the buffers differently.
+
+// So far we've been filling the memory managed by the buffer objects by calling glBufferData, which allocates a piece of memory
+// and adds data into this memory. If we were to pass NULL as its data argument, the function would only allocate memory
+// and not fill it. This is useful if we first want to reserve a specific amount of memory and later come back to this buffer
+// to fill it piece by piece.
+
+// Instead of filling the entire buffer with one function call we can also fill specific regions of the buffer by calling
+// glBufferSubData. This function expects a buffer target, an offset, the size of the data and the actual data as its arguments.
+// What's new with this function is that we can now give an offset that specifies from where we want to fill the buffer.
+// This allows us to insert/update only certain parts of the buffer's memory. Do note that the buffer should have enough allocated
+// memory, so a call to glBufferData is necessary before calling glBufferSubData on the buffer.
+
+// glBufferSubData(GL_ARRAY_BUFFER, // Target
+//                 24,              // Offset in bytes
+//                 sizeof(data),    // Size of data to write in bytes
+//                 &data);          // Data to write
+
+// Yet another method for getting data into a buffer is to ask for a pointer to the buffer's memory and directly copy the data
+// to the buffer by yourself. By calling glMapBuffer OpenGL returns a pointer to the currently bound buffer's memory
+// for us to operate on:
+
+// float data[] = {
+//     0.5f, 1.0f, -0.35f
+//     ...
+// };
+//
+// glBindBuffer(GL_ARRAY_BUFFER, buffer);
+//
+   // get pointer
+// void *ptr = glMapBuffer(GL_ARRAY_BUFFER, GL_WRITE_ONLY); // Options for the access value:
+                                                            // GL_READ_ONLY, GL_WRITE_ONLY, GL_READ_WRITE
+//
+   // now copy data into memory
+// memcpy(ptr, data, sizeof(data));
+   // make sure to tell OpenGL we're done with the pointer
+// glUnmapBuffer(GL_ARRAY_BUFFER);
+
+// By telling OpenGL we're finished with the pointer operations via glUnmapBuffer OpenGL knows you're done. By unmapping,
+// the pointer becomes invalid and the function returns GL_TRUE if OpenGL was able to map your data successfully to the buffer.
+
+// Using glMapBuffer is useful to directly map data to a buffer, without first storing it in temporary memory.
+// Think of directly reading data from a file and copying it into a buffer's memory.
+
+// Batching vertex attributes
+
+// Using glVertexAttribPointer we were able to specify the attribute layout of a VAO's content. Within the VAO we interleaved
+// the attributes; that is, we placed the position, normal and/or texture coordinates next to each other for each vertex.
+// Now that we know a bit more about buffers we could take a different approach.
+
+// What we could do instead is batch all the vector data into large chunks per attribute type instead of interleaving them.
+// So instead of an interleaved layout 123123123123 we take a batched approach 111122223333.
+
+// When loading vertex data from a file you generally retrieve an array of positions, an array of normals and/or an array
+// of texture coordinates. It might cost some effort to combine these arrays into one large array of interleaved data.
+// Taking the batching approach is then an easier solution that we can easily implement using glBufferSubData:
+
+// float positions[] = { ... };
+// float normals[] = { ... };
+// float tex[] = { ... };
+   // fill buffer
+// glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(positions), &positions);
+// glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions), sizeof(normals), &normals);
+// glBufferSubData(GL_ARRAY_BUFFER, sizeof(positions) + sizeof(normals), sizeof(tex), &tex);
+
+// This way we can directly transfer the attribute arrays as a whole into the buffer without first having to process them.
+// We could have also combined them into one large array and filled the buffer right away using glBufferData, but using
+// glBufferSubData lends itself perfectly for tasks like these.
+
+// We'll also have to update the vertex attribute pointers to reflect these changes:
+
+// glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), 0);  
+// glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)(sizeof(positions)));  
+// glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, 2 * sizeof(float), (void*)(sizeof(positions) + sizeof(normals)));
+
+// Copying buffers
+
+// Once a buffer is filled with your data you could want to share that data with other buffers, or perhaps copy the buffer's
+// content into another buffer. The function glCopyBufferSubData allows us to copy data from one buffer to another buffer.
+// The function's prototype is as follows:
+
+//void glCopyBufferSubData(GLenum readtarget,
+//                         GLenum writetarget,
+//                         GLintptr readoffset,
+//                         GLintptr writeoffset,
+//                         GLsizeiptr size);
+
+// We could for example copy from a VERTEX_ARRAY_BUFFER buffer to a VERTEX_ELEMENT_ARRAY_BUFFER buffer by specifying those
+// buffer targets as the read and write targets respectively. The buffers currently bound to those buffer targets will then
+// be affected.
+
+// But what if we wanted to read and write data into two different buffers that are both vertex array buffers?
+// We can't bind two buffers at the same time to the same buffer target. For this reason, and this reason alone, OpenGL gives us
+// two more buffer targets called GL_COPY_READ_BUFFER and GL_COPY_WRITE_BUFFER. We can then bind the buffers of our choice to
+// these new buffer targets and set those targets as the readtarget and writetarget arguments.
+
+// glCopyBufferSubData then reads data of a given size from a given readoffset and writes it into the writetarget buffer at
+// writeoffset. An example of copying the content of two vertex array buffers is shown below:
+
+// float vertexData[] = { ... };
+// glBindBuffer(GL_COPY_READ_BUFFER, vbo1);
+// glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2);
+// glCopyBufferSubData(GL_COPY_READ_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vertexData));
+
+// We could've also done this by only binding the writetarget buffer to one of the new buffer target types:
+
+// float vertexData[] = { ... };
+// glBindBuffer(GL_ARRAY_BUFFER, vbo1);
+// glBindBuffer(GL_COPY_WRITE_BUFFER, vbo2);
+// glCopyBufferSubData(GL_ARRAY_BUFFER, GL_COPY_WRITE_BUFFER, 0, 0, sizeof(vertexData));
+
+// Advanced GLSL
+
+// Vertex shader variables
+
+// 1) glPosition: Clip-space output position vector of the vertex shader.
+//                Setting glPosition is required to render anything to the screen.
+
+// 2) gl_PointSize: Recall that using GL_POINTS with glDrawElements allows us to render each vertex primitive as a point.
+//                  It is possible to set the size of the points being rendered via OpenGL's glPointSize function, but we can
+//                  also influence this value in the vertex shader.
+//                  The output float variable gl_PointSize allows us to set the width and height of the points in pixels.
+//                  By describing the point's size in the vertex shader you can influence this point value per vertex.
+//                  Influencing the point sizes in the vertex shader is disabled by default, but you can enable this functionality
+//                  by enabling OpenGL's GL_PROGRAM_POINT_SIZE:
+
+//                  glEnable(GL_PROGRAM_POINT_SIZE);
+
+//                  A simple example of influencing the point sizes is by setting the point size equal to the
+//                  clip-space position's z value which is equal to the vertex's distance to the viewer.
+//                  The point size should then increase the further we are from the vertices as the viewer.
+
+//                  void main()
+//                  {
+//                      gl_Position = projection * view * model * vec4(aPos, 1.0);
+//                      gl_PointSize = gl_Position.z;
+//                  }
+
+//                  gl_PointSize is great for particle generation.
+
+// 3) gl_VertexID: gl_Position and gl_PointSize are output variables, which means that we can influence
+//                 the results of the vertex shader by writing to them.
+//                 The vertex shader also gives us an interesting input variable, that we can only read from, called gl_VertexID.
+//                 The integer input variable gl_VertexID holds the ID of the vertex we are currently drawing.
+//                 When doing indexed rendering (with glDrawElements), this variable holds the index
+//                 of the vertex we are currently drawing.
+//                 When drawing without indices (via glDrawArrays), this variable holds the number of vertices
+//                 that have been processed since the start of the render call.
+
+// Fragment shader variables
+
+// 1) gl_FragCoord: This vec3 input variable contains the window-space coordinates of the fragment we are currently processing,
+//                  as well as its depth.
+//                  It is particularly useful for depth testing because its Z component is equal to the depth of the fragment.
+//                  The X and Y window-space coordinates originate from the bottom-left corner of the window.
+//                  So if we specify a window of 800 x 600 pixels with glViewport, the X component will range from 0 to 800,
+//                  and the Y component will range from 0 to 600.
+//                  Using this variable we can perform different fragment shader calculations based
+//                  on the window coordinates of each fragment.
+//                  A common usage of the gl_FragCoord variable is for comparing the visual output of
+//                  different fragment calculations, as usually seen in tech demos.
+//                  We could for example split the screen in two by rendering one output to the left side of the window
+//                  and another output to the right side of the window.
+
+//                  void main()
+//                  {
+//                      if (gl_FragCoord.x < 400)
+//                          FragColor = vec4(1.0, 0.0, 0.0, 1.0);
+//                      else
+//                          FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+//                  }
+
+// 2) gl_FrontFacing: In the face culling tutorial we mentioned that OpenGL is able to figure out if a face is a front or back face
+//                    based on the winding order of the vertices. If we're not using face culling (by enabling GL_FACE_CULL) then
+//                    the gl_FrontFacing input variable tells us if the current fragment is part of a front-facing or a back-facing face.
+//                    We could then decide to calculate different colors for front faces for example.
+
+//                    The gl_FrontFacing variable is a bool that is true if the fragment is part of a front face.
+//                    Using this variable we can create a cube with a different texture on the inside than on the outside:
+
+//                    #version 330 core
+//                    out vec4 FragColor;
+//                    
+//                    in vec2 TexCoords;
+//                    
+//                    uniform sampler2D frontTexture;
+//                    uniform sampler2D backTexture;
+//                    
+//                    void main()
+//                    {
+//                        if(gl_FrontFacing)
+//                            FragColor = texture(frontTexture, TexCoords);
+//                        else
+//                            FragColor = texture(backTexture, TexCoords);
+//                    }
+
+// 3) gl_FragDepth: The gl_FragCoord input variable allows us to read window-space coordinates and the depth value of the fragment
+//                  that is currently being processed, but it is a read-only variable, so we can't use it to change the window-space
+//                  coordinates of the fragment or its depth value.
+//                  It is possible, however, to set the depth value of a fragment using an output variable called gl_FragDepth.
+//                  To do this, we simply write a float value between 0.0 and 1.0 to this variable in the fragment shader:
+
+//                  gl_FragDepth = 0.0; // this fragment now has a depth value of 0.0
+
+//                  If the fragment shader does not write a value to gl_FragDepth, this variable will automatically take its value from gl_FragCoord.z.
+
+//                  Modifying the depth value of a fragment through gl_FragDepth has a major disadvantage, however, because doing this causes OpenGL
+//                  to disable early depth testing, which means that the fragment shader will be executed for all fragments, regardless of whether
+//                  they are behind of other fragments or not. This occurs because OpenGL cannot know the depth value of a fragment before it runs
+//                  the fragment shader, since the fragment shader might change the depth value of the fragment.
+
+//                  Starting with OpenGL 4.2, however, we can still take advantage of early depth testing in certain situations by redeclaring
+//                  the gl_FragDepth variable at the top of the fragment shader with a depth condition:
+
+//                  layout (depth_<condition>) out float gl_FragDepth;
+
+//                  This condition can take the following values:
+
+//                  | any       | The default value. Early depth testing is disabled.                   |
+//                  | greater   | You can only make the depth value larger compared to gl_FragCoord.z.  |
+//                  | less      | You can only make the depth value smaller compared to gl_FragCoord.z. |
+//                  | unchanged | If you write to gl_FragDepth, you will write exactly gl_FragCoord.z.  |
+
+//                  Below is an example of a fragment shader that increments the depth value of fragments while preserving early depth testing:
+
+//                  #version 420 core // Note the GLSL version!
+//                  out vec4 FragColor;
+//                  layout (depth_greater) out float gl_FragDepth;
+
+//                  void main()
+//                  {
+//                      FragColor = vec4(1.0);
+//                      gl_FragDepth = gl_FragCoord.z + 0.1;
+//                  }
+
+// Interface blocks
+
+// So far, every time we wanted to send data from the vertex to the fragment shader we declared several matching input/output
+// variables. Declaring these one at a time is the easiest way to send data from one shader to another, but as your applications
+// become larger, you will probably want to send more than a few variables over, including arrays and/or structs.
+
+// To help us organize these variables GLSL offers us something called interface blocks, which allow us to group together variables.
+// The declaration of such an interface block looks a lot like a struct declaration, except that it is now declared using an
+// in or out keyword based on whether the block is being inputted or outputted.
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+// layout (location = 1) in vec2 aTexCoords;
+//
+// uniform mat4 model;
+// uniform mat4 view;
+// uniform mat4 projection;
+//
+// out VS_OUT
+// {
+//     vec2 TexCoords;
+// } vs_out;
+//
+// void main()
+// {
+//     gl_Position = projection * view * model * vec4(aPos, 1.0);
+//     vs_out.TexCoords = aTexCoords;
+// }
+
+// This is very useful when we want to group shader inputs and outputs into arrays (see the section on geometry shaders).
+
+// Now that we have declared the output interface block, we must also declare the input interface block in the next shader,
+// which in this case is the fragment shader. The block name (VS_OUT) should be the same in the fragment shader,
+// but the instance name (vs_out as used in the vertex shader) can be anything we like.
+
+// #version 330 core
+// out vec4 FragColor;
+//
+// in VS_OUT
+// {
+//     vec2 TexCoords;
+// } fs_in;
+//
+// uniform sampler2D texture;
+//
+// void main()
+// {
+//     FragColor = texture(texture, fs_in.TexCoords);
+// }
+
+// Uniform buffer objects
+
+// When using more than one shader, we continually set uniform variables for each one, even when most of them are
+// exactly the same for each shader.
+
+// OpenGL gives us a tool called uniform buffer objects that allow us to declare a set of global uniform variables
+// that remain the same over several shader programs. When using uniform buffer objects we thus have to set the relevant uniforms
+// only once. We do still have to manually set the uniforms that are unique per shader, however.
+
+// Because a uniform buffer object is a buffer like any other buffer, we can create one via glGenBuffers, bind it to the
+// GL_UNIFORM_BUFFER buffer target, and store all the relevant uniform data into the buffer.
+// Note that there are certain rules that define how the data for uniform buffer objects should be stored.
+
+// Take the following vertex shader, for example, in which we store the projection and view matrices in a uniform block:
+
+// #version 330 core
+// layout (location = 0) in vec3 aPos;
+//
+// layout (std140) uniform Matrices
+// {
+//     mat4 projection;
+//     mat4 view;
+// };
+//
+// uniform mat4 model;
+//
+// void main()
+// {
+//     gl_Position = projection * view * model * vec4(aPos, 1.0);
+// }
+
+// In most of our samples we set a projection and view uniform matrix each render iteration for each shader we're using.
+// This is a perfect example of where uniform buffer objects become useful since now we only have to store these matrices once.
+
+// Here we declared a uniform block called Matrices that stores two 4x4 matrices.
+// Variables in a uniform block can be directly accessed without the block name as a prefix.
+// Then we store these matrix values in a buffer somewhere in the OpenGL code and each shader that declared this uniform block has
+// access to the matrices.
+
+// What does "layout (std140)"" mean? This statement specifies the memory layout used to store the content of the uniform block.
+// In other words, it sets the uniform block layout.
+
+// Uniform block layout
+
+// The content of a uniform block is stored in a buffer object, which is nothing more than a reserved piece of memory.
+// Because this piece of memory holds no information on what kind of data it holds, we need to tell OpenGL what parts of the memory
+// corresponds to which uniform variables in the shader.
+
+// Imagine you have the following uniform block in a shader:
+
+// layout (std140) uniform ExampleBlock
+// {
+//     float value;
+//     vec3  vector;
+//     mat4  matrix;
+//     float values[3];
+//     bool  boolean;
+//     int   integer;
+// };
+
+// What we want to know is the size (in bytes) and the offset (from the start of the block) of each of these variables
+// so we can place them in the buffer in the correct order. The size of each of the elements is clearly stated in OpenGL and
+// directly corresponds to C++ data types; vectors and matrices being (large) arrays of floats. What OpenGL doesn't clearly state
+// is the spacing between the variables. This allows the hardware to position variables as it sees fit.
+// Some hardware is able to place a vec3 adjacent to a float for example.
+// Other hardware pads the vec3 to an array of 4 floats before appending the float.
+
+// By default GLSL uses a uniform memory layout called a shared layout - shared because once the offsets are defined by the hardware,
+// they are consistently shared between multiple programs. With a shared layout GLSL is allowed to reposition the uniform variables
+// for optimization as long as the variables' order remains intact. Because we don't know at what offset each uniform variable will be
+// we don't know how to precisely fill our uniform buffer. We can query this information with functions like glGetUniformIndices,
+// but that is out of the scope of this discussion.
+
+// While a shared layout gives us some space-saving optimizations, we'd need to query each offset for each uniform variable,
+// which translates into a lot of work. The general practice is however to not use the shared layout, but to use the std140 layout instead.
+// The std140 layout explicitly states the memory layout for each variable type by calculating their respective offsets based on a set
+// of rules. Since this is explicitly mentioned we can manually figure out the offsets for each variable.
+
+// Each variable has a...
+// Base alignment: The space a variable takes (including padding) within a uniform block. This value is calculated using the std140 layout rules.
+// Aligned offset: The byte offset of a variable from the start of the block.
+// Note that the aligned offset of a variable must be equal to a multiple of its base alignment.
+
+// The exact layout rules can be found here: https://www.khronos.org/registry/OpenGL/extensions/ARB/ARB_uniform_buffer_object.txt
+// We'll list the most common rules below.
+// Each variable type in GLSL such as int, float and bool is defined to be a four-byte quantity with each entity of 4 bytes
+// being represented as N.
+
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// | Type                        | Layout rule
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+// | Scalar e.g. int or bool     | Each scalar has a base alignment of N.
+// | Vector                      | Either 2N or 4N. This means that a vec3 has a base alignment of 4N.
+// | Array of scalars or vectors | Each element has a base alignment equal to that of a vec4.
+// | Matrices                    | Stored as a large array of column vectors, where each of those vectors has a base alignment of vec4.
+// | Struct                      | Equal to the computed size of its elements according to the previous rules, but padded to a multiple of the size of a vec4.
+// -----------------------------------------------------------------------------------------------------------------------------------------------------------
+
+// Take for example the uniform block we introduced earlier:
+
+// layout (std140) uniform ExampleBlock
+// {
+//                      // base alignment                      // aligned offset
+//     float value;     // 4                                   // 0 
+//     vec3 vector;     // 16 (padded up to vec4)              // 16  (must be multiple of 16 so 4->16)
+//     mat4 matrix;     // 16 (each column treated as a vec4)  // 32  (column 0)
+//                      // 16                                  // 48  (column 1)
+//                      // 16                                  // 64  (column 2)
+//                      // 16                                  // 80  (column 3)
+//     float values[3]; // 16 (each element treated as a vec4) // 96  (values[0])
+//                      // 16                                  // 112 (values[1])
+//                      // 16                                  // 128 (values[2])
+//     bool boolean;    // 4                                   // 144
+//     int integer;     // 4                                   // 148
+// };
+
+// With the calculated offset values, based on the rules of the std140 layout, we can fill the buffer with the variable data
+// at each offset using functions like glBufferSubData. While not the most efficient, the std140 layout does guarantee us that
+// the memory layout remains the same over each program that declared this uniform block.
+
+// There are two other layouts to choose from that require us to query each offset before filling the buffers.
+// We've already seen the shared layout, so the remaining one is the packed layout. When using the packed layout,
+// there is no guarantee that the layout will remain the same between programs (not shared) because it allows the compiler to optimize
+// uniform variables away from the uniform block, which might differ per shader.
+
+// Using uniform buffers
+
+// First we need to create a uniform buffer object which is done via glGenBuffers. Then we need to bind it
+// to the GL_UNIFORM_BUFFER target. Finally, we need to allocate memory by calling glBufferData.
+
+// unsigned int uboExampleBlock;
+// glGenBuffers(1, &uboExampleBlock);
+// glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+// glBufferData(GL_UNIFORM_BUFFER, 152, NULL, GL_STATIC_DRAW); // allocate 152 bytes of memory
+// glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+// Now whenever we want to update or insert data into uboExampleBlock, we simply bind it to the GL_UNIFORM_BUFFER target and
+// use glBufferSubData to update its memory. We only have to update this uniform buffer once, and all the shaders that use it immediately
+// start using its updated data. But how does OpenGL know what uniform buffers correspond to which uniform blocks?
+
+// In OpenGL there is something called binding points, which can be used to link uniform buffers and uniform blocks.
+// When we create a uniform buffer, we can link it to a binding point. After doing this, we can link a uniform block in a shader
+// to the same binding point to connect it to the previously linked uniform buffer.
+
+// To link a uniform block to a specific binding point we must call glUniformBlockBinding. In the example below we are linking
+// a uniform block called "Lights" to binding point 2:
+
+// unsigned int lights_index = glGetUniformBlockIndex(shaderA.ID, // Shader program that contains the uniform block
+//                                                    "Lights");  // Name of the uniform block
+//
+// glUniformBlockBinding(shaderA.ID,                              // Shader program that contains the uniform block
+//                       lights_index,                            // Uniform block index (retrieved via glGetUniformBlockIndex)
+//                       2);                                      // Binding point
+
+// Note that we have to repeat this process for each shader.
+
+// Also note that from OpenGL version 4.2 and onwards it is also possible to store the binding point of a uniform block
+// explicitly in the shader by adding another layout specifier. This saves us the calls to glGetUniformBlockIndex and
+// glUniformBlockBinding. The following code sets the binding point of the "Lights" uniform block explicitly:
+
+// layout(std140, binding = 2) uniform Lights { ... };
+
+// After linking the uniform block to the binding point, we also need to link the uniform buffer object to the same binding point.
+// This can be accomplished with either glBindBufferBase or glBindBufferRange.
+
+// glBindBufferBase(GL_UNIFORM_BUFFER, // Target
+//                  2,                 // Binding point
+//                  uboExampleBlock);  // Uniform buffer object
+//
+// // or
+//
+// glBindBufferRange(GL_UNIFORM_BUFFER, // Target
+//                   2,                 // Binding point
+//                   uboExampleBlock,   // Uniform buffer object
+//                   0,                 // Offset
+//                   152);              // Size
+
+// The glBindBufferRange function allows us to only bind a specific region of a buffer to a binding point.
+// The region of our choice starts at offset and it covers the given size.
+// Using this function we could have multiple different uniform blocks linked to a single uniform buffer object.
+
+// Now that everything is set up, we can start adding data to the uniform buffer. We could add all the data as a single byte array,
+// or we could update specific parts of the buffer using glBufferSubData.
+// To update the boolean inside uboExampleBlock we could do the following:
+
+// glBindBuffer(GL_UNIFORM_BUFFER, uboExampleBlock);
+// int b = true; // bools in GLSL are represented as 4 bytes, so we store it in an integer
+// glBufferSubData(GL_UNIFORM_BUFFER, 144, 4, &b);
+// glBindBuffer(GL_UNIFORM_BUFFER, 0);
+
+// Uniform buffer objects have several advantages over single uniforms:
+// - Setting a lot of uniforms at once is faster than setting multiple uniforms one at a time.
+// - If you want to change the same uniform over several shaders, it is much easier to do this through a uniform buffer.
+// - You can use a lot more uniforms in shaders using uniform buffer objects.
+//   OpenGL has a limit to how much uniform data it can handle, which can be queried with GL_MAX_VERTEX_UNIFORM_COMPONENTS.
+//   When using uniform buffer objects, this limit is much higher. So whenever you reach the maximum number of uniforms,
+//   you can use uniform buffer objects.
+
+// Geometry Shader
+
+// Between the vertex and the fragment shader there is an optional shader stage called the geometry shader.
+// A geometry shader takes as input a set of vertices that form a single primitive, and it is able to transform them to generate
+// new primitives, possibly genearting new vertices in the process.
+
+// Below is an example of a geometry shader that takes a point primitive as its input and creates a horizontal line primitive
+// with the input point at its center.
+
+// #version 330 core
+//
+// layout (points) in;
+// layout (line_strip, max_vertices = 2) out;
+// 
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0); 
+//     EmitVertex();
+// 
+//     gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+// 
+//     EndPrimitive();
+// }
+
+// At the start of every geometry shader we need to declare the type of primitive we are receiving from the vertex shader.
+// We do this by declaring a layout specifier in front of the in keyword.
+// This input layout qualifier can take any of the following primitive values:
+
+// - points:              When drawing GL_POINTS (1).
+// - lines:               When drawing GL_LINES or GL_LINE_STRIP (2).
+// - lines_adjacency:     GL_LINES_ADJACENCY or GL_LINE_STRIP_ADJACENCY (4).
+// - triangles:           GL_TRIANGLES, GL_TRIANGLE_STRIP or GL_TRIANGLE_FAN (3).
+// - triangles_adjacency: GL_TRIANGLES_ADJACENCY or GL_TRIANGLE_STRIP_ADJACENCY (6).
+
+// These are almost all the rendering primitives we are able to give to rendering calls like glDrawArrays.
+// If we had chosen to draw vertices as GL_TRIANGLES we would need to set the input qualifier to triangles.
+// The number within the parenthesis represents the minimum number of vertices that a single primitive can contain.
+
+// We also need to specify the type of primitive that the geometry shader will output.
+// We do this by declaring a layout specifier in front of the out keyword.
+// Like the input layout qualifier, the output layout qualifier can also take several primitive values:
+
+// - points
+// - line_strip
+// - triangle_strip
+
+// With just these 3 values we can create almost any shape we want from the input primitives.
+// To generate a single triangle, for example, we would need to specify triangle_strip as the output and then output 3 vertices.
+
+// The geometry shader also expects us to set the maximum number of vertices it can output (if you exceed this number,
+// OpenGL won't draw the extra vertices) which we can also do within the layout specifier of the out keyword.
+// In this particular case we're going to output a line_strip with a maximum number of 2 vertices.
+
+// In case you are wondering what a line strip is: a line strip binds together a set of points to form one continuous line between them,
+// with a minimum of 2 points. Each extra point given to the rendering call results in a new line between the new point and the previous one.
+// With the current shader we'll only output a single line since the maximum number of vertices is equal to 2.
+
+// To generate meaningful results we need some way to retrieve the output of the previous shader stage.
+// GLSL gives us a built-in variable called gl_in that looks like this internally:
+
+// in gl_Vertex
+// {
+//     vec4  gl_Position;
+//     float gl_PointSize;
+//     float gl_ClipDistance[];
+// } gl_in[];
+
+// There are 3 things to note about gl_in:
+// - It is declared as an interface block.
+// - It contains gl_Position, which is the output variable that we always set in the vertex shader.
+// - It is declared as an array, because most render primitives consist of more than 1 vertex and the geometry shader
+//   receives all vertices of a primitive as its input.
+
+// Using the vertex data from the vertex shader we can start generating new data, which is done via 2 geometry shader functions
+// called EmitVertex and EndPrimitive.
+// The geometry shader expects you to output at least one of the primitives you specified as output.
+// In our case we want to at least generate one line strip primitive.
+
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position + vec4(-0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+//
+//     gl_Position = gl_in[0].gl_Position + vec4( 0.1, 0.0, 0.0, 0.0);
+//     EmitVertex();
+//
+//     EndPrimitive();
+// }
+
+// Each time we call EmitVertex the vector currently set to gl_Position is added to the primitive.
+// Whenever EndPrimitive is called, all emitted vertices are combined into the specified output render primitive.
+// By repeatedly calling EndPrimitive after one or more EmitVertex calls, multiple primitives can be generated.
+// This particular case emits two vertices that were translated by a small offset from the original vertex position,
+// and then calls EndPrimitive, combining these two vertices into a single line strip of 2 vertices.
+
+// Pass-through geometry shader:
+
+// Let's render a scene where we just draw 4 points on the Z-plane in NDC.
+
+// The coordinates of the points are:
+
+// float points[] = {
+//     -0.5f,  0.5f, // top-left
+//      0.5f,  0.5f, // top-right
+//      0.5f, -0.5f, // bottom-right
+//     -0.5f, -0.5f  // bottom-left
+// };
+
+// The vertex shader looks like this:
+
+// #version 330 core
+// layout (location = 0) in vec2 aPos;
+//
+// void main()
+// {
+//     gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+// }
+
+// And the fragment shader, which outputs the color green for all the points, looks like this:
+
+// #version 330 core
+//
+// out vec4 FragColor;
+//
+// void main()
+// {
+//     FragColor = vec4(0.0, 1.0, 0.0, 1.0);
+// }
+
+// After generating a VBO and a VAO for the points' vertex data, we can draw them using glDrawArrays:
+
+// shader.use();
+// glBindVertexArray(VAO);
+// glDrawArrays(GL_POINTS, 0, 4);
+
+// The result is a dark scene with 4 green points.
+
+// Now let's spice things up by adding a geometry shader to the scene.
+
+// For learning purposes we'll start with what is called a pass-through geometry shader, which simply takes a point primitive
+// as its input and passes it to the fragment shader unmodified:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (points, max_vertices = 1) out;
+// 
+// void main()
+// {
+//     gl_Position = gl_in[0].gl_Position;
+//     EmitVertex();
+//     EndPrimitive();
+// }
+
+// A geometry shader needs to be compiled and linked to a program just like the vertex and fragment shader,
+// but this time we'll create the shader using GL_GEOMETRY_SHADER as the shader type:
+
+// geometryShader = glCreateShader(GL_GEOMETRY_SHADER);
+// glShaderSource(geometryShader, 1, &gShaderCode, NULL);
+// glCompileShader(geometryShader);
+// ...
+// glAttachShader(program, geometryShader);
+// glLinkProgram(program);
+
+// The geometry shader compilation code is basically the same as the vertex and fragment shader compilation code.
+// Be sure to check for compile or link errors!
+
+// House geometry shader:
+
+// Let's get creative by writing a geometry shader that draws a house at the location of each point we give it.
+// We can achieve this by setting the output of the geometry shader to triangle_strip and then drawing a total
+// of three triangles: two for a square and one for the roof.
+
+// A triangle strip in OpenGL is a more efficient way to draw triangles using less vertices. After the first triangle is drawn,
+// each subsequent vertex will generate another triangle next to the first triangle: every 3 adjacent vertices will form a triangle.
+// If we have a total of 6 vertices that form a triangle strip we'd get the following triangles: (1,2,3), (2,3,4), (3,4,5) and (4,5,6).
+// A triangle strip needs at least 3 vertices and will generate N-2 triangles; with 6 vertices we created 6-2 = 4 triangles.
+
+// Using a triangle strip as the output of the geometry shader we can easily create the house shape we're after by generating
+// 3 adjacent triangles in the correct order. The following image shows the order in which we need to draw the vertices to get the
+// triangles we want:
+
+//         5
+//        / \
+//       /   \
+//      /     \
+//     /       \
+//   3 --------- 4
+//     |\      |
+//     | \     |
+//     |  \    |
+//     |   *   | layout(points) in
+//     |    \  |
+//     |     \ |
+//     |      \|
+//   1 -------- 2
+
+// This translates to the following geometry shader:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (triangle_strip, max_vertices = 5) out;
+// 
+// void build_house(vec4 position)
+// {
+//     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1: bottom-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2: bottom-right
+//     EmitVertex();
+//     gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3: top-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4: top-right
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5: top
+//     EmitVertex();
+//     EndPrimitive();
+// }
+// 
+// void main()
+// {
+//     build_house(gl_in[0].gl_Position);
+// }
+
+// This geometry shader generates 5 vertices, with each vertex being the point's position plus an offset, to form one large
+// triangle strip. The resulting primitive is then rasterized and the fragment shader runs on the entire triangle strip,
+// resulting in a green house for each point we've drawn.
+
+// House geometry shader with different colours:
+
+// Let's give each house a unique colour.
+// To do this we're going to add an extra vertex attribute with color information to the vertex shader, and we will receive that value
+// in the geometry shader and forward it to the fragment shader.
+
+// The updated vertex data is given below:
+
+// float points[] = {
+//     -0.5f,  0.5f, 1.0f, 0.0f, 0.0f, // top-left
+//      0.5f,  0.5f, 0.0f, 1.0f, 0.0f, // top-right
+//      0.5f, -0.5f, 0.0f, 0.0f, 1.0f, // bottom-right
+//     -0.5f, -0.5f, 1.0f, 1.0f, 0.0f  // bottom-left
+// };
+
+// The updated vertex shader is given below. It now forwards the color attribute to the geometry shader using an interface block:
+
+// #version 330 core
+//
+// layout (location = 0) in vec2 aPos;
+// layout (location = 1) in vec3 aColor;
+//
+// out VS_OUT
+// {
+//     vec3 color;
+// } vs_out;
+//
+// void main()
+// {
+//     gl_Position = vec4(aPos.x, aPos.y, 0.0, 1.0);
+//     vs_out.color = aColor;
+// }
+
+// Then we also need to declare the same interface block (with a different interface name) in the geometry shader:
+
+// in VS_OUT
+// {
+//     vec3 color;
+// } gs_in[];
+
+// Because the geometry shader acts on a set of vertices as its input, its input data from the vertex shader is always received
+// in the form of arrays, even if we only receive a single vertex like we do right now.
+
+// Note that we don't have to use interface blocks to transfer data to the geometry shader. We could have also written it as:
+
+// in vec3 vColor[];
+
+// If the vertex shader had forwarded the color vector as:
+
+// out vec3 vColor;
+
+// However, interface blocks are much easier to work with in shaders like the geometry shader. In practice, geometry shader inputs
+// can get quite large and grouping them in one large interface block array makes things a lot easier to manage.
+
+// Then we should also declare an output color vector for the next fragment shader stage:
+
+// out vec3 fColor;
+
+// Because the fragment shader expects only a single (interpolated) color it doesn't make sense to forward multiple colors.
+// The fColor vector is thus not an array, but a single vector.
+// ----------------------------------------------------------------
+// When a vertex is emitted, it stores the current value of fColor.
+// ----------------------------------------------------------------
+// This happens because each vertex needs a colour so that it can be interpolated by the rasterizer and processed by the fragment shader.
+
+// Since we want all the vertices that form a house to have the same colour, we can simply set fColor once and not change it:
+
+// fColor = gs_in[0].color; // gs_in[0] since there's only one input vertex
+//
+// gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1: bottom-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2: bottom-right
+// EmitVertex();
+// gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3: top-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4: top-right
+// EmitVertex();
+// gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5: top
+// EmitVertex();
+// EndPrimitive();
+
+// Just for fun we could also pretend it's winter and give the roofs of the houses a little snow by giving the last vertex a color of its own:
+
+// fColor = gs_in[0].color;
+// 
+// gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0);    // 1:bottom-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0);    // 2:bottom-right
+// EmitVertex();
+// gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0);    // 3:top-left
+// EmitVertex();
+// gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0);    // 4:top-right
+// EmitVertex();
+// gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0);    // 5:top
+// fColor = vec3(1.0, 1.0, 1.0);
+// EmitVertex();
+// EndPrimitive();
+
+// The full geometry shader end up looking like this:
+
+// #version 330 core
+// 
+// layout (points) in;
+// layout (triangle_strip, max_vertices = 5) out;
+// 
+// in VS_OUT
+// {
+//     vec3 color;
+// } gs_in[];
+// 
+// out vec3 fColor;
+// 
+// void build_house(vec4 position)
+// {
+//     fColor = gs_in[0].color; // gs_in[0] since there's only one input vertex
+//     gl_Position = position + vec4(-0.2, -0.2, 0.0, 0.0); // 1:bottom-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2, -0.2, 0.0, 0.0); // 2:bottom-right
+//     EmitVertex();
+//     gl_Position = position + vec4(-0.2,  0.2, 0.0, 0.0); // 3:top-left
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.2,  0.2, 0.0, 0.0); // 4:top-right
+//     EmitVertex();
+//     gl_Position = position + vec4( 0.0,  0.4, 0.0, 0.0); // 5:top
+//     fColor = vec3(1.0, 1.0, 1.0);
+//     EmitVertex();
+//     EndPrimitive();
+// }
+// 
+// void main()
+// {
+//     build_house(gl_in[0].gl_Position);
+// }

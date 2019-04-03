@@ -351,5 +351,29 @@
     <None Include="shader\15.1.geometry_shader_house.vs">
       <Filter>Shader Files</Filter>
     </None>
+    <None Include="shader\15.2.geometry_shader_model_diffuse.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.2.geometry_shader_model_diffuse.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.2.geometry_shader_normal_visualization.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.2.geometry_shader_normal_visualization.gs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.2.geometry_shader_normal_visualization.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.gs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.vs">
+      <Filter>Shader Files</Filter>
+    </None>
   </ItemGroup>
 </Project>

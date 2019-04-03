@@ -76,6 +76,14 @@
     <None Include="shader\15.1.geometry_shader_house.fs" />
     <None Include="shader\15.1.geometry_shader_house.gs" />
     <None Include="shader\15.1.geometry_shader_house.vs" />
+    <None Include="shader\15.2.geometry_shader_model_diffuse.fs" />
+    <None Include="shader\15.2.geometry_shader_model_diffuse.vs" />
+    <None Include="shader\15.2.geometry_shader_normal_visualization.fs" />
+    <None Include="shader\15.2.geometry_shader_normal_visualization.gs" />
+    <None Include="shader\15.2.geometry_shader_normal_visualization.vs" />
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.fs" />
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.gs" />
+    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.vs" />
     <None Include="shader\2.2.basic_lighting.fs" />
     <None Include="shader\2.2.basic_lighting.vs" />
     <None Include="shader\2.2.lamp.fs" />
