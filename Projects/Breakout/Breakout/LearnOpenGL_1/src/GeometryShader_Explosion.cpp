@@ -75,9 +75,9 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader shader("shader/15.3.geometry_shader_explosion.vs",
-                  "shader/15.3.geometry_shader_explosion.fs",
-                  "shader/15.3.geometry_shader_explosion.gs");
+    Shader shader("shader/15.3.geometry_shader_normal_explosion.vs",
+                  "shader/15.3.geometry_shader_normal_explosion.fs",
+                  "shader/15.3.geometry_shader_normal_explosion.gs");
 
     // load models
     // -----------

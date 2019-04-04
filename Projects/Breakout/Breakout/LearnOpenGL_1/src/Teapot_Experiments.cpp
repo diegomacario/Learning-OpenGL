@@ -87,9 +87,9 @@ int main()
     Shader modelShader("shader/13.7.cubemaps_teapot.vs", "shader/13.7.cubemaps_teapot.fs");
     Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
     Shader skyboxShader("shader/13.1.cubemaps_skybox.vs", "shader/13.1.cubemaps_skybox.fs");
-    Shader normalShader("shader/15.3.geometry_shader_normal_visualization_teapot.vs",
-                        "shader/15.3.geometry_shader_normal_visualization_teapot.fs",
-                        "shader/15.3.geometry_shader_normal_visualization_teapot.gs");
+    Shader normalShader("shader/15.4.geometry_shader_normal_visualization_teapot.vs",
+                        "shader/15.4.geometry_shader_normal_visualization_teapot.fs",
+                        "shader/15.4.geometry_shader_normal_visualization_teapot.gs");
 
    //                     Positions            Normals              Texture coords
    //                    <--------------->    <--------------->    <------->
@@ -354,7 +354,9 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(RIGHT, deltaTime);
 
     if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-        displayNormals = !displayNormals;
+        displayNormals = true;
+    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
+        displayNormals = false;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes

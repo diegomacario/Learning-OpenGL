@@ -366,13 +366,22 @@
     <None Include="shader\15.2.geometry_shader_normal_visualization.vs">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.fs">
+    <None Include="shader\15.3.geometry_shader_explosion.fs">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.gs">
+    <None Include="shader\15.3.geometry_shader_explosion.gs">
       <Filter>Shader Files</Filter>
     </None>
-    <None Include="shader\15.3.geometry_shader_normal_visualization_teapot.vs">
+    <None Include="shader\15.3.geometry_shader_explosion.vs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.4.geometry_shader_normal_visualization_teapot.fs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.4.geometry_shader_normal_visualization_teapot.gs">
+      <Filter>Shader Files</Filter>
+    </None>
+    <None Include="shader\15.4.geometry_shader_normal_visualization_teapot.vs">
       <Filter>Shader Files</Filter>
     </None>
   </ItemGroup>
