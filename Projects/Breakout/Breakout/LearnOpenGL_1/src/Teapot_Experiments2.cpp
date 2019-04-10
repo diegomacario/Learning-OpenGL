@@ -25,7 +25,7 @@ const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 3.0f));
+Camera camera(glm::vec3(0.0f, 0.0f, 1.0f));
 float lastX = (float)SCR_WIDTH / 2.0;
 float lastY = (float)SCR_HEIGHT / 2.0;
 bool firstMouse = true;
@@ -35,9 +35,7 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.25f;
-
-bool displayNormals = false;
+glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.1f;
 
 int main()
 {
@@ -81,14 +79,16 @@ int main()
     // configure global opengl state
     // -----------------------------
     glEnable(GL_DEPTH_TEST);
+    //glDisable(GL_DEPTH_TEST);
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("shader/13.7.cubemaps_teapot.vs", "shader/13.7.cubemaps_teapot.fs");
+    Shader modelShader("shader/16.2.model_shader.vs", "shader/16.2.model_shader.fs");
     Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
-    Shader normalShader("shader/15.4.geometry_shader_normal_visualization_teapot.vs",
-                        "shader/15.4.geometry_shader_normal_visualization_teapot.fs",
-                        "shader/15.4.geometry_shader_normal_visualization_teapot.gs");
+    Shader basicShader("shader/16.1.basic_shader.vs", "shader/16.1.basic_shader.fs");
+
+    // load model
+    Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
 
    //                     Positions            Normals              Texture coords
    //                    <--------------->    <--------------->    <------->
@@ -144,8 +144,26 @@ int main()
     glEnableVertexAttribArray(0);
     glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 8 * sizeof(float), (void*)0);
 
-    // load model
-    Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
+    GLfloat basicVertices[] = { // Pos            // Col
+                                0.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f,
+                                1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f,
+                                0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 1.0f,
+
+                                0.0f, 1.0f, 0.0f, 1.0f, 1.0f, 0.0f,
+                                1.0f, 1.0f, 0.0f, 0.0f, 1.0f, 1.0f,
+                                1.0f, 0.0f, 0.0f, 1.0f, 0.0f, 1.0f };
+
+    // basic VAO
+    unsigned int basicVAO, basicVBO;
+    glGenVertexArrays(1, &basicVAO);
+    glGenBuffers(1, &basicVBO);
+    glBindVertexArray(basicVAO);
+    glBindBuffer(GL_ARRAY_BUFFER, basicVBO);
+    glBufferData(GL_ARRAY_BUFFER, sizeof(basicVertices), basicVertices, GL_STATIC_DRAW);
+    glEnableVertexAttribArray(0);
+    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)0);
+    glEnableVertexAttribArray(1);
+    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
     // render loop
     // -----------
@@ -172,15 +190,58 @@ int main()
         glm::vec3 rotationAxis    = glm::normalize(glm::cross(lightPos, glm::vec3(0.0f, 1.0f, 0.0f)));
         rotMatrixForLight         = glm::rotate(rotMatrixForLight, (float) glfwGetTime(), rotationAxis);
         glm::vec3 rotatedLightPos = ((glm::mat3) (rotMatrixForLight)) * lightPos;
+        //rotatedLightPos = rotatedLightPos + glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f);
+
+        // define the model, view and projection matrices
+        // ----------------------------------------------
+        glm::mat4 model      = glm::mat4();
+        glm::mat4 view       = glm::mat4();
+        glm::mat4 projection = glm::mat4();
+
+        // draw basic shape
+        // ---------------------------------------------------------------------------------------------------------------------------------------------------------
+        basicShader.use();
+
+        // perspective
+        // -----------
+        model      = glm::mat4();
+        view       = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // ortographic
+        // -----------
+        //model      = glm::mat4();
+        //model      = glm::scale(model, glm::vec3(1280.0f, 720.0f, 1.0f));
+        //view       = glm::mat4();
+        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+
+        basicShader.setMat4("model", model);
+        basicShader.setMat4("view", view);
+        basicShader.setMat4("projection", projection);
+
+        // Draw the basic shape
+        glBindVertexArray(basicVAO);
+        glDrawArrays(GL_TRIANGLES, 0, 6);
 
         // draw model
-        // ----------
+        // (24.12f, 11.81f, 15.0f)
+        // ---------------------------------------------------------------------------------------------------------------------------------------------------------
         modelShader.use();
 
-        glm::mat4 model;
-        model = glm::scale(model, glm::vec3(0.02f, 0.02f, 0.02f));      // Scale the teapot down so that it fits in our scene
-        glm::mat4 view = camera.GetViewMatrix();
-        glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // perspective
+        // -----------
+        model      = glm::mat4();
+        model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model      = glm::scale(model, glm::vec3(0.005f));
+        view       = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // ortographic
+        // -----------
+        //model      = glm::mat4();
+        //model      = glm::translate(model, glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f));
+        //model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //model      = glm::scale(model, glm::vec3(10.0f));
+        //view       = glm::mat4();
+        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
         modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
@@ -198,25 +259,24 @@ int main()
 
         teapotModel.Draw(modelShader);
 
-        // Draw normals
-
-        if (displayNormals)
-        {
-            normalShader.use();
-            normalShader.setMat4("model", model);
-            normalShader.setMat4("view", view);
-            normalShader.setMat4("projection", projection);
-
-            teapotModel.Draw(normalShader);
-        }
-
         // draw lamp
-        // ----------
+        // ---------------------------------------------------------------------------------------------------------------------------------------------------------
         lampShader.use();
 
-        model = glm::mat4();
-        model = glm::translate(model, rotatedLightPos);
-        model = glm::scale(model, glm::vec3(0.02f));
+        // perspective
+        // -----------
+        model      = glm::mat4();
+        model      = glm::translate(model, rotatedLightPos);
+        model      = glm::scale(model, glm::vec3(0.02f));
+        view       = camera.GetViewMatrix();
+        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // ortographic
+        // -----------
+        //model      = glm::mat4();
+        //model      = glm::translate(model, rotatedLightPos);
+        //model      = glm::scale(model, glm::vec3(10.0f));
+        //view       = glm::mat4();
+        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
 
         lampShader.setMat4("model", model);
         lampShader.setMat4("view", view);
@@ -256,11 +316,6 @@ void processInput(GLFWwindow *window)
         camera.ProcessKeyboard(LEFT, deltaTime);
     if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
         camera.ProcessKeyboard(RIGHT, deltaTime);
-
-    if (glfwGetKey(window, GLFW_KEY_N) == GLFW_PRESS)
-        displayNormals = true;
-    if (glfwGetKey(window, GLFW_KEY_M) == GLFW_PRESS)
-        displayNormals = false;
 }
 
 // glfw: whenever the window size changed (by OS or user resize) this callback function executes
