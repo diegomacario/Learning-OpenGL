@@ -35,7 +35,9 @@ float deltaTime = 0.0f;
 float lastFrame = 0.0f;
 
 // lighting
-glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.1f;
+//glm::vec3 lightPos = glm::vec3(-1.0f, 1.0f, 1.0f) * 0.1f;
+//glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 175.0f);
+glm::vec3 lightPos = glm::vec3(-175.0f, 175.0f, 175.0f);
 
 int main()
 {
@@ -187,10 +189,10 @@ int main()
         // Rotate the light source
         // -----------------------
         glm::mat4 rotMatrixForLight;
-        glm::vec3 rotationAxis    = glm::normalize(glm::cross(lightPos, glm::vec3(0.0f, 1.0f, 0.0f)));
+        glm::vec3 rotationAxis    = glm::vec3(0.0f, 0.0f, 1.0f);
         rotMatrixForLight         = glm::rotate(rotMatrixForLight, (float) glfwGetTime(), rotationAxis);
         glm::vec3 rotatedLightPos = ((glm::mat3) (rotMatrixForLight)) * lightPos;
-        //rotatedLightPos = rotatedLightPos + glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f);
+        rotatedLightPos = rotatedLightPos + glm::vec3(1280.0f / 2.0f, 720.0f / 2, 0.0f);
 
         // define the model, view and projection matrices
         // ----------------------------------------------
@@ -204,15 +206,15 @@ int main()
 
         // perspective
         // -----------
-        model      = glm::mat4();
-        view       = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        //model      = glm::mat4();
+        //view       = camera.GetViewMatrix();
+        //projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // ortographic
         // -----------
-        //model      = glm::mat4();
-        //model      = glm::scale(model, glm::vec3(1280.0f, 720.0f, 1.0f));
-        //view       = glm::mat4();
-        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+        model      = glm::mat4();
+        model      = glm::scale(model, glm::vec3(1280.0f, 720.0f, 1.0f));
+        view       = glm::mat4();
+        projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
         basicShader.setMat4("model", model);
         basicShader.setMat4("view", view);
@@ -229,19 +231,19 @@ int main()
 
         // perspective
         // -----------
-        model      = glm::mat4();
-        model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        model      = glm::scale(model, glm::vec3(0.005f));
-        view       = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        //model      = glm::mat4();
+        //model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        //model      = glm::scale(model, glm::vec3(0.005f));
+        //view       = camera.GetViewMatrix();
+        //projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // ortographic
         // -----------
-        //model      = glm::mat4();
-        //model      = glm::translate(model, glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f));
-        //model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        //model      = glm::scale(model, glm::vec3(10.0f));
-        //view       = glm::mat4();
-        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+        model      = glm::mat4();
+        model      = glm::translate(model, glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f));
+        model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
+        model      = glm::scale(model, glm::vec3(10.0f));
+        view       = glm::mat4();
+        projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
         modelShader.setMat4("model", model);
         modelShader.setMat4("view", view);
@@ -265,18 +267,18 @@ int main()
 
         // perspective
         // -----------
-        model      = glm::mat4();
-        model      = glm::translate(model, rotatedLightPos);
-        model      = glm::scale(model, glm::vec3(0.02f));
-        view       = camera.GetViewMatrix();
-        projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // ortographic
-        // -----------
         //model      = glm::mat4();
         //model      = glm::translate(model, rotatedLightPos);
-        //model      = glm::scale(model, glm::vec3(10.0f));
-        //view       = glm::mat4();
-        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -1.0f, 1.0f);
+        //model      = glm::scale(model, glm::vec3(0.02f));
+        //view       = camera.GetViewMatrix();
+        //projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        // ortographic
+        // -----------
+        model      = glm::mat4();
+        model      = glm::translate(model, rotatedLightPos);
+        model      = glm::scale(model, glm::vec3(20.0f));
+        view       = glm::mat4();
+        projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
         lampShader.setMat4("model", model);
         lampShader.setMat4("view", view);

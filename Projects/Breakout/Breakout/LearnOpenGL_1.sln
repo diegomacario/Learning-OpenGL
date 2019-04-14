@@ -7,6 +7,8 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "LearnOpenGL_1", "LearnOpenG
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Breakout", "Breakout\Breakout.vcxproj", "{96B658AC-5C19-43EC-9AA2-297DCBADB440}"
 EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "TeaPong", "TeaPong\TeaPong.vcxproj", "{88627630-238F-4684-865F-DF5E07DF6880}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -31,6 +33,14 @@ Global
 		{96B658AC-5C19-43EC-9AA2-297DCBADB440}.Release|x64.Build.0 = Release|x64
 		{96B658AC-5C19-43EC-9AA2-297DCBADB440}.Release|x86.ActiveCfg = Release|Win32
 		{96B658AC-5C19-43EC-9AA2-297DCBADB440}.Release|x86.Build.0 = Release|Win32
+		{88627630-238F-4684-865F-DF5E07DF6880}.Debug|x64.ActiveCfg = Debug|x64
+		{88627630-238F-4684-865F-DF5E07DF6880}.Debug|x64.Build.0 = Debug|x64
+		{88627630-238F-4684-865F-DF5E07DF6880}.Debug|x86.ActiveCfg = Debug|Win32
+		{88627630-238F-4684-865F-DF5E07DF6880}.Debug|x86.Build.0 = Debug|Win32
+		{88627630-238F-4684-865F-DF5E07DF6880}.Release|x64.ActiveCfg = Release|x64
+		{88627630-238F-4684-865F-DF5E07DF6880}.Release|x64.Build.0 = Release|x64
+		{88627630-238F-4684-865F-DF5E07DF6880}.Release|x86.ActiveCfg = Release|Win32
+		{88627630-238F-4684-865F-DF5E07DF6880}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

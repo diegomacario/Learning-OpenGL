@@ -85,9 +85,9 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("shader/16.2.model_shader.vs", "shader/16.2.model_shader.fs");
-    Shader lampShader("shader/6.2.lamp.vs", "shader/6.2.lamp.fs");
-    Shader basicShader("shader/16.1.basic_shader.vs", "shader/16.1.basic_shader.fs");
+    Shader modelShader("shaders/16.2.model_shader.vs", "shaders/16.2.model_shader.fs");
+    Shader lampShader("shaders/6.2.lamp.vs", "shaders/6.2.lamp.fs");
+    Shader basicShader("shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
 
     // load model
     Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
