@@ -1,3 +1,4 @@
+/*
 #ifndef MESH_H
 #define MESH_H
 
@@ -78,7 +79,7 @@ public:
             number = std::to_string(heightNr++);
 
          // Set the sampler to the correct texture unit
-         glUniform1i(glGetUniformLocation(shader.getID(), (name + number).c_str()), i);
+         glUniform1i(glGetUniformLocation(shader.ID, (name + number).c_str()), i);
          // Bind the texture
          glBindTexture(GL_TEXTURE_2D, textures[i].id);
       }
@@ -137,3 +138,4 @@ private:
 };
 
 #endif
+*/
