@@ -1,16 +1,16 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include <string>
+#include <glm/glm.hpp>
 
-#include "glm/glm.hpp"
+#include <string>
 
 class Shader
 {
 public:
 
-   Shader(const char* vShaderFilePath, const char* fShaderFilePath);
-   Shader(const char* vShaderFilePath, const char* fShaderFilePath, const char* gShaderFilePath);
+   Shader(const std::string& vShaderFilePath, const std::string& fShaderFilePath);
+   Shader(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath);
    // TODO: Add destructor that deletes the shader program?
 
    void   use() const;
@@ -26,20 +26,20 @@ public:
    void   setVec3(const std::string& name, const glm::vec3& value) const;
    void   setVec3(const std::string& name, float x, float y, float z) const;
    void   setVec4(const std::string& name, const glm::vec4& value) const;
-   void   setVec4(const std::string& name, float x, float y, float z, float w);
+   void   setVec4(const std::string& name, float x, float y, float z, float w) const;
           
-   void   setMat2(const std::string& name, const glm::mat2& mat) const;
-   void   setMat3(const std::string& name, const glm::mat3& mat) const;
-   void   setMat4(const std::string& name, const glm::mat4& mat) const;
+   void   setMat2(const std::string& name, const glm::mat2& value) const;
+   void   setMat3(const std::string& name, const glm::mat3& value) const;
+   void   setMat4(const std::string& name, const glm::mat4& value) const;
 
 private:
 
    GLuint shaderProgID;
 
-   GLuint createAndCompileShader(const char * shaderFilePath, GLenum shaderType) const;
+   GLuint createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const;
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID) const;
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID, GLuint gShaderID) const;
-   void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const char* shaderFilePath) const;
+   void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
    void   checkForLinkingErrors(GLuint shaderProgID) const;
 };
 
