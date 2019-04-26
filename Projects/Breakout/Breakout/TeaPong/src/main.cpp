@@ -265,7 +265,7 @@ int main()
         modelShader.setFloat("pointLight.linear", 0.09f);
         modelShader.setFloat("pointLight.quadratic", 0.032f);
 
-        teapotModel.Draw(modelShader);
+        teapotModel.draw(modelShader);
 
         // draw lamp
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------

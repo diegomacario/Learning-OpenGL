@@ -9,28 +9,26 @@
 
 #include "model.h"
 
-// Constructor (expects a filepath to a 3D model)
-Model::Model(const std::string& path, bool gamma)
-   : gammaCorrection(gamma)
+Model::Model(const std::string& modelFilePath)
 {
-   loadModel(path);
+   loadModel(modelFilePath);
 }
 
 // Render the model
-void Model::Draw(Shader shader)
+void Model::draw(Shader shader)
 {
    for (unsigned int i = 0; i < meshes.size(); i++)
    {
-      meshes[i].Draw(shader);
+      meshes[i].draw(shader);
    }
 }
 
 // Loads a model with supported ASSIMP extensions and stores the resulting meshes in the meshes vector
-void Model::loadModel(const std::string& filepath)
+void Model::loadModel(const std::string& modelFilePath)
 {
    // Read file via ASSIMP
    Assimp::Importer importer;
-   const aiScene* scene = importer.ReadFile(filepath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
+   const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs | aiProcess_CalcTangentSpace);
 
    // Check for errors
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
@@ -40,7 +38,7 @@ void Model::loadModel(const std::string& filepath)
    }
 
    // Retrieve the directory part of the filepath
-   directory = filepath.substr(0, filepath.find_last_of('/'));
+   modelFileDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
 
    // Process ASSIMP's root node recursively
    processNode(scene->mRootNode, scene);
@@ -176,11 +174,11 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
 
       // Check if the current texture was loaded before, and if so, do not load it
       bool skip = false;
-      for (unsigned int j = 0; j < textures_loaded.size(); j++)
+      for (unsigned int j = 0; j < loadedTextures.size(); j++)
       {
-         if (std::strcmp(textures_loaded[j].filename.data(), filename.C_Str()) == 0)
+         if (std::strcmp(loadedTextures[j].filename.data(), filename.C_Str()) == 0)
          {
-            textures.push_back(textures_loaded[j]);
+            textures.push_back(loadedTextures[j]);
             skip = true; // A texture with the same filepath has already been loaded, so we continue to next one
             break;
          }
@@ -189,18 +187,18 @@ std::vector<Texture> Model::loadMaterialTextures(aiMaterial* mat, aiTextureType 
       if (!skip) // If the current texture hasn't been loaded already, load it
       {
          Texture texture;
-         texture.id = TextureFromFile(filename.C_Str(), this->directory);
+         texture.id = TextureFromFile(filename.C_Str(), this->modelFileDir);
          texture.type = typeName;
          texture.filename = filename.C_Str();
          textures.push_back(texture);
-         textures_loaded.push_back(texture); // Store the current texture in the model so that we can avoid loading it again
+         loadedTextures.push_back(texture); // Store the current texture in the model so that we can avoid loading it again
       }
    }
 
    return textures;
 }
 
-unsigned int TextureFromFile(const char* filename, const std::string& directory, bool gamma)
+unsigned int TextureFromFile(const char* filename, const std::string& directory)
 {
    std::string filepath = std::string(filename);
    filepath = directory + '/' + filepath;
