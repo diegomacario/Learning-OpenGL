@@ -10,18 +10,16 @@
 
 struct Vertex
 {
-   glm::vec3 Position;
-   glm::vec3 Normal;
-   glm::vec2 TexCoords;
-   glm::vec3 Tangent;
-   glm::vec3 Bitangent;
+   glm::vec3 position;
+   glm::vec3 normal;
+   glm::vec2 texCoords;
 };
 
 struct Texture
 {
-   unsigned int id;
-   std::string  type;
-   std::string  filename;
+   unsigned int  id;
+   aiTextureType type;
+   std::string   filename;
 };
 
 class Mesh
@@ -32,7 +30,7 @@ public:
    Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
 
    // Render the mesh
-   void draw(Shader shader);
+   void draw(Shader shader) const;
 
 private:
 

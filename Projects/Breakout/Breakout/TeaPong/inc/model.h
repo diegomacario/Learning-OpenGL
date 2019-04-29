@@ -15,24 +15,21 @@ public:
 
    Model(const std::string& modelFilePath);
 
-   void draw(Shader shader);
+   void draw(const Shader& shader) const;
 
 private:
 
-   std::string          modelFileDir;
-   std::vector<Mesh>    meshes;
-   std::vector<Texture> loadedTextures; // Stores all the textures loaded so far, so that each texture is not loaded more than once
+   std::string          mModelFileDir;
+   std::vector<Mesh>    mMeshes;
+   std::vector<Texture> mLoadedTextures; // Stores all the textures loaded so far, so that each texture is not loaded more than once
 
-   // Loads a model with supported ASSIMP extensions and stores the resulting meshes in the meshes vector
    void loadModel(const std::string& modelFilePath);
 
-   // Processes the meshes stored in a node, and then repeats this process on the node's children
-   void processNode(aiNode* node, const aiScene* scene);
+   void processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene);
 
-   Mesh processMesh(aiMesh* mesh, const aiScene* scene);
+   Mesh processMesh(const aiMesh* mesh, const aiScene* scene);
 
-   // Walks through all the textures of a given type and loads the ones that have not been loaded
-   std::vector<Texture> loadMaterialTextures(aiMaterial* mat, aiTextureType type, std::string typeName);
+   void loadMaterialTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures);
 };
 
 unsigned int TextureFromFile(const char* filename, const std::string& directory);

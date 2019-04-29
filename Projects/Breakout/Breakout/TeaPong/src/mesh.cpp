@@ -17,7 +17,7 @@ Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std:
 }
 
 // Render the mesh
-void Mesh::draw(Shader shader)
+void Mesh::draw(Shader shader) const
 {
    // Bind the appropriate textures
    unsigned int diffuseNr  = 1;
@@ -25,7 +25,7 @@ void Mesh::draw(Shader shader)
    unsigned int normalNr   = 1;
    unsigned int heightNr   = 1;
 
-   for (unsigned int i = 0; i < textures.size(); i++)
+   for (unsigned int i = 0; i < textures.size(); ++i)
    {
       glActiveTexture(GL_TEXTURE0 + i); // Activate the proper texture unit before binding
 
@@ -80,16 +80,10 @@ void Mesh::setupMesh()
    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
    // Vertex normals
    glEnableVertexAttribArray(1);
-   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Normal));
+   glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, normal));
    // Vertex texture coords
    glEnableVertexAttribArray(2);
-   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, TexCoords));
-   // Vertex tangent
-   glEnableVertexAttribArray(3);
-   glVertexAttribPointer(3, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Tangent));
-   // Vertex bitangent
-   glEnableVertexAttribArray(4);
-   glVertexAttribPointer(4, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, Bitangent));
+   glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 
    glBindVertexArray(0);
 }

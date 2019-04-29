@@ -34,7 +34,7 @@ public:
 
 private:
 
-   GLuint shaderProgID;
+   GLuint mShaderProgID;
 
    GLuint createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const;
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID) const;
