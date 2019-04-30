@@ -27,24 +27,20 @@ class Mesh
 {
 public:
 
-   // Constructor
-   Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures);
+   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures);
+   // TODO: Add destructor that deletes the VAO?
 
-   // Render the mesh
    void draw(Shader shader) const;
 
 private:
 
-   // Mesh Data
-   std::vector<Vertex>       vertices;
-   std::vector<unsigned int> indices;
-   std::vector<Texture>      textures;
+   std::vector<Vertex>       mVertices;
+   std::vector<unsigned int> mIndices;
+   std::vector<Texture>      mTextures;
 
-   // Render data
-   unsigned int VAO, VBO, EBO;
+   GLuint mVAO;
 
-   // Initializes all the buffer objects/arrays
-   void setupMesh();
+   void configureVAO();
 };
 
 #endif

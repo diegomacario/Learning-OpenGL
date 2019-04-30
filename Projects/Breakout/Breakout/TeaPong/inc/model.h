@@ -15,6 +15,7 @@ class Model
 public:
 
    Model(const std::string& modelFilePath);
+   // TODO: Add destructor that deletes the textures?
 
    void draw(const Shader& shader) const;
 

@@ -26,7 +26,7 @@ void Model::loadModel(const std::string& modelFilePath)
 {
    Assimp::Importer importer;
 
-   const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs); // TODO: Allow user to select which flags to use
+   const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs); // TODO: Allow the user to select which flags to use
 
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
@@ -110,6 +110,7 @@ void Model::processMaterial(const aiMaterial* material, std::vector<Texture>& te
    // Process the material of the mesh
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
+   // TODO: Allow the user to select which texture types to process
    processTextures(material, aiTextureType_AMBIENT, textures);
    processTextures(material, aiTextureType_EMISSIVE, textures);
    processTextures(material, aiTextureType_DIFFUSE, textures);
@@ -174,6 +175,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
       glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
 
+      // TODO: Allow the user to select which wrapping and mapping options to use
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);

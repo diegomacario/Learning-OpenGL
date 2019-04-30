@@ -3,19 +3,15 @@
 
 #include "mesh.h"
 
-// Constructor
-Mesh::Mesh(std::vector<Vertex> vertices, std::vector<unsigned int> indices, std::vector<Texture> textures)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures)
 {
-   this->vertices = vertices;
-   this->indices  = indices;
-   this->textures = textures;
+   mVertices = vertices;
+   mIndices  = indices;
+   mTextures = textures;
 
-   // Now that we have all the required data, set the vertex buffers
-   // and their attribute pointers
-   setupMesh();
+   configureVAO();
 }
 
-// Render the mesh
 void Mesh::draw(Shader shader) const
 {
    // Bind the appropriate textures
@@ -24,12 +20,12 @@ void Mesh::draw(Shader shader) const
    unsigned int normalNr   = 1;
    unsigned int heightNr   = 1;
 
-   for (unsigned int i = 0; i < textures.size(); ++i)
+   for (unsigned int i = 0; i < mTextures.size(); ++i)
    {
       glActiveTexture(GL_TEXTURE0 + i); // Activate the proper texture unit before binding
 
       std::string number;
-      std::string name = textures[i].type;
+      std::string name = mTextures[i].type;
       if(name == "texture_diffuse")
          number = std::to_string(diffuseNr++);
       else if(name == "texture_specular")
@@ -42,38 +38,37 @@ void Mesh::draw(Shader shader) const
       // Set the sampler to the correct texture unit
       glUniform1i(glGetUniformLocation(shader.getID(), (name + number).c_str()), i);
       // Bind the texture
-      glBindTexture(GL_TEXTURE_2D, textures[i].id);
+      glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
    }
 
    // Draw the mesh
-   glBindVertexArray(VAO);
-   glDrawElements(GL_TRIANGLES, indices.size(), GL_UNSIGNED_INT, 0);
+   glBindVertexArray(mVAO);
+   glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
    glBindVertexArray(0);
 
    // Always good practice to set everything back to default once configured
    glActiveTexture(GL_TEXTURE0);
 }
 
-// Initializes all the buffer objects/arrays
-void Mesh::setupMesh()
+void Mesh::configureVAO()
 {
-   // Create buffers/arrays
-   glGenVertexArrays(1, &VAO);
+   GLuint VBO, EBO;
+
+   glGenVertexArrays(1, &mVAO);
    glGenBuffers(1, &VBO);
    glGenBuffers(1, &EBO);
 
-   glBindVertexArray(VAO);
-   // Load data into vertex buffers
+   glBindVertexArray(mVAO);
+
+   // Load data into the buffers
    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   // A great thing about structs is that their memory layout is sequential for all their items
-   // The effect is that we can simply pass a pointer to the struct and it translates perfectly to a glm::vec3/2 array which
-   // again translates to 3/2 floats which translates to a byte array
-   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(Vertex), &vertices[0], GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW); // TODO: Is this okay?
 
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-   glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
+   glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(unsigned int), &mIndices[0], GL_STATIC_DRAW);
 
    // Set the vertex attribute pointers
+
    // Vertex Positions
    glEnableVertexAttribArray(0);
    glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)0);
