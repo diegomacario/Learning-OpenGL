@@ -1,9 +1,9 @@
 #include <glad/glad.h>
 
+#include <vector>
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <vector>
 
 #include "shader.h"
 

@@ -34,7 +34,7 @@ void Model::loadModel(const std::string& modelFilePath)
       return;
    }
 
-   mModelFileDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
+   mModelDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
 
    processNodeHierarchyRecursively(scene->mRootNode, scene);
 }
@@ -64,6 +64,15 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
    std::vector<unsigned int> indices;
    std::vector<Texture>      textures;
 
+   processVertices(mesh, vertices);
+   processIndices(mesh, indices);
+   processMaterial(scene->mMaterials[mesh->mMaterialIndex], textures);
+
+   return Mesh(vertices, indices, textures);
+}
+
+void Model::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices)
+{
    // Loop over the vertices of the mesh
    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
    {
@@ -79,7 +88,10 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
 
       vertices.push_back(vertex);
    }
+}
 
+void Model::processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices)
+{
    // Loop over the faces of the mesh
    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
    {
@@ -91,80 +103,74 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
          indices.push_back(face.mIndices[j]);
       }
    }
+}
 
+void Model::processMaterial(const aiMaterial* material, std::vector<Texture>& textures)
+{
    // Process the material of the mesh
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
-   aiMaterial* material = scene->mMaterials[mesh->mMaterialIndex];
-
-   // Store the ambient, emissive, diffuse and specular maps
-   loadMaterialTextures(material, aiTextureType_AMBIENT, textures);
-   loadMaterialTextures(material, aiTextureType_EMISSIVE, textures);
-   loadMaterialTextures(material, aiTextureType_DIFFUSE, textures);
-   loadMaterialTextures(material, aiTextureType_SPECULAR, textures);
-
-   return Mesh(vertices, indices, textures);
+   processTextures(material, aiTextureType_AMBIENT, textures);
+   processTextures(material, aiTextureType_EMISSIVE, textures);
+   processTextures(material, aiTextureType_DIFFUSE, textures);
+   processTextures(material, aiTextureType_SPECULAR, textures);
 }
 
-void Model::loadMaterialTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures)
+void Model::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures)
 {
-   // Loop over all the textures of the specified texture type
+   // Loop over all the textures of the specified type
    for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
    {
       aiString texFilename;
       material->GetTexture(texType, i, &texFilename);
 
-      // Check if the current texture was loaded before, and if so, do not load it
-      bool skip = false;
-      for (unsigned int j = 0; j < mLoadedTextures.size(); j++)
+      // Check if a texture with the same name as the current one has been loaded before
+      std::map<std::string, Texture>::iterator it = mLoadedTextures.find(texFilename.C_Str());
+      if (it != mLoadedTextures.end())
       {
-         if (std::strcmp(mLoadedTextures[j].filename.data(), texFilename.C_Str()) == 0)
-         {
-            textures.push_back(mLoadedTextures[j]);
-            skip = true; // A texture with the same filepath has already been loaded, so we continue to next one
-            break;
-         }
+         // Since the texture has been loaded before, we simply take it from the mLoadedTextures map and add it to the mesh
+         textures.push_back(it->second);
       }
-
-      if (!skip) // If the current texture hasn't been loaded already, load it
+      else
       {
+         // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
          Texture texture;
-         texture.id = TextureFromFile(texFilename.C_Str(), this->mModelFileDir);
-         texture.type = texType;
+         texture.id       = loadTexture(texFilename.C_Str(), this->mModelDir);
+         texture.type     = texType;
          texture.filename = texFilename.C_Str();
+
          textures.push_back(texture);
-         mLoadedTextures.push_back(texture); // Store the current texture in the model so that we can avoid loading it again
+
+         mLoadedTextures[texFilename.C_Str()] = texture;
       }
    }
 }
 
-unsigned int TextureFromFile(const char* filename, const std::string& directory)
+unsigned int loadTexture(const std::string& texFilename, const std::string& modelDir)
 {
-   std::string filepath = std::string(filename);
-   filepath = directory + '/' + filepath;
+   // We assume that textures are in the same directory as the model
+   std::string filePath = modelDir + '/' + texFilename;
 
-   unsigned int textureID;
-   glGenTextures(1, &textureID);
+   unsigned int texID;
+   glGenTextures(1, &texID);
 
-   int width, height, nrComponents;
-   unsigned char* data = stbi_load(filepath.c_str(), &width, &height, &nrComponents, 0);
+   int width, height, numComponents;
+   unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &numComponents, 0);
+
    if (data)
    {
       GLenum format;
-      if (nrComponents == 1)
+      switch (numComponents)
       {
-         format = GL_RED;
-      }
-      else if (nrComponents == 3)
-      {
-         format = GL_RGB;
-      }
-      else if (nrComponents == 4)
-      {
-         format = GL_RGBA;
+         case 1: format = GL_RED;
+            break;
+         case 3: format = GL_RGB;
+            break;
+         case 4: format = GL_RGBA;
+            break;
       }
 
-      glBindTexture(GL_TEXTURE_2D, textureID);
+      glBindTexture(GL_TEXTURE_2D, texID);
       glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
 
@@ -177,9 +183,8 @@ unsigned int TextureFromFile(const char* filename, const std::string& directory)
    }
    else
    {
-      std::cout << "Texture failed to load: " << filepath << std::endl;
-      stbi_image_free(data);
+      std::cout << "Error - The following texture could not be loaded: " << filePath << "\n";
    }
 
-   return textureID;
+   return texID;
 }

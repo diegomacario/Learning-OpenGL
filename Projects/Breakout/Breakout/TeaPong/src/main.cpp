@@ -783,7 +783,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 // Here is an example where we use a uniform variable in the fragment shader:
 
 // #version 330 core
-// out vec4 FragColor;
+// out vec4 FragColor;GL_LINEAR_MIPMAP_LINEAR
 //
 // uniform vec4 ourColor;
 //

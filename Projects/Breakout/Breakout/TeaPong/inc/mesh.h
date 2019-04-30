@@ -2,6 +2,7 @@
 #define MESH_H
 
 #include <glm/glm.hpp>
+#include <assimp/scene.h>
 
 #include <string>
 #include <vector>
