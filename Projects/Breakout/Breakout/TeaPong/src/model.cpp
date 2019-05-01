@@ -73,6 +73,8 @@ Mesh Model::processMesh(const aiMesh* mesh, const aiScene* scene)
 
 void Model::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices)
 {
+   vertices.reserve(mesh->mNumVertices);
+
    // Loop over the vertices of the mesh
    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
    {
@@ -92,6 +94,10 @@ void Model::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices)
 
 void Model::processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices)
 {
+   // We assume that mesh is made out of triangles
+   // This will always be true if the aiProcess_Triangulate flag continues to be used when loading the model
+   indices.reserve(mesh->mNumFaces * 3);
+
    // Loop over the faces of the mesh
    for (unsigned int i = 0; i < mesh->mNumFaces; i++)
    {
@@ -175,7 +181,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
       glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
       glGenerateMipmap(GL_TEXTURE_2D);
 
-      // TODO: Allow the user to select which wrapping and mapping options to use
+      // TODO: Allow the user to select which wrapping and sampling options to use
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
       glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
