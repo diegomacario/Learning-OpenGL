@@ -30,7 +30,7 @@ public:
    Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures);
    // TODO: Add destructor that deletes the VAO?
 
-   void draw(Shader shader) const;
+   void draw(const Shader& shader) const;
 
 private:
 
@@ -41,6 +41,7 @@ private:
    GLuint mVAO;
 
    void configureVAO();
+   void bindTextures(const Shader& shader) const;
 };
 
 #endif
