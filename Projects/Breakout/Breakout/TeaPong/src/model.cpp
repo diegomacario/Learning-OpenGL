@@ -175,6 +175,8 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
             break;
          case 4: format = GL_RGBA;
             break;
+         default: std::cout << "Error - The following texture has an invalid number of components (" << numComponents << "): " << filePath << "\n";
+            break;
       }
 
       glBindTexture(GL_TEXTURE_2D, texID);

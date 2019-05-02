@@ -1,6 +1,8 @@
 #include <glad/glad.h>
 #include <glm/gtc/matrix_transform.hpp>
 
+#include <iostream>
+
 #include "mesh.h"
 
 Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures)
@@ -15,6 +17,7 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
 void Mesh::draw(Shader shader) const
 {
    // Bind the appropriate textures
+
    unsigned int ambientNum  = 0;
    unsigned int emissiveNum = 0;
    unsigned int diffuseNum  = 0;
@@ -22,8 +25,10 @@ void Mesh::draw(Shader shader) const
 
    for (unsigned int i = 0; i < mTextures.size(); ++i)
    {
-      glActiveTexture(GL_TEXTURE0 + i); // Activate the proper texture unit before binding
+      // Activate the proper texture unit before binding the current texture
+      glActiveTexture(GL_TEXTURE0 + i);
 
+      // Compose the name of the sampler2D uniform that should exist in the shader
       std::string name;
       switch (mTextures[i].type)
       {
@@ -43,13 +48,25 @@ void Mesh::draw(Shader shader) const
             name = "specularTex" + specularNum;
             ++specularNum;
             break;
+         default:
+            std::cout << "Error - The following texture has an invalid type (" << mTextures[i].type << "): " << mTextures[i].filename << "\n";
+            name = "";
+            break;
       }
 
-      // TODO: Add error detection here.
-      // TODO: Add error detection in the set uniform calls?
+      // Get the location of the sampler2D uniform that should exist in the shader
+      GLint samplerUniformLoc = glGetUniformLocation(shader.getID(), name.c_str());
 
-      // Set the sampler to the correct texture unit
-      glUniform1i(glGetUniformLocation(shader.getID(), name.c_str()), i);
+      if (samplerUniformLoc != -1)
+      {
+         // Tell the sampler2D uniform in what texture unit to look for the texture data
+         glUniform1i(samplerUniformLoc, i);
+      }
+      else
+      {
+         std::cout << "Error - The following sampler2D uniform does not exist: " << name << "\n";
+      }
+
       // Bind the texture
       glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
    }
@@ -59,7 +76,6 @@ void Mesh::draw(Shader shader) const
    glDrawElements(GL_TRIANGLES, mIndices.size(), GL_UNSIGNED_INT, 0);
    glBindVertexArray(0);
 
-   // Always good practice to set everything back to default once configured
    glActiveTexture(GL_TEXTURE0);
 }
 
@@ -77,7 +93,7 @@ void Mesh::configureVAO()
 
    // Positions, normals and texture coordinates
    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW); // TODO: Is it true that a vertex struct if laid out in memory as an array of 8 floats?
+   glBufferData(GL_ARRAY_BUFFER, mVertices.size() * sizeof(Vertex), &mVertices[0], GL_STATIC_DRAW);
    // Indices
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
    glBufferData(GL_ELEMENT_ARRAY_BUFFER, mIndices.size() * sizeof(unsigned int), &mIndices[0], GL_STATIC_DRAW);
@@ -96,5 +112,6 @@ void Mesh::configureVAO()
 
    glBindVertexArray(0);
 
-   // TODO: Delete VBO and EBO.
+   glDeleteBuffers(1, &VBO);
+   glDeleteBuffers(1, &EBO);
 }
