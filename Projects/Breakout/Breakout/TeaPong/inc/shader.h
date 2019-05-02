@@ -41,6 +41,8 @@ private:
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID, GLuint gShaderID) const;
    void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
    void   checkForLinkingErrors(GLuint shaderProgID) const;
+
+   GLint  getUniformLocation(const std::string& name);
 };
 
 #endif
