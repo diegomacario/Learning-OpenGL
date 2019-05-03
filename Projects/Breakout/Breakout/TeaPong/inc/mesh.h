@@ -28,9 +28,9 @@ class Mesh
 public:
 
    Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures);
-   // TODO: Add destructor that deletes the VAO?
+   // TODO: Add destructor that deletes the VAO and the textures?
 
-   void draw(const Shader& shader) const;
+   void render(const Shader& shader) const;
 
 private:
 

@@ -191,7 +191,7 @@ void Shader::checkForLinkingErrors(GLuint shaderProgID) const
    }
 }
 
-GLint  Shader::getUniformLocation(const std::string& name)
+GLint Shader::getUniformLocation(const std::string& name) const
 {
    GLint uniformLoc = glGetUniformLocation(mShaderProgID, name.c_str());
 

@@ -14,11 +14,13 @@ Model::Model(const std::string& modelFilePath)
    loadModel(modelFilePath);
 }
 
-void Model::draw(const Shader& shader) const
+void Model::render(const Shader& shader) const
 {
+   // TODO: Maybe we should call shader.use() here to help the user
+
    for (auto &mesh : mMeshes)
    {
-      mesh.draw(shader);
+      mesh.render(shader);
    }
 }
 

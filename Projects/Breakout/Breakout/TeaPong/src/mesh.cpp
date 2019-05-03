@@ -14,7 +14,7 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
    configureVAO();
 }
 
-void Mesh::draw(const Shader& shader) const
+void Mesh::render(const Shader& shader) const
 {
    // Bind the textures
    bindTextures(shader);
@@ -76,6 +76,7 @@ void Mesh::bindTextures(const Shader& shader) const
       std::string sampler2DUniformName;
       switch (mTextures[i].type)
       {
+         // TODO: Would it be a good idea to somehow incorporate the filename of texture into our naming convention?
          case aiTextureType_AMBIENT:
             sampler2DUniformName = "ambientTex" + ambientNum;
             ++ambientNum;

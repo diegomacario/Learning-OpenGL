@@ -42,7 +42,7 @@ private:
    void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
    void   checkForLinkingErrors(GLuint shaderProgID) const;
 
-   GLint  getUniformLocation(const std::string& name);
+   GLint  getUniformLocation(const std::string& name) const;
 };
 
 #endif
