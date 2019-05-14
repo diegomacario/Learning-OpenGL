@@ -4,8 +4,6 @@
 #include <memory>
 #include "fwd.hpp"
 
-namespace entt {
-
  // Resource loaders must inherit from this class and stay true to the CRTP
  // idiom. Moreover, a resource loader must expose a public, const member
  // function named `load` that accepts a variable number of arguments and returns
@@ -38,7 +36,5 @@ class resource_loader
         return static_cast<const Loader *>(this)->load(std::forward<Args>(args)...);
     }
 };
-
-}
 
 #endif // ENTT_RESOURCE_LOADER_HPP

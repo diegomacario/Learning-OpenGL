@@ -6,8 +6,6 @@
 #include "config.h"
 #include "fwd.hpp"
 
-namespace entt {
-
  // A shared resource handle is a small class that wraps a resource and keeps it
  // alive even if it's deleted from the cache. It can be either copied or
  // moved. A handle shares a reference to the same resource with all the other
@@ -59,8 +57,5 @@ public:
 private:
     std::shared_ptr<Resource> resource;
 };
-
-
-}
 
 #endif // ENTT_RESOURCE_HANDLE_HPP

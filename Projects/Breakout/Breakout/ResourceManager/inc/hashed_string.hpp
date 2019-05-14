@@ -1,26 +1,14 @@
 #ifndef ENTT_CORE_HASHED_STRING_HPP
 #define ENTT_CORE_HASHED_STRING_HPP
 
-
 #include <cstddef>
 #include "config.h"
 
-
-namespace entt {
-
-
-/**
- * @cond TURN_OFF_DOXYGEN
- * Internal details not to be documented.
- */
-
-
-namespace internal {
-
+namespace internal
+{
 
 template<typename>
 struct fnv1a_traits;
-
 
 template<>
 struct fnv1a_traits<std::uint32_t> {
@@ -28,22 +16,13 @@ struct fnv1a_traits<std::uint32_t> {
     static constexpr std::uint32_t prime = 16777619;
 };
 
-
 template<>
 struct fnv1a_traits<std::uint64_t> {
     static constexpr std::uint64_t offset = 14695981039346656037ull;
     static constexpr std::uint64_t prime = 1099511628211ull;
 };
 
-
 }
-
-
-/**
- * Internal details not to be documented.
- * @endcond TURN_OFF_DOXYGEN
- */
-
 
 /**
  * @brief Zero overhead unique identifier.
@@ -185,7 +164,6 @@ private:
     hash_type hash;
 };
 
-
 /**
  * @brief Compares two hashed strings.
  * @param lhs A valid hashed string.
@@ -196,17 +174,13 @@ constexpr bool operator!=(const hashed_string &lhs, const hashed_string &rhs) EN
     return !(lhs == rhs);
 }
 
-
-}
-
-
 /**
  * @brief User defined literal for hashed strings.
  * @param str The literal without its suffix.
  * @return A properly initialized hashed string.
  */
-constexpr entt::hashed_string operator"" ENTT_HS_SUFFIX(const char *str, std::size_t) ENTT_NOEXCEPT {
-    return entt::hashed_string{str};
+constexpr hashed_string operator"" ENTT_HS_SUFFIX(const char *str, std::size_t) ENTT_NOEXCEPT {
+    return hashed_string{str};
 }
 
 

@@ -1,7 +1,6 @@
 #ifndef ENTT_RESOURCE_CACHE_HPP
 #define ENTT_RESOURCE_CACHE_HPP
 
-
 #include <memory>
 #include <utility>
 #include <type_traits>
@@ -12,22 +11,13 @@
 #include "loader.hpp"
 #include "fwd.hpp"
 
-
-namespace entt {
-
-
-/**
- * @brief Simple cache for resources of a given type.
- *
- * Minimal implementation of a cache for resources of a given type. It doesn't
- * offer much functionalities but it's suitable for small or medium sized
- * applications and can be freely inherited to add targeted functionalities for
- * large sized applications.
- *
- * @tparam Resource Type of resources managed by a cache.
- */
+ // Minimal implementation of a cache for resources of a given type. It doesn't
+ // offer much functionalities but it's suitable for small or medium sized
+ // applications and can be freely inherited to add targeted functionalities for
+ // large sized applications.
 template<typename Resource>
-class resource_cache {
+class resource_cache
+{
     using container_type = std::unordered_map<hashed_string::hash_type, std::shared_ptr<Resource>>;
 
 public:
@@ -199,9 +189,5 @@ public:
 private:
     container_type resources;
 };
-
-
-}
-
 
 #endif // ENTT_RESOURCE_CACHE_HPP
