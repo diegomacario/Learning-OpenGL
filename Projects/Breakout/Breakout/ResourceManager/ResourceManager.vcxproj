@@ -119,6 +119,10 @@
     <ClInclude Include="inc\handle.hpp" />
     <ClInclude Include="inc\hashed_string.hpp" />
     <ClInclude Include="inc\loader.hpp" />
+    <ClInclude Include="inc\TemplateTests.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
