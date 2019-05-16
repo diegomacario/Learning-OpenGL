@@ -42,4 +42,57 @@ printTuple(std::tuple<Tp...>& t)
 
 // -------------------------------------------------------------------------------
 
+template <class Arg>
+void printArguments(Arg const& arg)
+{
+   std::cout << arg; // Print last argument without a comma and end compile-time recursion
+}
+
+template <class Head, class... Tail>
+void printArguments(Head const& head, Tail const&... tail)
+{
+   std::cout << head << ", ";
+   printArguments(tail...);
+}
+
+// -------------------------------------------------------------------------------
+
+template <class Head, class... Tail>
+void printArgumentsConstExpr(Head const& head, Tail const&... tail)
+{
+   std::cout << head;
+   if constexpr(sizeof...(tail) > 0)
+   {
+      std::cout << ", ";
+      print(tail...);
+   }
+}
+
+// -------------------------------------------------------------------------------
+
+template <class Head, class... Tail>
+void printIterative(Head const& head, Tail const&... tail)
+{
+   std::cout << head;
+   (void)std::initializer_list<int>{((std::cout << ", " << tail), 0)...};
+}
+
+// -------------------------------------------------------------------------------
+
+template <class T, class... Args>
+auto pairWithRest(T const& t, Args const&... args)
+{
+   return std::make_tuple(std::make_pair(t, args)...);
+}
+
+template <class... Args>
+auto selfCartesianProduct(Args const&... args)
+{
+   // Parameter packs get expanded from the innermost to the outermost
+   // std::tuple_cat(pairWithRest(args, 1, "!", 5.0)...);
+   // std::tuple_cat(pairWithRest(1, 1, "!", 5.0), pairWithRest("!", 1, "!", 5.0), pairWithRest(5.0, 1, "!", 5.0),);
+   // This results in 3 tuples of pairs which then get concatenated via tuple_cat
+   return std::tuple_cat(pairWithRest(args, args...)...);
+}
+
 #endif

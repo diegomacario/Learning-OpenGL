@@ -6,12 +6,12 @@
 #include "config.h"
 #include "fwd.hpp"
 
- // A shared resource handle is a small class that wraps a resource and keeps it
- // alive even if it's deleted from the cache. It can be either copied or
- // moved. A handle shares a reference to the same resource with all the other
- // handles constructed for the same identifier.<br/>
- // As a rule of thumb, resources should never be copied nor moved. Handles are
- // the way to go to keep references to them.
+// A shared resource handle is a small class that wraps a resource and keeps it
+// alive even if it's deleted from the cache. It can be either copied or
+// moved. A handle shares a reference to the same resource with all the other
+// handles constructed for the same identifier.
+// As a rule of thumb, resources should never be copied nor moved. Handles are
+// the way to go to keep references to them.
 template<typename Resource>
 class resource_handle
 {
