@@ -84,16 +84,22 @@ public:
      * @return A handle for the given resource.
      */
     template<typename Loader, typename... Args>
-    resource_handle<Resource> load(const resource_type id, Args &&... args) {
+    resource_handle<Resource>
+    load(const resource_type id, Args &&... args)
+    {
         static_assert(std::is_base_of_v<resource_loader<Loader, Resource>, Loader>);
         resource_handle<Resource> handle{};
 
-        if(auto it = resources.find(id); it == resources.cend()) {
-            if(auto resource = Loader{}.get(std::forward<Args>(args)...); resource) {
+        if (auto it = resources.find(id); it == resources.cend())
+        {
+            if (auto resource = Loader{}.get(std::forward<Args>(args)...); resource)
+            {
                 resources[id] = resource;
                 handle = std::move(resource);
             }
-        } else {
+        }
+        else
+        {
             handle = it->second;
         }
 
