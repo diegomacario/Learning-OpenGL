@@ -33,8 +33,14 @@
     <ClCompile Include="src\shader.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="src\shader_loader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\stb_image.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="inc\camera.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -47,7 +53,13 @@
     <ClInclude Include="inc\shader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\stb_image.h">
+    <ClInclude Include="inc\resource_manager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\resource_loader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\shader_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

@@ -26,7 +26,7 @@
 template<typename Loader, typename Resource>
 class resource_loader
 {
-    friend class resource_cache<Resource>; // resource_cache can now access the private interface of resource_handle.
+    friend class resource_cache<Resource>; // resource_cache can now access the private interface of resource_loader.
 
     // Loads the resource and returns it. In case of errors, it returns an empty pointer.
     // Args - Types of arguments for the loader.

@@ -7,6 +7,13 @@
 
 #include "shader.h"
 
+Shader::Shader(GLuint shaderProgID)
+   : mShaderProgID(shaderProgID)
+{
+
+}
+
+/*
 Shader::Shader(const std::string& vShaderFilePath, const std::string& fShaderFilePath)
 {
    GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
@@ -30,6 +37,7 @@ Shader::Shader(const std::string& vShaderFilePath, const std::string& fShaderFil
    glDeleteShader(fShaderID);
    glDeleteShader(gShaderID);
 }
+*/
 
 void Shader::use() const
 {
@@ -101,6 +109,7 @@ void Shader::setMat4(const std::string& name, const glm::mat4& value) const
    glUniformMatrix4fv(getUniformLocation(name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
+/*
 GLuint Shader::createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const
 {
    std::ifstream shaderFile(shaderFilePath);
@@ -190,6 +199,7 @@ void Shader::checkForLinkingErrors(GLuint shaderProgID) const
       std::cout << "Error - The following error occurred while linking a shader program:\n" << infoLog.data() << "\n";
    }
 }
+*/
 
 GLint Shader::getUniformLocation(const std::string& name) const
 {

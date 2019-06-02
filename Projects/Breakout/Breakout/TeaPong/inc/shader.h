@@ -9,8 +9,11 @@ class Shader
 {
 public:
 
+   Shader(GLuint shaderProgID);
+   /*
    Shader(const std::string& vShaderFilePath, const std::string& fShaderFilePath);
    Shader(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath);
+   */
    // TODO: Add destructor that deletes the shader program?
 
    void   use() const;
@@ -36,11 +39,13 @@ private:
 
    GLuint mShaderProgID;
 
+   /*
    GLuint createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const;
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID) const;
    GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID, GLuint gShaderID) const;
    void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
    void   checkForLinkingErrors(GLuint shaderProgID) const;
+   */
 
    GLint  getUniformLocation(const std::string& name) const;
 };

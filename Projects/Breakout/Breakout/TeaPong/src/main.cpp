@@ -6,9 +6,11 @@
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
 
-#include <shader.h>
-#include <camera.h>
-#include <model.h>
+#include "shader.h"
+#include "camera.h"
+#include "model.h"
+#include "resource_manager.h"
+#include "shader_loader.h"
 
 #include <iostream>
 
@@ -85,9 +87,13 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    Shader modelShader("shaders/16.2.model_shader.vs", "shaders/16.2.model_shader.fs");
-    Shader lampShader("shaders/6.2.lamp.vs", "shaders/6.2.lamp.fs");
-    Shader basicShader("shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
+    ResourceManager<Shader> shaderManager;
+    shaderManager.loadResource<ShaderLoader>("model", "shaders/16.2.model_shader.vs", "shaders/16.2.model_shader.fs");
+    shaderManager.loadResource<ShaderLoader>("lamp", "shaders/6.2.lamp.vs", "shaders/6.2.lamp.fs");
+    shaderManager.loadResource<ShaderLoader>("basic", "shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
+    auto modelShader = shaderManager.getResource("model");
+    auto lampShader  = shaderManager.getResource("lamp");
+    auto basicShader = shaderManager.getResource("basic");
 
     // load model
     Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
@@ -202,7 +208,7 @@ int main()
 
         // draw basic shape
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------
-        basicShader.use();
+        basicShader->use();
 
         // perspective
         // -----------
@@ -217,9 +223,9 @@ int main()
         view       = glm::mat4();
         projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
-        basicShader.setMat4("model", model);
-        basicShader.setMat4("view", view);
-        basicShader.setMat4("projection", projection);
+        basicShader->setMat4("model", model);
+        basicShader->setMat4("view", view);
+        basicShader->setMat4("projection", projection);
 
         // Draw the basic shape
         glBindVertexArray(basicVAO);
@@ -228,7 +234,7 @@ int main()
         // draw model
         // (24.12f, 11.81f, 15.0f)
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------
-        modelShader.use();
+        modelShader->use();
 
         glm::mat4 rotMatrixForTeapot = glm::mat4();
         rotMatrixForTeapot = glm::rotate(rotMatrixForTeapot, (float) glfwGetTime(), glm::vec3(1.0f, 1.0f, 1.0f));
@@ -251,25 +257,25 @@ int main()
         //view       = glm::mat4();
         //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
-        modelShader.setMat4("model", model);
-        modelShader.setMat4("view", view);
-        modelShader.setMat4("projection", projection);
+        modelShader->setMat4("model", model);
+        modelShader->setMat4("view", view);
+        modelShader->setMat4("projection", projection);
 
         // Camera properties
-        modelShader.setVec3("viewPos", camera.Position);
+        modelShader->setVec3("viewPos", camera.Position);
 
         // Light properties
-        modelShader.setVec3("pointLight.position", rotatedLightPos);
-        modelShader.setVec3("pointLight.color", 1.0f, 1.0f, 1.0f);
-        modelShader.setFloat("pointLight.constant", 1.0f);
-        modelShader.setFloat("pointLight.linear", 0.09f);
-        modelShader.setFloat("pointLight.quadratic", 0.032f);
+        modelShader->setVec3("pointLight.position", rotatedLightPos);
+        modelShader->setVec3("pointLight.color", 1.0f, 1.0f, 1.0f);
+        modelShader->setFloat("pointLight.constant", 1.0f);
+        modelShader->setFloat("pointLight.linear", 0.09f);
+        modelShader->setFloat("pointLight.quadratic", 0.032f);
 
-        teapotModel.render(modelShader);
+        teapotModel.render(*modelShader);
 
         // draw lamp
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------
-        lampShader.use();
+        lampShader->use();
 
         // perspective
         // -----------
@@ -286,9 +292,9 @@ int main()
         view       = glm::mat4();
         projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
-        lampShader.setMat4("model", model);
-        lampShader.setMat4("view", view);
-        lampShader.setMat4("projection", projection);
+        lampShader->setMat4("model", model);
+        lampShader->setMat4("view", view);
+        lampShader->setMat4("projection", projection);
 
         // Draw the light cube
         glBindVertexArray(lampVAO);
