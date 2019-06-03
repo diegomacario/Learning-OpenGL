@@ -7,7 +7,7 @@
 
 #include "shader_loader.h"
 
-std::shared_ptr<Shader> ShaderLoader::load(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const
+std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const
 {
    GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
    GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
@@ -20,7 +20,7 @@ std::shared_ptr<Shader> ShaderLoader::load(const std::string& vShaderFilePath, c
    return std::make_shared<Shader>(shaderProgID);
 }
 
-std::shared_ptr<Shader> ShaderLoader::load(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const
+std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const
 {
    GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
    GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);

@@ -23,10 +23,10 @@ public:
    ResourceManager(ResourceManager&&) = default;
    ResourceManager& operator=(ResourceManager&&) = default;
 
-   template<typename TLoader, typename... Args>
+   template<typename TResourceLoader, typename... Args>
    std::shared_ptr<TResource> loadResource(const std::string& id, Args&&... args);
 
-   template<typename TLoader, typename... Args>
+   template<typename TResourceLoader, typename... Args>
    std::shared_ptr<TResource> loadUnmanagedResource(Args&&... args) const;
 
    std::shared_ptr<TResource> getResource(const std::string& id) const;
@@ -42,17 +42,15 @@ private:
 };
 
 template<typename TResource>
-template<typename TLoader, typename... Args>
+template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::string& id, Args&&... args)
 {
-   //static_assert(std::is_base_of_v<ResourceLoader<TLoader, TResource>, TLoader>);
-
    std::shared_ptr<TResource> handle{};
 
    auto it = resources.find(id);
    if (it == resources.cend())
    {
-      auto resource = TLoader{}.loadResource(std::forward<Args>(args)...);
+      auto resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
       if (resource)
       {
          resources[id] = resource;
@@ -68,10 +66,10 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
 }
 
 template<typename TResource>
-template<typename TLoader, typename... Args>
+template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadUnmanagedResource(Args&&... args) const
 {
-   return { TLoader{}.get(std::forward<Args>(args)...) };
+   return { TResourceLoader{}.loadResource(std::forward<Args>(args)...) };
 }
 
 template<typename TResource>

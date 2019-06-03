@@ -56,9 +56,6 @@
     <ClInclude Include="inc\resource_manager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="inc\resource_loader.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="inc\shader_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>

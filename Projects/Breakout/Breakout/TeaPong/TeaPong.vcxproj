@@ -129,7 +129,6 @@
     <ClInclude Include="inc\camera.h" />
     <ClInclude Include="inc\mesh.h" />
     <ClInclude Include="inc\model.h" />
-    <ClInclude Include="inc\resource_loader.h" />
     <ClInclude Include="inc\resource_manager.h" />
     <ClInclude Include="inc\shader.h" />
     <ClInclude Include="inc\shader_loader.h" />
