@@ -24,16 +24,16 @@ public:
    ResourceManager& operator=(ResourceManager&&) = default;
 
    template<typename TResourceLoader, typename... Args>
-   std::shared_ptr<TResource> loadResource(const std::string& id, Args&&... args);
+   std::shared_ptr<TResource> loadResource(const std::string& resourceID, Args&&... args);
 
    template<typename TResourceLoader, typename... Args>
    std::shared_ptr<TResource> loadUnmanagedResource(Args&&... args) const;
 
-   std::shared_ptr<TResource> getResource(const std::string& id) const;
+   std::shared_ptr<TResource> getResource(const std::string& resourceID) const;
 
-   bool                       containsResource(const std::string& id) const noexcept;
+   bool                       containsResource(const std::string& resourceID) const noexcept;
 
-   void                       stopManagingResource(const std::string& id) noexcept;
+   void                       stopManagingResource(const std::string& resourceID) noexcept;
    void                       stopManagingAllResources() noexcept;
 
 private:
@@ -43,17 +43,17 @@ private:
 
 template<typename TResource>
 template<typename TResourceLoader, typename... Args>
-std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::string& id, Args&&... args)
+std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::string& resourceID, Args&&... args)
 {
    std::shared_ptr<TResource> handle{};
 
-   auto it = resources.find(id);
+   auto it = resources.find(resourceID);
    if (it == resources.cend())
    {
       auto resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
       if (resource)
       {
-         resources[id] = resource;
+         resources[resourceID] = resource;
          handle = std::move(resource);
       }
    }
@@ -69,26 +69,26 @@ template<typename TResource>
 template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadUnmanagedResource(Args&&... args) const
 {
-   return { TResourceLoader{}.loadResource(std::forward<Args>(args)...) };
+   return TResourceLoader{}.loadResource(std::forward<Args>(args)...);
 }
 
 template<typename TResource>
-std::shared_ptr<TResource> ResourceManager<TResource>::getResource(const std::string& id) const
+std::shared_ptr<TResource> ResourceManager<TResource>::getResource(const std::string& resourceID) const
 {
-   auto it = resources.find(id);
-   return { it == resources.end() ? nullptr : it->second };
+   auto it = resources.find(resourceID);
+   return (it == resources.end() ? nullptr : it->second);
 }
 
 template<typename TResource>
-bool ResourceManager<TResource>::containsResource(const std::string& id) const noexcept
+bool ResourceManager<TResource>::containsResource(const std::string& resourceID) const noexcept
 {
-   return (resources.find(id) != resources.cend());
+   return (resources.find(resourceID) != resources.cend());
 }
 
 template<typename TResource>
-void ResourceManager<TResource>::stopManagingResource(const std::string& id) noexcept
+void ResourceManager<TResource>::stopManagingResource(const std::string& resourceID) noexcept
 {
-   if (auto it = resources.find(id); it != resources.end())
+   if (auto it = resources.find(resourceID); it != resources.end())
    {
       resources.erase(it);
    }

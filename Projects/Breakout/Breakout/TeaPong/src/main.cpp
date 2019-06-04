@@ -87,10 +87,10 @@ int main()
 
     // build and compile shaders
     // -------------------------
-    ResourceManager<Shader> shaderManager;
-    shaderManager.loadResource<ShaderLoader>("model", "shaders/16.2.model_shader.vs", "shaders/16.2.model_shader.fs");
-    shaderManager.loadResource<ShaderLoader>("lamp", "shaders/6.2.lamp.vs", "shaders/6.2.lamp.fs");
-    shaderManager.loadResource<ShaderLoader>("basic", "shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
+    ResourceManager<Shader, ShaderLoader> shaderManager;
+    shaderManager.loadResource("model", "shaders/16.2.model_shader.vs", "shaders/16.2.model_shader.fs");
+    shaderManager.loadResource("lamp", "shaders/6.2.lamp.vs", "shaders/6.2.lamp.fs");
+    shaderManager.loadResource("basic", "shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
     auto modelShader = shaderManager.getResource("model");
     auto lampShader  = shaderManager.getResource("lamp");
     auto basicShader = shaderManager.getResource("basic");
