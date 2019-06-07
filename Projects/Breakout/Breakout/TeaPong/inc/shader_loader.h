@@ -2,7 +2,6 @@
 #define SHADER_LOADER_H
 
 #include "shader.h"
-#include "resource_loader.h"
 
 class ShaderLoader
 {

@@ -94,7 +94,7 @@ void Mesh::bindTextures(const Shader& shader) const
             ++specularNum;
             break;
          default:
-            std::cout << "Error - The following texture is of an invalid type (" << mTextures[i].type << "): " << mTextures[i].filename << "\n";
+            std::cout << "Error - Mesh::bindTextures - The following texture is of an invalid type (" << mTextures[i].type << "): " << mTextures[i].filename << "\n";
             sampler2DUniformName = "";
             break;
       }
@@ -115,7 +115,7 @@ void Mesh::bindTextures(const Shader& shader) const
       }
       else
       {
-         std::cout << "Error - The following sampler2D uniform does not exist: " << sampler2DUniformName << "\n";
+         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << sampler2DUniformName << "\n";
       }
    }
 

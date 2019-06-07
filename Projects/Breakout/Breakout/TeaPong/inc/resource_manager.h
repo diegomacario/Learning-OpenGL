@@ -3,11 +3,8 @@
 
 #include <string>
 #include <memory>
-#include <utility>
-#include <type_traits>
 #include <unordered_map>
-
-#include "resource_loader.h"
+#include <iostream>
 
 template<typename TResource>
 class ResourceManager
@@ -45,24 +42,26 @@ template<typename TResource>
 template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::string& resourceID, Args&&... args)
 {
-   std::shared_ptr<TResource> handle{};
+   std::shared_ptr<TResource> resource{};
 
    auto it = resources.find(resourceID);
    if (it == resources.cend())
    {
-      auto resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
+      // TODO: Are we taking advantage of move semantics inside this function?
+      resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
       if (resource)
       {
          resources[resourceID] = resource;
-         handle = std::move(resource);
       }
    }
    else
    {
-      handle = it->second;
+      std::cout << "Warning - ResourceManager::loadResource - A resource with the following ID already exists: " << resourceID << "\n";
+      // TODO: What happens when I assign a value to a shared_ptr that already wraps a nullptr?
+      resource = it->second;
    }
 
-   return handle;
+   return resource;
 }
 
 template<typename TResource>
@@ -76,7 +75,15 @@ template<typename TResource>
 std::shared_ptr<TResource> ResourceManager<TResource>::getResource(const std::string& resourceID) const
 {
    auto it = resources.find(resourceID);
-   return (it == resources.end() ? nullptr : it->second);
+   if (it != resources.end())
+   {
+      return it->second;
+   }
+   else
+   {
+      std::cout << "Error - ResourceManager::getResource - A resource with the following ID does not exist: " << resourceID << "\n";
+      return nullptr;
+   }
 }
 
 template<typename TResource>
@@ -88,9 +95,14 @@ bool ResourceManager<TResource>::containsResource(const std::string& resourceID)
 template<typename TResource>
 void ResourceManager<TResource>::stopManagingResource(const std::string& resourceID) noexcept
 {
-   if (auto it = resources.find(resourceID); it != resources.end())
+   auto it = resources.find(resourceID);
+   if (it != resources.end())
    {
       resources.erase(it);
+   }
+   else
+   {
+      std::cout << "Error - ResourceManager::stopManagingResource - A resource with the following ID does not exist: " << resourceID << "\n";
    }
 }
 

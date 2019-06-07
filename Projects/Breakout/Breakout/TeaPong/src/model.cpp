@@ -32,7 +32,7 @@ void Model::loadModel(const std::string& modelFilePath)
 
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
-      std::cout << "Error - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
+      std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
       return;
    }
 
@@ -177,7 +177,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
             break;
          case 4: format = GL_RGBA;
             break;
-         default: std::cout << "Error - The following texture has an invalid number of components (" << numComponents << "): " << filePath << "\n";
+         default: std::cout << "Error - loadTexture - The following texture has an invalid number of components (" << numComponents << "): " << filePath << "\n";
             break;
       }
 
@@ -195,7 +195,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
    }
    else
    {
-      std::cout << "Error - The following texture could not be loaded: " << filePath << "\n";
+      std::cout << "Error - loadTexture - The following texture could not be loaded: " << filePath << "\n";
    }
 
    return texID;

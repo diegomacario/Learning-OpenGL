@@ -4,6 +4,7 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
+#include <memory>
 
 #include "shader_loader.h"
 
@@ -59,7 +60,7 @@ GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, G
    }
    else
    {
-      std::cout << "Error - The following shader file could not be opened: " << shaderFilePath << "\n";
+      std::cout << "Error - ShaderLoader::createAndCompileShader - The following shader file could not be opened: " << shaderFilePath << "\n";
       return 0;
    }
 }
@@ -104,7 +105,7 @@ void ShaderLoader::checkForCompilationErrors(GLuint shaderID, GLenum shaderType,
       std::vector<GLchar> infoLog(infoLogLength);
       glGetShaderInfoLog(shaderID, infoLogLength, NULL, &infoLog[0]);
 
-      std::cout << "Error - The error below occurred while compiling this shader: " << shaderFilePath << "\n" << infoLog.data() << "\n";
+      std::cout << "Error - ShaderLoader::checkForCompilationErrors - The error below occurred while compiling this shader: " << shaderFilePath << "\n" << infoLog.data() << "\n";
    }
 }
 
@@ -121,6 +122,6 @@ void ShaderLoader::checkForLinkingErrors(GLuint shaderProgID) const
       std::vector<GLchar> infoLog(infoLogLength);
       glGetProgramInfoLog(shaderProgID, infoLogLength, NULL, &infoLog[0]);
 
-      std::cout << "Error - The following error occurred while linking a shader program:\n" << infoLog.data() << "\n";
+      std::cout << "Error - ShaderLoader::checkForLinkingErrors - The following error occurred while linking a shader program:\n" << infoLog.data() << "\n";
    }
 }
