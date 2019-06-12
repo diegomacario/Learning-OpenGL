@@ -18,15 +18,19 @@ std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePat
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
       std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
-      return;
+      return nullptr;
    }
 
    mModelDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
 
-   processNodeHierarchyRecursively(scene->mRootNode, scene);
+   std::vector<Mesh> meshes;
+   processNodeHierarchyRecursively(scene->mRootNode, scene, meshes);
+
+   // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model?
+   return std::make_shared<Model>(meshes);
 }
 
-void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene)
+void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes) const
 {
    // Create a Mesh object for each mesh referenced by the current node
    for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -35,17 +39,17 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiSc
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      mMeshes.push_back(processMesh(mesh, scene));
+      meshes.push_back(processMesh(mesh, scene));
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
    for (unsigned int i = 0; i < node->mNumChildren; i++)
    {
-      processNodeHierarchyRecursively(node->mChildren[i], scene);
+      processNodeHierarchyRecursively(node->mChildren[i], scene, meshes);
    }
 }
 
-Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene)
+Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene) const
 {
    std::vector<Vertex>       vertices;
    std::vector<unsigned int> indices;
@@ -58,7 +62,7 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene)
    return Mesh(vertices, indices, textures);
 }
 
-void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices)
+void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices) const
 {
    vertices.reserve(mesh->mNumVertices);
 
@@ -79,7 +83,7 @@ void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& verti
    }
 }
 
-void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices)
+void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices) const
 {
    // We assume that mesh is made out of triangles
    // This will always be true if the aiProcess_Triangulate flag continues to be used when loading the model
@@ -98,7 +102,7 @@ void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& 
    }
 }
 
-void ModelLoader::processMaterial(const aiMaterial* material, std::vector<Texture>& textures)
+void ModelLoader::processMaterial(const aiMaterial* material, std::vector<Texture>& textures) const
 {
    // Process the material of the mesh
    // The material can consist of many textures of different types
@@ -110,7 +114,7 @@ void ModelLoader::processMaterial(const aiMaterial* material, std::vector<Textur
    processTextures(material, aiTextureType_SPECULAR, textures);
 }
 
-void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures)
+void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures) const
 {
    // Loop over all the textures of the specified type
    for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
@@ -128,8 +132,9 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
       else
       {
          // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
+         // Note that we assume that textures are in the same directory as the model
          Texture texture;
-         texture.id       = loadTexture(texFilename.C_Str(), this->mModelDir);
+         texture.id       = loadTexture(this->mModelDir + '/' + texFilename.C_Str());
          texture.type     = texType;
          texture.filename = texFilename.C_Str();
 
@@ -140,16 +145,13 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
    }
 }
 
-unsigned int loadTexture(const std::string& texFilename, const std::string& modelDir)
+unsigned int loadTexture(const std::string& texFilePath)
 {
-   // We assume that textures are in the same directory as the model
-   std::string filePath = modelDir + '/' + texFilename;
-
    unsigned int texID;
    glGenTextures(1, &texID);
 
    int width, height, numComponents;
-   unsigned char* data = stbi_load(filePath.c_str(), &width, &height, &numComponents, 0);
+   unsigned char* data = stbi_load(texFilePath.c_str(), &width, &height, &numComponents, 0);
 
    if (data)
    {
@@ -162,7 +164,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
          break;
       case 4: format = GL_RGBA;
          break;
-      default: std::cout << "Error - loadTexture - The following texture has an invalid number of components (" << numComponents << "): " << filePath << "\n";
+      default: std::cout << "Error - loadTexture - The following texture has an invalid number of components (" << numComponents << "): " << texFilePath << "\n";
          break;
       }
 
@@ -180,7 +182,7 @@ unsigned int loadTexture(const std::string& texFilename, const std::string& mode
    }
    else
    {
-      std::cout << "Error - loadTexture - The following texture could not be loaded: " << filePath << "\n";
+      std::cout << "Error - loadTexture - The following texture could not be loaded: " << texFilePath << "\n";
    }
 
    return texID;

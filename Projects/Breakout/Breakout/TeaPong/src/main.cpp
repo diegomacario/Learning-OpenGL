@@ -11,6 +11,7 @@
 #include "model.h"
 #include "resource_manager.h"
 #include "shader_loader.h"
+#include "model_loader.h"
 
 #include <iostream>
 
@@ -100,7 +101,11 @@ int main()
     //auto basicShader = shaderManager.loadUnmanagedResource<ShaderLoader>("shaders/16.1.basic_shader.vs", "shaders/16.1.basic_shader.fs");
 
     // load model
-    Model teapotModel("objects/teapot/high_poly_with_mat/Teapot.obj");
+    ResourceManager<Model> modelManager;
+    modelManager.loadResource<ModelLoader>("teapot", "objects/teapot/high_poly_with_mat/Teapot.obj");
+    auto teapotModel = modelManager.getResource("teapot");
+
+    //auto teapotModel = modelManager.loadUnmanagedResource<ModelLoader>("objects/teapot/high_poly_with_mat/Teapot.obj");
 
    //                     Positions            Normals              Texture coords
    //                    <--------------->    <--------------->    <------->
@@ -275,7 +280,7 @@ int main()
         modelShader->setFloat("pointLight.linear", 0.09f);
         modelShader->setFloat("pointLight.quadratic", 0.032f);
 
-        teapotModel.render(*modelShader);
+        teapotModel->render(*modelShader);
 
         // draw lamp
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------

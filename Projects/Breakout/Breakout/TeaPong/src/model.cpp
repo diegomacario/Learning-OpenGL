@@ -9,9 +9,10 @@
 
 #include "model.h"
 
-Model::Model(const std::string& modelFilePath)
+Model::Model(const std::vector<Mesh>& meshes)
+   : mMeshes(meshes)
 {
-   loadModel(modelFilePath);
+
 }
 
 void Model::render(const Shader& shader) const
