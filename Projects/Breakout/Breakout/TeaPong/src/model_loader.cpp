@@ -140,7 +140,7 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
 
          textures.push_back(texture);
 
-         mLoadedTextures[texFilename.C_Str()] = texture;
+         mLoadedTextures.emplace(texFilename.C_Str(), texture);
       }
    }
 }
