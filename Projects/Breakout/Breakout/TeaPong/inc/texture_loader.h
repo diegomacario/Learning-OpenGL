@@ -20,11 +20,21 @@ public:
    TextureLoader& operator=(TextureLoader&&) = delete;
 
    std::shared_ptr<Texture> loadResource(const std::string& texFilePath) const;
-   std::shared_ptr<Texture> loadResource(const std::string& texFilePath, GLuint wrapS, GLuint wrapT, GLuint minFilter, GLuint maxFilter) const;
+   std::shared_ptr<Texture> loadResource(const std::string& texFilePath,
+                                         GLuint             wrapS,
+                                         GLuint             wrapT,
+                                         GLuint             minFilter,
+                                         GLuint             magFilter,
+                                         bool               genMipmap) const;
 
 private:
 
-   GLuint loadTexture(const std::string& texFilePath);
+   GLuint loadTexture(const std::string& texFilePath,
+                      GLuint             wrapS,
+                      GLuint             wrapT,
+                      GLuint             minFilter,
+                      GLuint             magFilter,
+                      bool               genMipmap) const;
 
 };
 
