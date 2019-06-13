@@ -59,6 +59,7 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene) const
    processIndices(mesh, indices);
    processMaterial(scene->mMaterials[mesh->mMaterialIndex], textures);
 
+   // TODO: Could we take advantage of move semantics here?
    return Mesh(vertices, indices, textures);
 }
 
@@ -138,16 +139,16 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
          texture.type     = texType;
          texture.filename = texFilename.C_Str();
 
+         // TODO: Could we take advantage of emplace and emplace_back here?
          textures.push_back(texture);
-
-         mLoadedTextures.emplace(texFilename.C_Str(), texture);
+         mLoadedTextures.insert({texFilename.C_Str(), texture});
       }
    }
 }
 
-unsigned int loadTexture(const std::string& texFilePath)
+GLuint loadTexture(const std::string& texFilePath)
 {
-   unsigned int texID;
+   GLuint texID;
    glGenTextures(1, &texID);
 
    int width, height, numComponents;

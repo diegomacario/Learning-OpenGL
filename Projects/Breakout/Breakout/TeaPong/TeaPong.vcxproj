@@ -125,6 +125,8 @@
     <ClCompile Include="src\shader.cpp" />
     <ClCompile Include="src\shader_loader.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
+    <ClCompile Include="src\texture.cpp" />
+    <ClCompile Include="src\texture_loader.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\camera.h" />
@@ -135,6 +137,8 @@
     <ClInclude Include="inc\shader.h" />
     <ClInclude Include="inc\shader_loader.h" />
     <ClInclude Include="inc\stb_image.h" />
+    <ClInclude Include="inc\texture.h" />
+    <ClInclude Include="inc\texture_loader.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

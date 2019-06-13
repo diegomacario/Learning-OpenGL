@@ -35,6 +35,6 @@ private:
    void processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures) const;
 };
 
-unsigned int loadTexture(const std::string& texFilePath);
+GLuint loadTexture(const std::string& texFilePath);
 
 #endif

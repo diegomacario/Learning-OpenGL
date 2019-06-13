@@ -34,13 +34,11 @@ public:
 
 private:
 
-   std::vector<Vertex>       mVertices;
-   std::vector<unsigned int> mIndices;
-   std::vector<Texture>      mTextures;
+   GLsizei              mNumIndices;
+   std::vector<Texture> mTextures;
+   GLuint               mVAO;
 
-   GLuint mVAO;
-
-   void configureVAO();
+   void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
    void bindTextures(const Shader& shader) const;
 };
 
