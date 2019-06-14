@@ -7,15 +7,13 @@ class Texture
 {
 public:
 
-   Texture();
+   Texture(GLuint texID);
 
    void Bind() const;
 
 private:
 
    GLuint mTexID;
-
-   void Generate(GLuint width, GLuint height, unsigned char* data);
 };
 
 #endif
