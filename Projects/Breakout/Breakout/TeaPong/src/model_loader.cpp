@@ -80,6 +80,7 @@ void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& verti
       vertex.normal    = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
       vertex.texCoords = mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f);
 
+      // TODO: Use emplace_back here?
       vertices.push_back(vertex);
    }
 }

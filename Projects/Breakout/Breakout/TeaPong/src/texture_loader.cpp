@@ -38,9 +38,6 @@ GLuint TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(
    GLenum format;
    switch (numComponents)
    {
-   case 1:
-      format = GL_RED;
-      break;
    case 3:
       format = GL_RGB;
       break;
