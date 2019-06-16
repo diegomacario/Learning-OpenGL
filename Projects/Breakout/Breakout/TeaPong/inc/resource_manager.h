@@ -1,10 +1,8 @@
 #ifndef RESOURCE_MANAGER_H
 #define RESOURCE_MANAGER_H
 
-#include <string>
 #include <memory>
 #include <unordered_map>
-#include <iostream>
 
 template<typename TResource>
 class ResourceManager
@@ -48,7 +46,7 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
    if (it == resources.cend())
    {
       // TODO: Are we taking advantage of move semantics inside this function?
-      resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
+      resource = std::make_shared<TResource>(TResourceLoader{}.loadResource(std::forward<Args>(args)...));
       if (resource)
       {
          resources[resourceID] = resource;
@@ -68,7 +66,8 @@ template<typename TResource>
 template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadUnmanagedResource(Args&&... args) const
 {
-   return TResourceLoader{}.loadResource(std::forward<Args>(args)...);
+   // TODO: Are we taking advantage of move semantics inside this function?
+   return std::make_shared<TResource>(TResourceLoader{}.loadResource(std::forward<Args>(args)...));
 }
 
 template<typename TResource>

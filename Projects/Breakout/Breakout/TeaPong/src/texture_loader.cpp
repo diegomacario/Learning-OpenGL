@@ -4,12 +4,12 @@
 
 #include "texture_loader.h"
 
-std::shared_ptr<Texture> TextureLoader::loadResource(const std::string& texFilePath,
-                                                     GLuint             wrapS,
-                                                     GLuint             wrapT,
-                                                     GLuint             minFilter,
-                                                     GLuint             magFilter,
-                                                     bool               genMipmap) const
+Texture TextureLoader::loadResource(const std::string& texFilePath,
+                                    GLuint             wrapS,
+                                    GLuint             wrapT,
+                                    GLuint             minFilter,
+                                    GLuint             magFilter,
+                                    bool               genMipmap) const
 {
    int width, height, numComponents;
    std::unique_ptr<unsigned char, void(*)(void*)> texData(stbi_load(texFilePath.c_str(), &width, &height, &numComponents, 0), stbi_image_free);
@@ -17,12 +17,12 @@ std::shared_ptr<Texture> TextureLoader::loadResource(const std::string& texFileP
    if (!texData)
    {
       std::cout << "Error - TextureLoader::loadResource - The following texture could not be loaded: " << texFilePath << "\n";
-      return nullptr;
+      return Texture(0);
    }
 
    GLuint texID = generateTexture(texData, width, height, numComponents, wrapS, wrapT, minFilter, magFilter, genMipmap);
 
-   return std::make_shared<Texture>(texID);
+   return Texture(texID);
 }
 
 GLuint TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(*)(void*)>& texData,

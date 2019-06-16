@@ -4,11 +4,10 @@
 #include <fstream>
 #include <sstream>
 #include <iostream>
-#include <memory>
 
 #include "shader_loader.h"
 
-std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const
+Shader ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const
 {
    GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
    GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
@@ -18,10 +17,10 @@ std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFil
    glDeleteShader(vShaderID);
    glDeleteShader(fShaderID);
 
-   return std::make_shared<Shader>(shaderProgID);
+   return Shader(shaderProgID);
 }
 
-std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const
+Shader ShaderLoader::loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const
 {
    GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
    GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
@@ -33,7 +32,7 @@ std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFil
    glDeleteShader(fShaderID);
    glDeleteShader(gShaderID);
 
-   return std::make_shared<Shader>(shaderProgID);
+   return Shader(shaderProgID);
 }
 
 GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const

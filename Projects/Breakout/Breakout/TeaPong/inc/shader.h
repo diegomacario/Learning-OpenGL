@@ -1,6 +1,7 @@
 #ifndef SHADER_H
 #define SHADER_H
 
+#include <glad/glad.h>
 #include <glm/glm.hpp>
 
 #include <string>
@@ -9,7 +10,7 @@ class Shader
 {
 public:
 
-   Shader(GLuint shaderProgID);
+   explicit Shader(GLuint shaderProgID);
    // TODO: Add destructor that deletes the shader program?
 
    void   use() const;

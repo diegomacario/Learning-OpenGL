@@ -7,7 +7,7 @@ class Texture
 {
 public:
 
-   Texture(GLuint texID);
+   explicit Texture(GLuint texID);
    // TODO: Add destructor that deletes the texture?
 
    void Bind() const;

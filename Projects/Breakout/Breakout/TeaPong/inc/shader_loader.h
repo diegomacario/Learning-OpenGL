@@ -16,8 +16,8 @@ public:
    ShaderLoader(ShaderLoader&&) = delete;
    ShaderLoader& operator=(ShaderLoader&&) = delete;
 
-   std::shared_ptr<Shader> loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const;
-   std::shared_ptr<Shader> loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const;
+   Shader loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const;
+   Shader loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const;
 
 private:
 

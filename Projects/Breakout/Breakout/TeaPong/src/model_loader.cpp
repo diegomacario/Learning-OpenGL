@@ -1,24 +1,20 @@
-#include <glad/glad.h>
-#include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
-#include <stb_image.h>
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
 #include <iostream>
 
 #include "model_loader.h"
+#include "texture_loader.h"
 
-std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePath) const
+Model ModelLoader::loadResource(const std::string& modelFilePath) const
 {
    Assimp::Importer importer;
-
    const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs); // TODO: Allow the user to select which flags to use
 
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
       std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
-      return nullptr;
+      return Model(std::vector<Mesh>());
    }
 
    mModelDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
@@ -26,8 +22,8 @@ std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePat
    std::vector<Mesh> meshes;
    processNodeHierarchyRecursively(scene->mRootNode, scene, meshes);
 
-   // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model?
-   return std::make_shared<Model>(meshes);
+   // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
+   return Model(meshes);
 }
 
 void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes) const
@@ -53,7 +49,7 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene) const
 {
    std::vector<Vertex>       vertices;
    std::vector<unsigned int> indices;
-   std::vector<Texture>      textures;
+   std::vector<MeshTexture>  textures;
 
    processVertices(mesh, vertices);
    processIndices(mesh, indices);
@@ -104,7 +100,7 @@ void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& 
    }
 }
 
-void ModelLoader::processMaterial(const aiMaterial* material, std::vector<Texture>& textures) const
+void ModelLoader::processMaterial(const aiMaterial* material, std::vector<MeshTexture>& textures) const
 {
    // Process the material of the mesh
    // The material can consist of many textures of different types
@@ -116,7 +112,7 @@ void ModelLoader::processMaterial(const aiMaterial* material, std::vector<Textur
    processTextures(material, aiTextureType_SPECULAR, textures);
 }
 
-void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<Texture>& textures) const
+void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<MeshTexture>& textures) const
 {
    // Loop over all the textures of the specified type
    for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
@@ -125,7 +121,7 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
       material->GetTexture(texType, i, &texFilename);
 
       // Check if a texture with the same name as the current one has been loaded before
-      std::map<std::string, Texture>::iterator it = mLoadedTextures.find(texFilename.C_Str());
+      auto it = mLoadedTextures.find(texFilename.C_Str());
       if (it != mLoadedTextures.end())
       {
          // Since the texture has been loaded before, we simply take it from the mLoadedTextures map and add it to the mesh
@@ -135,57 +131,13 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
       {
          // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
          // Note that we assume that textures are in the same directory as the model
-         Texture texture;
-         texture.id       = loadTexture(this->mModelDir + '/' + texFilename.C_Str());
-         texture.type     = texType;
-         texture.filename = texFilename.C_Str();
+         MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
+                             texType,
+                             texFilename.C_Str());
 
          // TODO: Could we take advantage of emplace and emplace_back here?
          textures.push_back(texture);
          mLoadedTextures.insert({texFilename.C_Str(), texture});
       }
    }
-}
-
-GLuint loadTexture(const std::string& texFilePath)
-{
-   GLuint texID;
-   glGenTextures(1, &texID);
-
-   int width, height, numComponents;
-   unsigned char* data = stbi_load(texFilePath.c_str(), &width, &height, &numComponents, 0);
-
-   if (data)
-   {
-      GLenum format;
-      switch (numComponents)
-      {
-      case 1: format = GL_RED;
-         break;
-      case 3: format = GL_RGB;
-         break;
-      case 4: format = GL_RGBA;
-         break;
-      default: std::cout << "Error - loadTexture - The following texture has an invalid number of components (" << numComponents << "): " << texFilePath << "\n";
-         break;
-      }
-
-      glBindTexture(GL_TEXTURE_2D, texID);
-      glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, data);
-      glGenerateMipmap(GL_TEXTURE_2D);
-
-      // TODO: Allow the user to select which wrapping and sampling options to use
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-      glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-      stbi_image_free(data);
-   }
-   else
-   {
-      std::cout << "Error - loadTexture - The following texture could not be loaded: " << texFilePath << "\n";
-   }
-
-   return texID;
 }

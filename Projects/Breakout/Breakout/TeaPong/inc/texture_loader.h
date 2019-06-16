@@ -19,12 +19,12 @@ public:
    TextureLoader(TextureLoader&&) = delete;
    TextureLoader& operator=(TextureLoader&&) = delete;
 
-   std::shared_ptr<Texture> loadResource(const std::string& texFilePath,
-                                         GLuint             wrapS     = GL_REPEAT,
-                                         GLuint             wrapT     = GL_REPEAT,
-                                         GLuint             minFilter = GL_LINEAR,
-                                         GLuint             magFilter = GL_LINEAR,
-                                         bool               genMipmap = false) const;
+   Texture loadResource(const std::string& texFilePath,
+                        GLuint             wrapS     = GL_REPEAT,
+                        GLuint             wrapT     = GL_REPEAT,
+                        GLuint             minFilter = GL_LINEAR,
+                        GLuint             magFilter = GL_LINEAR,
+                        bool               genMipmap = false) const;
 
 private:
 

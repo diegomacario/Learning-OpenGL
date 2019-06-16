@@ -1,11 +1,8 @@
-#include <glad/glad.h>
-#include <glm/gtc/matrix_transform.hpp>
-
 #include <iostream>
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures)
    : mNumIndices(indices.size())
    , mTextures(textures)
 {
@@ -107,7 +104,7 @@ void Mesh::bindTextures(const Shader& shader) const
          // Tell the sampler2D uniform in what texture unit to look for the texture data
          glUniform1i(sampler2DUniformLoc, texUnit);
          // Bind the texture
-         glBindTexture(GL_TEXTURE_2D, mTextures[i].id);
+         mTextures[i].tex.Bind();
 
          ++texUnit;
       }

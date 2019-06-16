@@ -1,14 +1,8 @@
 #ifndef MODEL_H
 #define MODEL_H
 
-#include <assimp/scene.h>
-
-#include <string>
-#include <vector>
-#include <map>
-
-#include "mesh.h"
 #include "shader.h"
+#include "mesh.h"
 
 class Model
 {

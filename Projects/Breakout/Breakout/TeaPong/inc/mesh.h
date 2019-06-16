@@ -1,10 +1,8 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include <glm/glm.hpp>
 #include <assimp/scene.h>
 
-#include <string>
 #include <vector>
 
 #include "shader.h"
@@ -17,9 +15,17 @@ struct Vertex
    glm::vec2 texCoords;
 };
 
-struct Texture
+struct MeshTexture
 {
-   unsigned int  id;
+   MeshTexture(Texture tex, aiTextureType type, const std::string& filename)
+      : tex(tex)
+      , type(type)
+      , filename(filename)
+   {
+
+   }
+
+   Texture       tex;
    aiTextureType type;
    std::string   filename;
 };
@@ -28,16 +34,16 @@ class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<Texture>& textures);
+   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
    // TODO: Add destructor that deletes the VAO and the textures?
 
    void render(const Shader& shader) const;
 
 private:
 
-   GLsizei              mNumIndices;
-   std::vector<Texture> mTextures;
-   GLuint               mVAO;
+   GLsizei                   mNumIndices;
+   std::vector<MeshTexture>  mTextures;
+   GLuint                    mVAO;
 
    void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
    void bindTextures(const Shader& shader) const;
