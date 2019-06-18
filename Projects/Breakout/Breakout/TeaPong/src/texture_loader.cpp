@@ -45,7 +45,7 @@ GLuint TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(
       format = GL_RGBA;
       break;
    default:
-      std::cout << "Error - generateTexture - The texture has an invalid number of components: " << numComponents << "\n";
+      std::cout << "Error - TextureLoader::generateTexture - The texture has an invalid number of components: " << numComponents << "\n";
    }
 
    GLuint texID;
