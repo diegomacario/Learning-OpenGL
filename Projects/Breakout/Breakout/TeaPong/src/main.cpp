@@ -28,7 +28,13 @@ const unsigned int SCR_WIDTH = 1280;
 const unsigned int SCR_HEIGHT = 720;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 1.0f), glm::vec3(0.0f, 1.0f, 0.0f), 0.0f, 0.0f);
+Camera camera(glm::vec3(0.0f, 0.0f, 1.0f),
+              glm::vec3(0.0f, 1.0f, 0.0f),
+              0.0f,
+              0.0f,
+              45.0f,
+              2.5f,
+              0.1f);
 float lastX = (float)SCR_WIDTH / 2.0;
 float lastY = (float)SCR_HEIGHT / 2.0;
 bool firstMouse = true;
@@ -255,7 +261,7 @@ int main()
         model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
         model      = glm::scale(model, glm::vec3(0.01f));
         view       = camera.getViewMatrix();
-        projection = glm::perspective(glm::radians(camera.getZoom()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
+        projection = glm::perspective(glm::radians(camera.getFieldOfViewY()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // ortographic
         // -----------
         //model      = glm::mat4();

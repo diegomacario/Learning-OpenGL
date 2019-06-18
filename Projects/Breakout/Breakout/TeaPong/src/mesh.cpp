@@ -9,6 +9,11 @@ Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>&
    configureVAO(vertices, indices);
 }
 
+Mesh::~Mesh()
+{
+   glDeleteVertexArrays(1, &mVAO);
+}
+
 void Mesh::render(const Shader& shader) const
 {
    // Bind the textures

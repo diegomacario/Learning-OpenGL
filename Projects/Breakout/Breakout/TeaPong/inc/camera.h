@@ -1,11 +1,8 @@
 #ifndef CAMERA_H
 #define CAMERA_H
 
-#include <glad/glad.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
-
-#include <vector>
 
 enum class MovementDirection
 {
@@ -22,14 +19,17 @@ public:
    Camera(glm::vec3 position,
           glm::vec3 worldUp,
           float     yaw,
-          float     pitch);
+          float     pitch,
+          float     fieldOfViewY,
+          float     movementSpeed,
+          float     mouseSensitivity);
 
    glm::vec3 getPosition();
-   float     getZoom();
+   float     getFieldOfViewY();
    glm::mat4 getViewMatrix();
 
    void processKeyboard(MovementDirection direction, float deltaTime);
-   void processMouseMovement(float xOffset, float yOffset, GLboolean constrainPitch = true);
+   void processMouseMovement(float xOffset, float yOffset);
    void processMouseScroll(float yOffset);
 
 private:
@@ -43,9 +43,10 @@ private:
    float mYaw;
    float mPitch;
 
+   float mFieldOfViewY;
+
    float mMovementSpeed;
    float mMouseSensitivity;
-   float mZoom;
 
    void updateCameraVectors();
 };

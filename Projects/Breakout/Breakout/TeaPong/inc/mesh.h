@@ -35,7 +35,14 @@ class Mesh
 public:
 
    Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
-   // TODO: Add destructor that deletes the VAO and the textures?
+   ~Mesh();
+
+   // TODO: Should it be possible to copy a mesh? Would that result in two textures pointing to the same memory in the GPU? Or two VAOs? What happens if glDeleteTextures or glDeleteArrays gets called twice?
+   Mesh(Mesh&) = default;
+   Mesh& operator=(Mesh&) = default;
+
+   Mesh(Mesh&&) = default;
+   Mesh& operator=(Mesh&&) = default;
 
    void render(const Shader& shader) const;
 

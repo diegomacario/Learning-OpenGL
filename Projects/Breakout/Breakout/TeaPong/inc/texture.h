@@ -8,7 +8,14 @@ class Texture
 public:
 
    explicit Texture(GLuint texID);
-   // TODO: Add destructor that deletes the texture?
+   ~Texture();
+
+   // TODO: Should it be possible to copy a texture? Would that result in two textures pointing to the same memory in the GPU? What happens if glDeleteTextures gets called twice?
+   Texture(Texture&) = default;
+   Texture& operator=(Texture&) = default;
+
+   Texture(Texture&&) = default;
+   Texture& operator=(Texture&&) = default;
 
    void Bind() const;
 
