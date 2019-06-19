@@ -14,6 +14,9 @@ Shader ShaderLoader::loadResource(const std::string& vShaderFilePath, const std:
 
    GLuint shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID);
 
+   glDetachShader(shaderProgID, vShaderID);
+   glDetachShader(shaderProgID, fShaderID);
+
    glDeleteShader(vShaderID);
    glDeleteShader(fShaderID);
 
@@ -27,6 +30,10 @@ Shader ShaderLoader::loadResource(const std::string& vShaderFilePath, const std:
    GLuint gShaderID = createAndCompileShader(gShaderFilePath, GL_GEOMETRY_SHADER);
 
    GLuint shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID, gShaderID);
+
+   glDetachShader(shaderProgID, vShaderID);
+   glDetachShader(shaderProgID, fShaderID);
+   glDetachShader(shaderProgID, gShaderID);
 
    glDeleteShader(vShaderID);
    glDeleteShader(fShaderID);

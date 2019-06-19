@@ -14,6 +14,22 @@ Mesh::~Mesh()
    glDeleteVertexArrays(1, &mVAO);
 }
 
+Mesh::Mesh(Mesh&& rhs)
+   : mNumIndices(std::exchange(rhs.mNumIndices, 0))
+   , mTextures(std::move(rhs.mTextures))
+   , mVAO(std::exchange(rhs.mVAO, 0))
+{
+
+}
+
+Mesh& Mesh::operator=(Mesh&& rhs)
+{
+   mNumIndices = std::exchange(rhs.mNumIndices, 0);
+   mTextures   = std::move(rhs.mTextures);
+   mVAO        = std::exchange(rhs.mVAO, 0);
+   return *this;
+}
+
 void Mesh::render(const Shader& shader) const
 {
    // Bind the textures

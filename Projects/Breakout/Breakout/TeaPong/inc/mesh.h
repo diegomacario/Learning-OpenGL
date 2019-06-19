@@ -37,12 +37,11 @@ public:
    Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
    ~Mesh();
 
-   // TODO: Should it be possible to copy a mesh? Would that result in two textures pointing to the same memory in the GPU? Or two VAOs? What happens if glDeleteTextures or glDeleteArrays gets called twice?
-   Mesh(Mesh&) = default;
-   Mesh& operator=(Mesh&) = default;
+   Mesh(Mesh&) = delete;
+   Mesh& operator=(Mesh&) = delete;
 
-   Mesh(Mesh&&) = default;
-   Mesh& operator=(Mesh&&) = default;
+   Mesh(Mesh&& rhs);
+   Mesh& operator=(Mesh&& rhs);
 
    void render(const Shader& shader) const;
 

@@ -11,7 +11,13 @@ class Shader
 public:
 
    explicit Shader(GLuint shaderProgID);
-   // TODO: Add destructor that deletes the shader program?
+   ~Shader();
+
+   Shader(Shader&) = delete;
+   Shader& operator=(Shader&) = delete;
+
+   Shader(Shader&& rhs);
+   Shader& operator=(Shader&& rhs);
 
    void   use() const;
 

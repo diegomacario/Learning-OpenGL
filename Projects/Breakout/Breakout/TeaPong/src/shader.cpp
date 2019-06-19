@@ -8,6 +8,23 @@ Shader::Shader(GLuint shaderProgID)
 
 }
 
+Shader::~Shader()
+{
+   glDeleteProgram(mShaderProgID);
+}
+
+Shader::Shader(Shader&& rhs)
+   : mShaderProgID(std::exchange(rhs.mShaderProgID, 0))
+{
+
+}
+
+Shader& Shader::operator=(Shader&& rhs)
+{
+   mShaderProgID = std::exchange(rhs.mShaderProgID, 0);
+   return *this;
+}
+
 void Shader::use() const
 {
    glUseProgram(mShaderProgID);

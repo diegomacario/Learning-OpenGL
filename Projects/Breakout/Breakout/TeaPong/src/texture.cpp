@@ -1,3 +1,5 @@
+#include <utility>
+
 #include "texture.h"
 
 Texture::Texture(GLuint texID)
@@ -9,6 +11,18 @@ Texture::Texture(GLuint texID)
 Texture::~Texture()
 {
    glDeleteTextures(1, &mTexID);
+}
+
+Texture::Texture(Texture&& rhs)
+   : mTexID(std::exchange(rhs.mTexID, 0))
+{
+
+}
+
+Texture& Texture::operator=(Texture&& rhs)
+{
+   mTexID = std::exchange(rhs.mTexID, 0);
+   return *this;
 }
 
 void Texture::Bind() const
