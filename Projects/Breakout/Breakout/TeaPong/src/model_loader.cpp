@@ -120,24 +120,13 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
       aiString texFilename;
       material->GetTexture(texType, i, &texFilename);
 
-      // Check if a texture with the same name as the current one has been loaded before
-      auto it = mLoadedTextures.find(texFilename.C_Str());
-      if (it != mLoadedTextures.end())
-      {
-         // Since the texture has been loaded before, we simply take it from the mLoadedTextures map and add it to the mesh
-         textures.push_back(it->second);
-      }
-      else
-      {
-         // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
-         // Note that we assume that textures are in the same directory as the model
-         MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
-                             texType,
-                             texFilename.C_Str());
+      // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
+      // Note that we assume that textures are in the same directory as the model
+      MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
+                          texType,
+                          texFilename.C_Str());
 
-         // TODO: Could we take advantage of emplace and emplace_back here?
-         textures.push_back(texture);
-         mLoadedTextures.insert({texFilename.C_Str(), texture});
-      }
+      // TODO: Could we take advantage of emplace and emplace_back here?
+      textures.push_back(texture);
    }
 }

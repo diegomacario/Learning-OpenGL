@@ -17,12 +17,31 @@ struct Vertex
 
 struct MeshTexture
 {
-   MeshTexture(Texture tex, aiTextureType type, const std::string& filename)
-      : tex(tex)
+   MeshTexture(Texture&& tex, aiTextureType type, const std::string& filename)
+      : tex(std::move(tex))
       , type(type)
       , filename(filename)
    {
 
+   }
+
+   MeshTexture(MeshTexture&) = delete;
+   MeshTexture& operator=(MeshTexture&) = delete;
+
+   MeshTexture(MeshTexture&& rhs)
+      : tex(std::move(rhs.tex))
+      , type(std::exchange(rhs.type, aiTextureType_NONE))
+      , filename(std::move(filename)) // TODO: Does this leave the string in rhs empty?
+   {
+
+   }
+
+   MeshTexture& operator=(MeshTexture&& rhs)
+   {
+      tex = std::move(rhs.tex);
+      type = std::exchange(rhs.type, aiTextureType_NONE);
+      filename = std::move(filename); // TODO: Does this leave the string in rhs empty?
+      return *this;
    }
 
    Texture       tex;

@@ -23,7 +23,6 @@ public:
 private:
 
    mutable std::string mModelDir;
-   mutable std::unordered_map<std::string, MeshTexture> mLoadedTextures; // This map stores all the textures used by this model, so that if a texture is used by more than one mesh, it is only loaded once
 
    void processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes) const;
 
