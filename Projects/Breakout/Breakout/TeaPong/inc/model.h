@@ -9,7 +9,12 @@ class Model
 public:
 
    Model(const std::vector<Mesh>& meshes);
-   // TODO: Delete copy constructor/copy assignment operator, and create the move constructor/move assignment operator.
+
+   Model(Model&) = delete;
+   Model& operator=(Model&) = delete;
+
+   Model(Model&& rhs) = default;
+   Model& operator=(Model&& rhs) = default;
 
    void render(const Shader& shader) const;
 
