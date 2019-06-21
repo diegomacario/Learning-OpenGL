@@ -17,7 +17,7 @@ struct Vertex
 
 struct MeshTexture
 {
-   MeshTexture(Texture&& tex, aiTextureType type, const std::string& filename)
+   MeshTexture(Texture& tex, aiTextureType type, const std::string& filename)
       : tex(std::move(tex))
       , type(type)
       , filename(filename)
@@ -53,7 +53,7 @@ class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
+   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>& textures);
    ~Mesh();
 
    Mesh(Mesh&) = delete;

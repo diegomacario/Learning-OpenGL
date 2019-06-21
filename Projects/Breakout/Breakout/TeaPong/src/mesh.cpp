@@ -2,9 +2,9 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>& textures)
    : mNumIndices(indices.size())
-   , mTextures(textures)
+   , mTextures(std::move(textures))
 {
    configureVAO(vertices, indices);
 }

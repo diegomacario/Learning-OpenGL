@@ -23,7 +23,7 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
    processNodeHierarchyRecursively(scene->mRootNode, scene, meshes);
 
    // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
-   return Model(meshes);
+   return Model(std::move(meshes));
 }
 
 void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes) const
@@ -35,7 +35,7 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiSc
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      meshes.push_back(processMesh(mesh, scene));
+      meshes.push_back(std::move(processMesh(mesh, scene)));
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
@@ -127,6 +127,6 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
                           texFilename.C_Str());
 
       // TODO: Could we take advantage of emplace and emplace_back here?
-      textures.push_back(texture);
+      textures.push_back(std::move(texture));
    }
 }

@@ -1,7 +1,7 @@
 #include "model.h"
 
-Model::Model(const std::vector<Mesh>& meshes)
-   : mMeshes(meshes)
+Model::Model(std::vector<Mesh>& meshes)
+   : mMeshes(std::move(meshes))
 {
 
 }

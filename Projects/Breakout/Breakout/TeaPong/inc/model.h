@@ -8,7 +8,7 @@ class Model
 {
 public:
 
-   Model(const std::vector<Mesh>& meshes);
+   Model(std::vector<Mesh>& meshes);
 
    Model(Model&) = delete;
    Model& operator=(Model&) = delete;
