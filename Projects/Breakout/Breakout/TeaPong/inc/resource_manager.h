@@ -12,8 +12,8 @@ public:
    ResourceManager() = default;
    ~ResourceManager() = default;
 
-   ResourceManager(ResourceManager&) = delete;
-   ResourceManager& operator=(ResourceManager&) = delete;
+   ResourceManager(const ResourceManager&) = delete;
+   ResourceManager& operator=(const ResourceManager&) = delete;
 
    ResourceManager(ResourceManager&&) = default;
    ResourceManager& operator=(ResourceManager&&) = default;
