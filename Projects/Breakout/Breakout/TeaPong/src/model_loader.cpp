@@ -114,25 +114,13 @@ void ModelLoader::processMaterial(const aiMaterial* material, std::vector<MeshTe
 
 void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<MeshTexture>& textures) const
 {
-   // Loop over all the textures of the specified type
+   // Load all the textures of the specified type
    for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
    {
       aiString texFilename;
       material->GetTexture(texType, i, &texFilename);
 
-      // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
-      // Note that we assume that textures are in the same directory as the model
-      //MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
-      //                    texType,
-      //                    texFilename.C_Str());
-
-      // TODO: Could we take advantage of emplace and emplace_back here?
-      //textures.push_back(std::move(texture));
-
-      //textures.push_back(MeshTexture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
-      //                               texType,
-      //                               texFilename.C_Str()));
-
+      // Note that we assume that the textures are in the same directory as the model
       textures.emplace_back(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()), texType, texFilename.C_Str());
    }
 }
