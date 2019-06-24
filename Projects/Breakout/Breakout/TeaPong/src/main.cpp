@@ -48,6 +48,7 @@ float lastFrame = 0.0f;
 //glm::vec3 lightPos = glm::vec3(0.0f, 0.0f, 175.0f);
 glm::vec3 lightPos = glm::vec3(-175.0f, 175.0f, 175.0f);
 
+// TODO: Make everything noexcept, everywhere
 int main()
 {
     // glfw: initialize and configure

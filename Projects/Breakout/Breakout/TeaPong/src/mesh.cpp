@@ -2,7 +2,7 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>& textures)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>&& textures)
    : mNumIndices(indices.size())
    , mTextures(std::move(textures))
 {

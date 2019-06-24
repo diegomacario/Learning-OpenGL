@@ -13,8 +13,8 @@ public:
    explicit Shader(GLuint shaderProgID);
    ~Shader();
 
-   Shader(Shader&) = delete;
-   Shader& operator=(Shader&) = delete;
+   Shader(const Shader&) = delete;
+   Shader& operator=(const Shader&) = delete;
 
    Shader(Shader&& rhs);
    Shader& operator=(Shader&& rhs);

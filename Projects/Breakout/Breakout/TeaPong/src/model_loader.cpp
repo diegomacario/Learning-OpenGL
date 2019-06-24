@@ -35,7 +35,7 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiSc
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      meshes.push_back(std::move(processMesh(mesh, scene)));
+      meshes.push_back(processMesh(mesh, scene));
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
@@ -56,7 +56,7 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene) const
    processMaterial(scene->mMaterials[mesh->mMaterialIndex], textures);
 
    // TODO: Could we take advantage of move semantics here?
-   return Mesh(vertices, indices, textures);
+   return Mesh(vertices, indices, std::move(textures));
 }
 
 void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices) const
@@ -122,11 +122,17 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
 
       // Since the texture has not been loaded before, we load it and add it to both the mLoadedTextures map and to the mesh
       // Note that we assume that textures are in the same directory as the model
-      MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
-                          texType,
-                          texFilename.C_Str());
+      //MeshTexture texture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
+      //                    texType,
+      //                    texFilename.C_Str());
 
       // TODO: Could we take advantage of emplace and emplace_back here?
-      textures.push_back(std::move(texture));
+      //textures.push_back(std::move(texture));
+
+      //textures.push_back(MeshTexture(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()),
+      //                               texType,
+      //                               texFilename.C_Str()));
+
+      textures.emplace_back(TextureLoader{}.loadResource(this->mModelDir + '/' + texFilename.C_Str()), texType, texFilename.C_Str());
    }
 }

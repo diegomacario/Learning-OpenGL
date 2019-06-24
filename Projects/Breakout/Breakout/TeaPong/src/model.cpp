@@ -1,6 +1,6 @@
 #include "model.h"
 
-Model::Model(std::vector<Mesh>& meshes)
+Model::Model(std::vector<Mesh>&& meshes)
    : mMeshes(std::move(meshes))
 {
 

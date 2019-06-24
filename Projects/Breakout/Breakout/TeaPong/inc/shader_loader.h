@@ -10,8 +10,8 @@ public:
    ShaderLoader() = default;
    ~ShaderLoader() = default;
 
-   ShaderLoader(ShaderLoader&) = delete;
-   ShaderLoader& operator=(ShaderLoader&) = delete;
+   ShaderLoader(const ShaderLoader&) = delete;
+   ShaderLoader& operator=(const ShaderLoader&) = delete;
 
    ShaderLoader(ShaderLoader&&) = delete;
    ShaderLoader& operator=(ShaderLoader&&) = delete;

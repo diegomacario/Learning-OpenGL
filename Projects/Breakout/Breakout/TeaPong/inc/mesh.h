@@ -17,7 +17,7 @@ struct Vertex
 
 struct MeshTexture
 {
-   MeshTexture(Texture& tex, aiTextureType type, const std::string& filename)
+   MeshTexture(Texture&& tex, aiTextureType type, const std::string& filename)
       : tex(std::move(tex))
       , type(type)
       , filename(filename)
@@ -25,8 +25,10 @@ struct MeshTexture
 
    }
 
-   MeshTexture(MeshTexture&) = delete;
-   MeshTexture& operator=(MeshTexture&) = delete;
+   ~MeshTexture() = default;
+
+   MeshTexture(const MeshTexture&) = delete;
+   MeshTexture& operator=(const MeshTexture&) = delete;
 
    MeshTexture(MeshTexture&& rhs)
       : tex(std::move(rhs.tex))
@@ -53,11 +55,11 @@ class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>& textures);
+   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>&& textures);
    ~Mesh();
 
-   Mesh(Mesh&) = delete;
-   Mesh& operator=(Mesh&) = delete;
+   Mesh(const Mesh&) = delete;
+   Mesh& operator=(const Mesh&) = delete;
 
    Mesh(Mesh&& rhs);
    Mesh& operator=(Mesh&& rhs);

@@ -13,8 +13,8 @@ public:
    TextureLoader() = default;
    ~TextureLoader() = default;
 
-   TextureLoader(TextureLoader&) = delete;
-   TextureLoader& operator=(TextureLoader&) = delete;
+   TextureLoader(const TextureLoader&) = delete;
+   TextureLoader& operator=(const TextureLoader&) = delete;
 
    TextureLoader(TextureLoader&&) = delete;
    TextureLoader& operator=(TextureLoader&&) = delete;

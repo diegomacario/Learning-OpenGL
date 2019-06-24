@@ -12,8 +12,8 @@ public:
    ModelLoader() = default;
    ~ModelLoader() = default; // TODO: Should the destructor delete the textures?
 
-   ModelLoader(ModelLoader&) = delete;
-   ModelLoader& operator=(ModelLoader&) = delete;
+   ModelLoader(const ModelLoader&) = delete;
+   ModelLoader& operator=(const ModelLoader&) = delete;
 
    ModelLoader(ModelLoader&&) = delete;
    ModelLoader& operator=(ModelLoader&&) = delete;

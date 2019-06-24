@@ -8,10 +8,10 @@ class Model
 {
 public:
 
-   Model(std::vector<Mesh>& meshes);
+   Model(std::vector<Mesh>&& meshes);
 
-   Model(Model&) = delete;
-   Model& operator=(Model&) = delete;
+   Model(const Model&) = delete;
+   Model& operator=(const Model&) = delete;
 
    Model(Model&& rhs) = default;
    Model& operator=(Model&& rhs) = default;

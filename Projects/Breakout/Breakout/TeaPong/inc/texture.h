@@ -10,8 +10,8 @@ public:
    explicit Texture(GLuint texID);
    ~Texture();
 
-   Texture(Texture&) = delete;
-   Texture& operator=(Texture&) = delete;
+   Texture(const Texture&) = delete;
+   Texture& operator=(const Texture&) = delete;
 
    Texture(Texture&& rhs);
    Texture& operator=(Texture&& rhs);
