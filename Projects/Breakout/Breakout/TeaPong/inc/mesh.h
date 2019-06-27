@@ -17,45 +17,22 @@ struct Vertex
 
 struct MeshTexture
 {
-   MeshTexture(Texture&& tex, aiTextureType type, const std::string& filename)
-      : tex(std::move(tex))
-      , type(type)
-      , filename(filename)
+   MeshTexture(const std::shared_ptr<Texture>& tex, const std::string& uniformName)
+      : tex(tex)
+      , uniformName(uniformName)
    {
 
    }
 
-   ~MeshTexture() = default;
-
-   MeshTexture(const MeshTexture&) = delete;
-   MeshTexture& operator=(const MeshTexture&) = delete;
-
-   MeshTexture(MeshTexture&& rhs)
-      : tex(std::move(rhs.tex))
-      , type(std::exchange(rhs.type, aiTextureType_NONE))
-      , filename(std::move(filename)) // TODO: Does this leave the string in rhs empty?
-   {
-
-   }
-
-   MeshTexture& operator=(MeshTexture&& rhs)
-   {
-      tex = std::move(rhs.tex);
-      type = std::exchange(rhs.type, aiTextureType_NONE);
-      filename = std::move(filename); // TODO: Does this leave the string in rhs empty?
-      return *this;
-   }
-
-   Texture       tex;
-   aiTextureType type;
-   std::string   filename;
+   std::shared_ptr<Texture> tex;
+   std::string              uniformName;
 };
 
 class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>&& textures);
+   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
    ~Mesh();
 
    Mesh(const Mesh&) = delete;
@@ -68,9 +45,9 @@ public:
 
 private:
 
-   GLsizei                   mNumIndices;
-   std::vector<MeshTexture>  mTextures;
-   GLuint                    mVAO;
+   GLsizei                  mNumIndices;
+   std::vector<MeshTexture> mTextures;
+   GLuint                   mVAO;
 
    void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
    void bindTextures(const Shader& shader) const;

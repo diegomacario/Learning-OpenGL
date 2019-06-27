@@ -3,12 +3,13 @@
 
 #include "shader.h"
 #include "mesh.h"
+#include "resource_manager.h"
 
 class Model
 {
 public:
 
-   Model(std::vector<Mesh>&& meshes);
+   Model(std::vector<Mesh>&& meshes, ResourceManager<Texture>&& texManager);
 
    Model(const Model&) = delete;
    Model& operator=(const Model&) = delete;
@@ -20,7 +21,8 @@ public:
 
 private:
 
-   std::vector<Mesh> mMeshes;
+   std::vector<Mesh>        mMeshes;
+   ResourceManager<Texture> mTexManager;
 };
 
 #endif

@@ -1,7 +1,8 @@
 #include "model.h"
 
-Model::Model(std::vector<Mesh>&& meshes)
+Model::Model(std::vector<Mesh>&& meshes, ResourceManager<Texture>&& texManager)
    : mMeshes(std::move(meshes))
+   , mTexManager(std::move(texManager))
 {
 
 }

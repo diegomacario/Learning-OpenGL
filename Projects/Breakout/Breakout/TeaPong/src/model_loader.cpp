@@ -14,7 +14,7 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
       std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
-      return Model(std::vector<Mesh>());
+      return Model(std::vector<Mesh>(), ResourceManager<Texture>());
    }
 
    mModelDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
@@ -24,7 +24,7 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
    processNodeHierarchyRecursively(scene->mRootNode, scene, meshes, texManager);
 
    // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
-   return Model(std::move(meshes));
+   return Model(std::move(meshes), std::move(texManager));
 }
 
 void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes, ResourceManager<Texture>& texManager) const
@@ -57,7 +57,7 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene, Resource
    processMaterial(scene->mMaterials[mesh->mMaterialIndex], textures, texManager);
 
    // TODO: Could we take advantage of move semantics here?
-   return Mesh(vertices, indices, std::move(textures));
+   return Mesh(vertices, indices, textures);
 }
 
 void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices) const
@@ -115,21 +115,23 @@ void ModelLoader::processMaterial(const aiMaterial* material, std::vector<MeshTe
 
 void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<MeshTexture>& textures, ResourceManager<Texture>& texManager) const
 {
-   std::string sampler2DUniformName;
+   // Compose the names of the sampler2D uniforms that should exist in the shader
+   // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
+   std::string uniformName;
    switch (texType)
    {
-      // TODO: Would it be a good idea to somehow incorporate the filename of texture into our naming convention?
+   // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
    case aiTextureType_AMBIENT:
-      sampler2DUniformName = "ambientTex";
+      uniformName = "ambientTex";
       break;
    case aiTextureType_EMISSIVE:
-      sampler2DUniformName = "emissiveTex";
+      uniformName = "emissiveTex";
       break;
    case aiTextureType_DIFFUSE:
-      sampler2DUniformName = "diffuseTex";
+      uniformName = "diffuseTex";
       break;
    case aiTextureType_SPECULAR:
-      sampler2DUniformName = "specularTex";
+      uniformName = "specularTex";
       break;
    default:
       std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
@@ -143,6 +145,7 @@ void ModelLoader::processTextures(const aiMaterial* material, const aiTextureTyp
       material->GetTexture(texType, i, &texFilename);
 
       // Note that we assume that the textures are in the same directory as the model
-      textures.emplace_back(texManager.loadResource<TextureLoader>(sampler2DUniformName + std::to_string(i), this->mModelDir + '/' + texFilename.C_Str()), texType, texFilename.C_Str());
+      textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), this->mModelDir + '/' + texFilename.C_Str()),
+                            uniformName + std::to_string(i));
    }
 }

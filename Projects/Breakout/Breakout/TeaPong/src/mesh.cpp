@@ -2,9 +2,9 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, std::vector<MeshTexture>&& textures)
+Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures)
    : mNumIndices(indices.size())
-   , mTextures(std::move(textures))
+   , mTextures(textures)
 {
    configureVAO(vertices, indices);
 }
@@ -80,58 +80,27 @@ void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<u
 
 void Mesh::bindTextures(const Shader& shader) const
 {
-   unsigned int ambientNum  = 0;
-   unsigned int emissiveNum = 0;
-   unsigned int diffuseNum  = 0;
-   unsigned int specularNum = 0;
-   unsigned int texUnit     = GL_TEXTURE0;
+   unsigned int texUnit = GL_TEXTURE0;
 
    for (unsigned int i = 0; i < mTextures.size(); ++i)
    {
-      // Compose the name of the sampler2D uniform that should exist in the shader
-      std::string sampler2DUniformName;
-      switch (mTextures[i].type)
-      {
-         // TODO: Would it be a good idea to somehow incorporate the filename of texture into our naming convention?
-         case aiTextureType_AMBIENT:
-            sampler2DUniformName = "ambientTex" + ambientNum;
-            ++ambientNum;
-            break;
-         case aiTextureType_EMISSIVE:
-            sampler2DUniformName = "emissiveTex" + emissiveNum;
-            ++emissiveNum;
-            break;
-         case aiTextureType_DIFFUSE:
-            sampler2DUniformName = "diffuseTex" + diffuseNum;
-            ++diffuseNum;
-            break;
-         case aiTextureType_SPECULAR:
-            sampler2DUniformName = "specularTex" + specularNum;
-            ++specularNum;
-            break;
-         default:
-            std::cout << "Error - Mesh::bindTextures - The following texture is of an invalid type (" << mTextures[i].type << "): " << mTextures[i].filename << "\n";
-            sampler2DUniformName = "";
-            break;
-      }
-
       // Get the location of the sampler2D uniform that should exist in the shader
-      GLint sampler2DUniformLoc = glGetUniformLocation(shader.getID(), sampler2DUniformName.c_str());
+      GLint uniformLoc = glGetUniformLocation(shader.getID(), mTextures[i].uniformName.c_str());
 
-      if (sampler2DUniformLoc != -1)
+      if (uniformLoc != -1)
       {
          // Activate the proper texture unit before binding the current texture
          glActiveTexture(texUnit);
          // Tell the sampler2D uniform in what texture unit to look for the texture data
-         glUniform1i(sampler2DUniformLoc, texUnit);
+         glUniform1i(uniformLoc, texUnit);
          // Bind the texture
-         mTextures[i].tex.Bind();
+         mTextures[i].tex->Bind();
 
          ++texUnit;
       }
       else
       {
-         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << sampler2DUniformName << "\n";
+         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << mTextures[i].uniformName << "\n";
       }
    }
 
