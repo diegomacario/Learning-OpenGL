@@ -60,8 +60,9 @@ Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene, Resource
    return Mesh(vertices, indices, textures);
 }
 
-void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices) const
+std::vector<Vertex> ModelLoader::processVertices(const aiMesh* mesh) const
 {
+   std::vector<Vertex> vertices;
    vertices.reserve(mesh->mNumVertices);
 
    // Loop over the vertices of the mesh
@@ -80,12 +81,16 @@ void ModelLoader::processVertices(const aiMesh* mesh, std::vector<Vertex>& verti
       // TODO: Use emplace_back here?
       vertices.push_back(vertex);
    }
+
+   return vertices;
 }
 
-void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices) const
+std::vector<unsigned int> ModelLoader::processIndices(const aiMesh* mesh) const
 {
-   // We assume that mesh is made out of triangles
+   // We assume that the mesh is made out of triangles, which is why we multiply the number of faces by 3 when reserving space in the indices vector
    // This will always be true if the aiProcess_Triangulate flag continues to be used when loading the model
+   // TODO: Multiply by a different factor if we begin supporting other flags besides aiProcess_Triangulate
+   std::vector<unsigned int> indices;
    indices.reserve(mesh->mNumFaces * 3);
 
    // Loop over the faces of the mesh
@@ -99,9 +104,11 @@ void ModelLoader::processIndices(const aiMesh* mesh, std::vector<unsigned int>& 
          indices.push_back(face.mIndices[j]);
       }
    }
+
+   return indices;
 }
 
-void ModelLoader::processMaterial(const aiMaterial* material, std::vector<MeshTexture>& textures, ResourceManager<Texture>& texManager) const
+std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial* material, ResourceManager<Texture>& texManager) const
 {
    // Process the material of the mesh
    // The material can consist of many textures of different types

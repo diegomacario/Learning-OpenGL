@@ -13,13 +13,13 @@ Texture::~Texture()
    glDeleteTextures(1, &mTexID);
 }
 
-Texture::Texture(Texture&& rhs)
+Texture::Texture(Texture&& rhs) noexcept
    : mTexID(std::exchange(rhs.mTexID, 0))
 {
 
 }
 
-Texture& Texture::operator=(Texture&& rhs)
+Texture& Texture::operator=(Texture&& rhs) noexcept
 {
    mTexID = std::exchange(rhs.mTexID, 0);
    return *this;

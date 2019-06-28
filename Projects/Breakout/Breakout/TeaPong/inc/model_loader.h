@@ -29,9 +29,9 @@ private:
 
    // These methods translate Assimp's data into the Mesh objects that form the model
    Mesh processMesh(const aiMesh* mesh, const aiScene* scene, ResourceManager<Texture>& texManager) const;
-   void processVertices(const aiMesh* mesh, std::vector<Vertex>& vertices) const;
-   void processIndices(const aiMesh* mesh, std::vector<unsigned int>& indices) const;
-   void processMaterial(const aiMaterial* material, std::vector<MeshTexture>& textures, ResourceManager<Texture>& texManager) const;
+   std::vector<Vertex>       processVertices(const aiMesh* mesh) const;
+   std::vector<unsigned int> processIndices(const aiMesh* mesh) const;
+   std::vector<MeshTexture>  processMaterial(const aiMaterial* material, ResourceManager<Texture>& texManager) const;
    void processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<MeshTexture>& textures, ResourceManager<Texture>& texManager) const;
 };
 

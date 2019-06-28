@@ -14,7 +14,7 @@ Mesh::~Mesh()
    glDeleteVertexArrays(1, &mVAO);
 }
 
-Mesh::Mesh(Mesh&& rhs)
+Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
    , mTextures(std::move(rhs.mTextures))
    , mVAO(std::exchange(rhs.mVAO, 0))
@@ -22,7 +22,7 @@ Mesh::Mesh(Mesh&& rhs)
 
 }
 
-Mesh& Mesh::operator=(Mesh&& rhs)
+Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
    mNumIndices = std::exchange(rhs.mNumIndices, 0);
    mTextures   = std::move(rhs.mTextures);

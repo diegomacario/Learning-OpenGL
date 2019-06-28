@@ -13,8 +13,8 @@ public:
    Texture(const Texture&) = delete;
    Texture& operator=(const Texture&) = delete;
 
-   Texture(Texture&& rhs);
-   Texture& operator=(Texture&& rhs);
+   Texture(Texture&& rhs) noexcept;
+   Texture& operator=(Texture&& rhs) noexcept;
 
    void Bind() const;
 

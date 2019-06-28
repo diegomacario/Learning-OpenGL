@@ -4,6 +4,7 @@
 #include <assimp/scene.h>
 
 #include <vector>
+#include <memory>
 
 #include "shader.h"
 #include "texture.h"
@@ -38,8 +39,8 @@ public:
    Mesh(const Mesh&) = delete;
    Mesh& operator=(const Mesh&) = delete;
 
-   Mesh(Mesh&& rhs);
-   Mesh& operator=(Mesh&& rhs);
+   Mesh(Mesh&& rhs) noexcept;
+   Mesh& operator=(Mesh&& rhs) noexcept;
 
    void render(const Shader& shader) const;
 

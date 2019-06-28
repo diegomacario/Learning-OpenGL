@@ -13,13 +13,13 @@ Shader::~Shader()
    glDeleteProgram(mShaderProgID);
 }
 
-Shader::Shader(Shader&& rhs)
+Shader::Shader(Shader&& rhs) noexcept
    : mShaderProgID(std::exchange(rhs.mShaderProgID, 0))
 {
 
 }
 
-Shader& Shader::operator=(Shader&& rhs)
+Shader& Shader::operator=(Shader&& rhs) noexcept
 {
    mShaderProgID = std::exchange(rhs.mShaderProgID, 0);
    return *this;
