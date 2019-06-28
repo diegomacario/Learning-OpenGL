@@ -1,6 +1,7 @@
 #include <assimp/Importer.hpp>
 #include <assimp/postprocess.h>
 
+#include <array>
 #include <iostream>
 
 #include "model_loader.h"
@@ -17,17 +18,23 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
       return Model(std::vector<Mesh>(), ResourceManager<Texture>());
    }
 
-   mModelDir = modelFilePath.substr(0, modelFilePath.find_last_of('/'));
-
-   std::vector<Mesh> meshes;
    ResourceManager<Texture> texManager;
-   processNodeHierarchyRecursively(scene->mRootNode, scene, meshes, texManager);
+   std::vector<Mesh>        meshes;
+   processNodeHierarchyRecursively(scene->mRootNode,
+                                   scene,
+                                   modelFilePath.substr(0, modelFilePath.find_last_of('/')),
+                                   texManager,
+                                   meshes);
 
    // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
    return Model(std::move(meshes), std::move(texManager));
 }
 
-void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiScene* scene, std::vector<Mesh>& meshes, ResourceManager<Texture>& texManager) const
+void ModelLoader::processNodeHierarchyRecursively(const aiNode*             node,
+                                                  const aiScene*            scene,
+                                                  const std::string&        modelDir,
+                                                  ResourceManager<Texture>& texManager,
+                                                  std::vector<Mesh>&        meshes) const
 {
    // Create a Mesh object for each mesh referenced by the current node
    for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -36,28 +43,20 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode* node, const aiSc
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      meshes.push_back(processMesh(mesh, scene, texManager));
+      meshes.emplace_back(processVertices(mesh),                                                           // Vertices
+                          processIndices(mesh),                                                            // Indices
+                          processMaterial(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager)); // Textures
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
    for (unsigned int i = 0; i < node->mNumChildren; i++)
    {
-      processNodeHierarchyRecursively(node->mChildren[i], scene, meshes, texManager);
+      processNodeHierarchyRecursively(node->mChildren[i],
+                                      scene,
+                                      modelDir,
+                                      texManager,
+                                      meshes);
    }
-}
-
-Mesh ModelLoader::processMesh(const aiMesh* mesh, const aiScene* scene, ResourceManager<Texture>& texManager) const
-{
-   std::vector<Vertex>       vertices;
-   std::vector<unsigned int> indices;
-   std::vector<MeshTexture>  textures;
-
-   processVertices(mesh, vertices);
-   processIndices(mesh, indices);
-   processMaterial(scene->mMaterials[mesh->mMaterialIndex], textures, texManager);
-
-   // TODO: Could we take advantage of move semantics here?
-   return Mesh(vertices, indices, textures);
 }
 
 std::vector<Vertex> ModelLoader::processVertices(const aiMesh* mesh) const
@@ -68,18 +67,13 @@ std::vector<Vertex> ModelLoader::processVertices(const aiMesh* mesh) const
    // Loop over the vertices of the mesh
    for (unsigned int i = 0; i < mesh->mNumVertices; i++)
    {
-      Vertex vertex;
-
       // Store the position, the normal and the texture coordinates of the current vertex
       // Note that a vertex can contain up to 8 different sets of texture coordinates
       // We make the assumption that we will only use models that have a single set of texture coordinates per vertex
       // For this reason, we only check for the existence of the first set
-      vertex.position  = glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z);
-      vertex.normal    = glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z);
-      vertex.texCoords = mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f);
-
-      // TODO: Use emplace_back here?
-      vertices.push_back(vertex);
+      vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z),                                                // Position
+                            glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z),                                                   // Normal
+                            mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f)); // Texture coordinates
    }
 
    return vertices;
@@ -108,51 +102,59 @@ std::vector<unsigned int> ModelLoader::processIndices(const aiMesh* mesh) const
    return indices;
 }
 
-std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial* material, ResourceManager<Texture>& texManager) const
+std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial*         material,
+                                                      const std::string&        modelDir,
+                                                      ResourceManager<Texture>& texManager) const
 {
-   // Process the material of the mesh
+   std::vector<MeshTexture> textures;
+
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
    // TODO: Allow the user to select which texture types to process
-   processTextures(material, aiTextureType_AMBIENT, textures, texManager);
-   processTextures(material, aiTextureType_EMISSIVE, textures, texManager);
-   processTextures(material, aiTextureType_DIFFUSE, textures, texManager);
-   processTextures(material, aiTextureType_SPECULAR, textures, texManager);
-}
+   std::array<aiTextureType, 4> texTypes = {aiTextureType_AMBIENT,
+                                            aiTextureType_EMISSIVE,
+                                            aiTextureType_DIFFUSE,
+                                            aiTextureType_SPECULAR};
 
-void ModelLoader::processTextures(const aiMaterial* material, const aiTextureType texType, std::vector<MeshTexture>& textures, ResourceManager<Texture>& texManager) const
-{
-   // Compose the names of the sampler2D uniforms that should exist in the shader
-   // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
    std::string uniformName;
-   switch (texType)
+   for (aiTextureType texType : texTypes)
    {
-   // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
-   case aiTextureType_AMBIENT:
-      uniformName = "ambientTex";
-      break;
-   case aiTextureType_EMISSIVE:
-      uniformName = "emissiveTex";
-      break;
-   case aiTextureType_DIFFUSE:
-      uniformName = "diffuseTex";
-      break;
-   case aiTextureType_SPECULAR:
-      uniformName = "specularTex";
-      break;
-   default:
-      std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
-      return;
+       // Compose the name of the sampler2D uniform that should exist in the shader
+       // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
+       switch (texType)
+       {
+           // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
+       case aiTextureType_AMBIENT:
+           uniformName = "ambientTex";
+           break;
+       case aiTextureType_EMISSIVE:
+           uniformName = "emissiveTex";
+           break;
+       case aiTextureType_DIFFUSE:
+           uniformName = "diffuseTex";
+           break;
+       case aiTextureType_SPECULAR:
+           uniformName = "specularTex";
+           break;
+       default:
+           std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
+           goto skip;
+       }
+
+       // Load all the textures of the specified type
+       for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
+       {
+           aiString texFilename;
+           material->GetTexture(texType, i, &texFilename);
+
+           // Note that we assume that the textures are in the same directory as the model
+           textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()),
+               uniformName + std::to_string(i));
+       }
+
+       // We jump here if we are asked to process textures of an invalid type
+       skip:;
    }
 
-   // Load all the textures of the specified type
-   for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
-   {
-      aiString texFilename;
-      material->GetTexture(texType, i, &texFilename);
-
-      // Note that we assume that the textures are in the same directory as the model
-      textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), this->mModelDir + '/' + texFilename.C_Str()),
-                            uniformName + std::to_string(i));
-   }
+   return textures;
 }
