@@ -1,6 +1,8 @@
 #ifndef SHADER_LOADER_H
 #define SHADER_LOADER_H
 
+#include <memory>
+
 #include "shader.h"
 
 class ShaderLoader
@@ -10,14 +12,18 @@ public:
    ShaderLoader() = default;
    ~ShaderLoader() = default;
 
-   ShaderLoader(const ShaderLoader&) = delete;
-   ShaderLoader& operator=(const ShaderLoader&) = delete;
+   ShaderLoader(const ShaderLoader&) = default;
+   ShaderLoader& operator=(const ShaderLoader&) = default;
 
-   ShaderLoader(ShaderLoader&&) = delete;
-   ShaderLoader& operator=(ShaderLoader&&) = delete;
+   ShaderLoader(ShaderLoader&&) = default;
+   ShaderLoader& operator=(ShaderLoader&&) = default;
 
-   Shader loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath) const;
-   Shader loadResource(const std::string& vShaderFilePath, const std::string& fShaderFilePath, const std::string& gShaderFilePath) const;
+   std::shared_ptr<Shader> loadResource(const std::string& vShaderFilePath,
+                                        const std::string& fShaderFilePath) const;
+
+   std::shared_ptr<Shader> loadResource(const std::string& vShaderFilePath,
+                                        const std::string& fShaderFilePath,
+                                        const std::string& gShaderFilePath) const;
 
 private:
 

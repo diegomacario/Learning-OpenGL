@@ -45,8 +45,10 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
    auto it = resources.find(resourceID);
    if (it == resources.cend())
    {
-      // TODO: Are we taking advantage of move semantics inside this function?
-      resource = std::make_shared<TResource>(TResourceLoader{}.loadResource(std::forward<Args>(args)...));
+      resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
+
+      // We only store the resource if it is not a nullptr
+      // We expect the loaders to print an error message when they are unable to load a resource successfully, which is why we don't print anything here
       if (resource)
       {
          resources[resourceID] = resource;
@@ -55,7 +57,6 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
    else
    {
       std::cout << "Warning - ResourceManager::loadResource - A resource with the following ID already exists: " << resourceID << "\n";
-      // TODO: What happens when I assign a value to a shared_ptr that already wraps a nullptr?
       resource = it->second;
    }
 
@@ -66,8 +67,8 @@ template<typename TResource>
 template<typename TResourceLoader, typename... Args>
 std::shared_ptr<TResource> ResourceManager<TResource>::loadUnmanagedResource(Args&&... args) const
 {
-   // TODO: Are we taking advantage of move semantics inside this function?
-   return std::make_shared<TResource>(TResourceLoader{}.loadResource(std::forward<Args>(args)...));
+   // We expect the loaders to print an error message when they are unable to load a resource successfully, which is why we don't print anything here
+   return TResourceLoader{}.loadResource(std::forward<Args>(args)...);
 }
 
 template<typename TResource>

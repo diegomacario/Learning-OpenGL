@@ -11,15 +11,15 @@ class ModelLoader
 public:
 
    ModelLoader() = default;
-   ~ModelLoader() = default; // TODO: Should the destructor delete the textures?
+   ~ModelLoader() = default;
 
-   ModelLoader(const ModelLoader&) = delete;
-   ModelLoader& operator=(const ModelLoader&) = delete;
+   ModelLoader(const ModelLoader&) = default;
+   ModelLoader& operator=(const ModelLoader&) = default;
 
-   ModelLoader(ModelLoader&&) = delete;
-   ModelLoader& operator=(ModelLoader&&) = delete;
+   ModelLoader(ModelLoader&&) = default;
+   ModelLoader& operator=(ModelLoader&&) = default;
 
-   Model loadResource(const std::string& modelFilePath) const;
+   std::shared_ptr<Model> loadResource(const std::string& modelFilePath) const;
 
 private:
 
@@ -29,7 +29,6 @@ private:
                                         ResourceManager<Texture>& texManager,
                                         std::vector<Mesh>&        meshes) const;
 
-   // These methods translate Assimp's data into the Mesh objects that form the model
    std::vector<Vertex>       processVertices(const aiMesh* mesh) const;
 
    std::vector<unsigned int> processIndices(const aiMesh* mesh) const;

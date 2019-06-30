@@ -7,7 +7,7 @@
 #include "model_loader.h"
 #include "texture_loader.h"
 
-Model ModelLoader::loadResource(const std::string& modelFilePath) const
+std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePath) const
 {
    Assimp::Importer importer;
    const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs); // TODO: Allow the user to select which flags to use
@@ -15,7 +15,7 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
       std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
-      return Model(std::vector<Mesh>(), ResourceManager<Texture>());
+      return nullptr;
    }
 
    ResourceManager<Texture> texManager;
@@ -27,7 +27,7 @@ Model ModelLoader::loadResource(const std::string& modelFilePath) const
                                    meshes);
 
    // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
-   return Model(std::move(meshes), std::move(texManager));
+   return std::make_shared<Model>(std::move(meshes), std::move(texManager));
 }
 
 void ModelLoader::processNodeHierarchyRecursively(const aiNode*             node,
