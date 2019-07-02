@@ -94,7 +94,7 @@ void Mesh::bindTextures(const Shader& shader) const
          // Tell the sampler2D uniform in what texture unit to look for the texture data
          glUniform1i(uniformLoc, texUnit);
          // Bind the texture
-         mTextures[i].tex->Bind();
+         mTextures[i].texture->Bind();
 
          ++texUnit;
       }

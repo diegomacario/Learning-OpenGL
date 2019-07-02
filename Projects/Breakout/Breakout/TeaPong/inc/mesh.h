@@ -28,14 +28,14 @@ struct Vertex
 
 struct MeshTexture
 {
-   MeshTexture(const std::shared_ptr<Texture>& tex, const std::string& uniformName)
-      : tex(tex)
+   MeshTexture(const std::shared_ptr<Texture>& texture, const std::string& uniformName)
+      : texture(texture)
       , uniformName(uniformName)
    {
 
    }
 
-   std::shared_ptr<Texture> tex;
+   std::shared_ptr<Texture> texture;
    std::string              uniformName;
 };
 

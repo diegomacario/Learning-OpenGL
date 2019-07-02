@@ -80,5 +80,17 @@
     <ClInclude Include="inc\texture_loader.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="inc\game_object_2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\game_object_3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\movable_game_object_2D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="inc\movable_game_object_3D.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

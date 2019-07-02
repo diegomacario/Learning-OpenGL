@@ -131,9 +131,13 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\camera.h" />
+    <ClInclude Include="inc\game_object_2D.h" />
+    <ClInclude Include="inc\game_object_3D.h" />
     <ClInclude Include="inc\mesh.h" />
     <ClInclude Include="inc\model.h" />
     <ClInclude Include="inc\model_loader.h" />
+    <ClInclude Include="inc\movable_game_object_2D.h" />
+    <ClInclude Include="inc\movable_game_object_3D.h" />
     <ClInclude Include="inc\resource_manager.h" />
     <ClInclude Include="inc\shader.h" />
     <ClInclude Include="inc\shader_loader.h" />
