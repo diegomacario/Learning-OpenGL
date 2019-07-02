@@ -8,11 +8,11 @@ class MovableGameObject2D : public GameObject2D
 public:
 
    MovableGameObject2D(const std::shared_ptr<Texture>& texture,
-                       const glm::vec2&                position,
-                       float                           angleOfRotation,
-                       const glm::vec2&                scaling,
+                       const glm::vec2&                posOfTopLeftCornerInPix,
+                       float                           angleOfRotInDeg,
+                       const glm::vec2&                dimensionsInPix,
                        const glm::vec2&                velocity);
-   ~MovableGameObject2D() = default; // TODO: Should the destructor be virtual?
+   ~MovableGameObject2D() = default;
 
    MovableGameObject2D(const MovableGameObject2D&) = default;
    MovableGameObject2D& operator=(const MovableGameObject2D&) = default;
@@ -22,7 +22,7 @@ public:
 
 private:
 
-   glm::vec2 velocity; // TODO: Should this be divided into speed and direction?
+   glm::vec2 mVelocity; // TODO: Should this be divided into speed and direction?
 };
 
 #endif

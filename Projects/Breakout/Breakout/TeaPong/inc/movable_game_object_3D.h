@@ -7,13 +7,13 @@ class MovableGameObject3D : public GameObject3D
 {
 public:
 
-   MovableGameObject3D(const std::shared_ptr<Texture>& texture,
-                       const glm::vec2&                position,
-                       float                           angleOfRotation,
-                       const glm::vec3&                axisOfRotation,
-                       const glm::vec2&                scaling,
-                       const glm::vec3&                velocity);
-   ~MovableGameObject3D() = default; // TODO: Should the destructor be virtual?
+   MovableGameObject3D(const std::shared_ptr<Model>& model,
+                       const glm::vec3&              position,
+                       float                         angleOfRotInDeg,
+                       const glm::vec3&              axisOfRot,
+                       const glm::vec3&              scalingFactors,
+                       const glm::vec3&              velocity);
+   ~MovableGameObject3D() = default;
 
    MovableGameObject3D(const MovableGameObject3D&) = default;
    MovableGameObject3D& operator=(const MovableGameObject3D&) = default;
@@ -23,7 +23,7 @@ public:
 
 private:
 
-   glm::vec3 velocity; // TODO: Should this be divided into speed and direction?
+   glm::vec3 mVelocity; // TODO: Should this be divided into speed and direction?
 };
 
 #endif

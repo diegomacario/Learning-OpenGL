@@ -13,10 +13,10 @@ public:
 
    GameObject3D(const std::shared_ptr<Model>& model,
                 const glm::vec3&              position,
-                float                         angleOfRotation,
-                const glm::vec3&              axisOfRotation,
-                const glm::vec3&              scaling);
-   ~GameObject3D() = default; // TODO: Should the destructor be virtual?
+                float                         angleOfRotInDeg,
+                const glm::vec3&              axisOfRot,
+                const glm::vec3&              scalingFactors);
+   virtual ~GameObject3D() = default;
 
    GameObject3D(const GameObject3D&) = default;
    GameObject3D& operator=(const GameObject3D&) = default;
@@ -29,9 +29,9 @@ private:
    std::shared_ptr<Model> mModel;
 
    glm::vec3 mPosition;
-   float     mAngleOfRotation;
-   glm::vec3 mAxisOfRotation;
-   glm::vec3 mScaling;
+   float     mAngleOfRotInDeg;
+   glm::vec3 mAxisOfRot;
+   glm::vec3 mScalingFactors;
 };
 
 #endif
