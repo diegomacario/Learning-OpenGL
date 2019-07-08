@@ -25,10 +25,14 @@ public:
    GameObject2D& operator=(GameObject2D&& rhs) noexcept;
 
    std::shared_ptr<Texture> getTexture() const;
+   // TODO: Remove?
+   /*
    glm::vec2                getPosOfTopLeftCornerInPix() const;
    float                    getAngleOfRotInDeg() const;
    float                    getWidthInPix() const;
    float                    getHeightInPix() const;
+   */
+   glm::mat4                getModelMatrix() const;
 
 private:
 
@@ -38,6 +42,9 @@ private:
    float                    mAngleOfRotInDeg;
    float                    mWidthInPix;
    float                    mHeightInPix;
+   glm::mat4                mModelMat;
+
+   void calculateModelMatrix();
 };
 
 #endif

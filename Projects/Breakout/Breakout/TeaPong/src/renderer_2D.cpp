@@ -1,5 +1,4 @@
 #include <glm/glm.hpp>
-#include <glm/gtc/matrix_transform.hpp>
 
 #include <array>
 
@@ -32,35 +31,13 @@ Renderer2D& Renderer2D::operator=(Renderer2D&& rhs) noexcept
 
 void Renderer2D::render(const GameObject2D& gameObj2D)
 {
-   glm::mat4 model;
-
-   // TODO: Could we store the model matrix and re-use it if nothing changes? This would make things much more efficient for fixed objects.
-   // 5) Translate the quad to the right position
-   model = glm::translate(model, glm::vec3(gameObj2D.getPosOfTopLeftCornerInPix(), 0.0f));
-
-   // 4) Move the center of rotation back to the top left corner
-   model = glm::translate(model, glm::vec3(0.5f * gameObj2D.getWidthInPix(),
-                                           0.5f * gameObj2D.getHeightInPix(),
-                                           0.0f));
-   // 3) Rotate the quad around its center
-   model = glm::rotate(model, gameObj2D.getAngleOfRotInDeg(), glm::vec3(0.0f, 0.0f, 1.0f));
-   // 2) Move center of rotation to the center of the quad
-   model = glm::translate(model, glm::vec3(-0.5f * gameObj2D.getWidthInPix(),
-                                           -0.5f * gameObj2D.getHeightInPix(),
-                                            0.0f));
-
-   // 1) Scale the quad
-   model = glm::scale(model, glm::vec3(gameObj2D.getWidthInPix(),
-                                       gameObj2D.getHeightInPix(),
-                                       1.0f));
-
-   // Render textured quad
    mShader->use();
-   mShader->setMat4("model", model);
+   mShader->setMat4("model", gameObj2D.getModelMatrix());
 
    glActiveTexture(GL_TEXTURE0);
    gameObj2D.getTexture()->bind();
 
+   // Render textured quad
    glBindVertexArray(mVAO);
    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
    glBindVertexArray(0);
@@ -140,6 +117,7 @@ void Renderer2D::configureVAO()
    glEnableVertexAttribArray(0);
    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
+   // TODO: Can I delete the VBO and EBO before unbinding the VAO? Is it necessary to unbind them before deleting them?
    glBindVertexArray(0);
 
    glDeleteBuffers(1, &VBO);

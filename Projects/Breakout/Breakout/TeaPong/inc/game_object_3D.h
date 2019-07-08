@@ -24,6 +24,8 @@ public:
    GameObject3D(GameObject3D&& rhs) noexcept;
    GameObject3D& operator=(GameObject3D&& rhs) noexcept;
 
+   glm::mat4 getModelMatrix() const;
+
 private:
 
    std::shared_ptr<Model> mModel;
@@ -32,6 +34,9 @@ private:
    float                  mAngleOfRotInDeg;
    glm::vec3              mAxisOfRot;
    glm::vec3              mScalingFactors;
+   glm::mat4              mModelMat;
+
+   void calculateModelMatrix();
 };
 
 #endif
