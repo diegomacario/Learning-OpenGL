@@ -16,7 +16,7 @@ public:
    Texture(Texture&& rhs) noexcept;
    Texture& operator=(Texture&& rhs) noexcept;
 
-   void Bind() const;
+   void bind() const;
 
 private:
 

@@ -25,7 +25,7 @@ Texture& Texture::operator=(Texture&& rhs) noexcept
    return *this;
 }
 
-void Texture::Bind() const
+void Texture::bind() const
 {
    glBindTexture(GL_TEXTURE_2D, mTexID);
 }

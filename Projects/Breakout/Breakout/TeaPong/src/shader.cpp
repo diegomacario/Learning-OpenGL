@@ -32,7 +32,7 @@ void Shader::use() const
 
 GLuint Shader::getID() const
 {
-    return mShaderProgID;
+   return mShaderProgID;
 }
 
 void Shader::setBool(const std::string& name, bool value) const

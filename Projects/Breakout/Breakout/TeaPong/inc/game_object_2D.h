@@ -14,7 +14,8 @@ public:
    GameObject2D(const std::shared_ptr<Texture>& texture,
                 const glm::vec2&                posOfTopLeftCornerInPix,
                 float                           angleOfRotInDeg,
-                const glm::vec2&                dimensionsInPix);
+                float                           widthInPix,
+                float                           heightInPix);
    virtual ~GameObject2D() = default;
 
    GameObject2D(const GameObject2D&) = default;
@@ -23,13 +24,20 @@ public:
    GameObject2D(GameObject2D&& rhs) noexcept;
    GameObject2D& operator=(GameObject2D&& rhs) noexcept;
 
+   std::shared_ptr<Texture> getTexture() const;
+   glm::vec2                getPosOfTopLeftCornerInPix() const;
+   float                    getAngleOfRotInDeg() const;
+   float                    getWidthInPix() const;
+   float                    getHeightInPix() const;
+
 private:
 
    std::shared_ptr<Texture> mTexture;
 
-   glm::vec2 mPosOfTopLeftCornerInPix;
-   float     mAngleOfRotInDeg;
-   glm::vec2 mDimensionsInPix;
+   glm::vec2                mPosOfTopLeftCornerInPix;
+   float                    mAngleOfRotInDeg;
+   float                    mWidthInPix;
+   float                    mHeightInPix;
 };
 
 #endif

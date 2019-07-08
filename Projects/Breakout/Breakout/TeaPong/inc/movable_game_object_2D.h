@@ -10,7 +10,8 @@ public:
    MovableGameObject2D(const std::shared_ptr<Texture>& texture,
                        const glm::vec2&                posOfTopLeftCornerInPix,
                        float                           angleOfRotInDeg,
-                       const glm::vec2&                dimensionsInPix,
+                       float                           widthInPix,
+                       float                           heightInPix,
                        const glm::vec2&                velocity);
    ~MovableGameObject2D() = default;
 

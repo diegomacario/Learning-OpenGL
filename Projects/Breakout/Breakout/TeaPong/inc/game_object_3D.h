@@ -28,10 +28,10 @@ private:
 
    std::shared_ptr<Model> mModel;
 
-   glm::vec3 mPosition;
-   float     mAngleOfRotInDeg;
-   glm::vec3 mAxisOfRot;
-   glm::vec3 mScalingFactors;
+   glm::vec3              mPosition;
+   float                  mAngleOfRotInDeg;
+   glm::vec3              mAxisOfRot;
+   glm::vec3              mScalingFactors;
 };
 
 #endif
