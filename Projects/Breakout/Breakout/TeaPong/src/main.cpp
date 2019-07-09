@@ -226,15 +226,10 @@ int main()
         // ---------------------------------------------------------------------------------------------------------------------------------------------------------
         basicShader->use();
 
-        // perspective
-        // -----------
-        //model      = glm::mat4();
-        //view       = camera.GetViewMatrix();
-        //projection = glm::perspective(glm::radians(camera.Zoom), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
         // ortographic
         // -----------
         model      = glm::mat4();
-        model      = glm::translate(model, glm::vec3(0.0f, 0.0f, -199.0f));
+        model      = glm::translate(model, glm::vec3(0.0f, 0.0f, -160.0f));
         model      = glm::scale(model, glm::vec3(1280.0f, 720.0f, 1.0f));
         view       = glm::mat4();
         projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
@@ -263,15 +258,6 @@ int main()
         model      = glm::scale(model, glm::vec3(0.01f));
         view       = camera.getViewMatrix();
         projection = glm::perspective(glm::radians(camera.getFieldOfViewY()), (float)SCR_WIDTH / (float)SCR_HEIGHT, 0.1f, 100.0f);
-        // ortographic
-        // -----------
-        //model      = glm::mat4();
-        //model      = glm::translate(model, glm::vec3(1280.0f / 2, 720.0f / 2, 0.0f));
-        //model      = model * rotMatrixForTeapot;
-        //model      = glm::rotate(model, glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
-        //model      = glm::scale(model, glm::vec3(10.0f));
-        //view       = glm::mat4();
-        //projection = glm::ortho(0.0f, 1280.0f, 720.0f, 0.0f, -200.0f, 200.0f);
 
         modelShader->setMat4("model", model);
         modelShader->setMat4("view", view);

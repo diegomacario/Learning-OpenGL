@@ -14,7 +14,7 @@ GameObject3D::GameObject3D(const std::shared_ptr<Model>& model,
    , mScalingFactors(scalingFactors)
    , mModelMat(1.0f)
 {
-
+   calculateModelMatrix();
 }
 
 GameObject3D::GameObject3D(GameObject3D&& rhs) noexcept
