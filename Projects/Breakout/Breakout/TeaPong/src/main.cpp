@@ -1,3 +1,4 @@
+/*
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <stb_image.h>
@@ -447,6 +448,7 @@ unsigned int loadCubemap(std::vector<std::string> faces)
 
     return textureID;
 }
+*/
 
 // Additional information:
 // The process of transforming 3D coordinates to 2D pixels is managed by OpenGL's graphics pipeline
