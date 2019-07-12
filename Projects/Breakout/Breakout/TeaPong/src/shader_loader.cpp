@@ -54,15 +54,14 @@ GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, G
       // Read the entire file into a string
       std::stringstream shaderStream;
       shaderStream << shaderFile.rdbuf();
-      std::string shaderCodeAsStr = shaderStream.str();
+      std::string shaderCodeStr = shaderStream.str();
 
       shaderFile.close();
 
-      const char* shaderCodeAsCStr  = shaderCodeAsStr.c_str();
-
       // Create and compile the shader
       GLuint shaderID = glCreateShader(shaderType);
-      glShaderSource(shaderID, 1, &shaderCodeAsCStr, NULL);
+      const char* shaderCodeCStr = shaderCodeStr.c_str();
+      glShaderSource(shaderID, 1, &shaderCodeCStr, nullptr);
       glCompileShader(shaderID);
       checkForCompilationErrors(shaderID, shaderType, shaderFilePath);
       return shaderID;
@@ -112,7 +111,7 @@ void ShaderLoader::checkForCompilationErrors(GLuint shaderID, GLenum shaderType,
       glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
       std::vector<GLchar> infoLog(infoLogLength);
-      glGetShaderInfoLog(shaderID, infoLogLength, NULL, &infoLog[0]);
+      glGetShaderInfoLog(shaderID, infoLogLength, nullptr, &infoLog[0]);
 
       std::cout << "Error - ShaderLoader::checkForCompilationErrors - The error below occurred while compiling this shader: " << shaderFilePath << "\n" << infoLog.data() << "\n";
    }
@@ -129,7 +128,7 @@ void ShaderLoader::checkForLinkingErrors(GLuint shaderProgID) const
       glGetProgramiv(shaderProgID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
       std::vector<GLchar> infoLog(infoLogLength);
-      glGetProgramInfoLog(shaderProgID, infoLogLength, NULL, &infoLog[0]);
+      glGetProgramInfoLog(shaderProgID, infoLogLength, nullptr, &infoLog[0]);
 
       std::cout << "Error - ShaderLoader::checkForLinkingErrors - The following error occurred while linking a shader program:\n" << infoLog.data() << "\n";
    }
