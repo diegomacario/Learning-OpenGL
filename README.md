@@ -20,7 +20,11 @@ Small graphics and physics experiments built with OpenGL.
 
 ### Patterns
 
-http://gameprogrammingpatterns.com/contents.html
+- http://gameprogrammingpatterns.com/contents.html
+
+### Game State Management
+
+- http://www.ai-junkie.com/architecture/state_driven/tut_state1.html
 
 ### Miscellanous
 
