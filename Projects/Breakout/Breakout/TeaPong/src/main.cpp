@@ -7,6 +7,7 @@
 #include "shader_loader.h"
 #include "model_loader.h"
 #include "camera.h"
+#include "state_machine.h"
 
 void framebufferSizeCallback(GLFWwindow* window, int width, int height);
 void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
