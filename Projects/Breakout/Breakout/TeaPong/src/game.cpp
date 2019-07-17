@@ -1,11 +1,7 @@
 #include "game.h"
 
 Game::Game(GLuint windowWidth, GLuint windowHeight)
-   : mWindowWidth(windowWidth)
-   , mWindowHeight(windowHeight)
-   , mKeyboard()
-   , mProcessedKeyboard()
-   , mTextureManager()
+   : mTextureManager()
    , mModelManager()
    , mShaderManager()
    , mRenderer2D()
@@ -14,6 +10,7 @@ Game::Game(GLuint windowWidth, GLuint windowHeight)
    , mBall()
    , mGameStates()
    , mStateMachine()
+   , mWindow()
 {
    initialize();
 }

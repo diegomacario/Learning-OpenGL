@@ -1,6 +1,7 @@
 #ifndef WINDOW_H
 #define WINDOW_H
 
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
 #include <bitset>
@@ -18,7 +19,26 @@ public:
    Window(Window&&) = delete;
    Window& operator=(Window&&) = delete;
 
-   bool initialize();
+   bool   initialize();
+
+   bool   shouldClose() const;
+   void   setShouldClose(bool shouldClose); // TODO: Could this be considered to be const?
+   void   swapBuffers();                    // TODO: Could this be considered to be const?
+   void   pollEvents();                     // TODO: Could this be considered to be const?
+
+   // Keyboard
+   bool   isKeyPressed(int key) const;
+   bool   hasKeyBeenProcessed(int key) const;
+   void   setKeyAsProcessed(int key);
+
+   // Cursor
+   double getCursorXOffset() const;
+   double getCursorYOffset() const;
+
+   // Scroll wheel
+   double getScrollYOffset() const;
+
+   bool                           mCursorMoved;
 
 private:
 
@@ -28,19 +48,22 @@ private:
    GLuint                         mHeight;
    std::string                    mTitle;
 
-   std::bitset<GLFW_KEY_LAST + 1> mKeyboard;
-   std::bitset<GLFW_KEY_LAST + 1> mProcessedKeyboard;
+   // Keyboard
+   std::bitset<GLFW_KEY_LAST + 1> mKeys;
+   std::bitset<GLFW_KEY_LAST + 1> mProcessedKeys;
 
-   float                          mLastCursorXPos;
-   float                          mLastCursorYPos;
-   float                          mCursorXOffset;
-   float                          mCursorYOffset;
+   // Cursor
    bool                           mFirstCursorPosCallback;
+   double                         mLastCursorXPos;
+   double                         mLastCursorYPos;
+   double                         mCursorXOffset;
+   double                         mCursorYOffset;
 
-   float                          mScrollYOffset;
+   // Scroll wheel
+   double                         mScrollYOffset;
 
    void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-   void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
+   void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
    void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
    void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 };

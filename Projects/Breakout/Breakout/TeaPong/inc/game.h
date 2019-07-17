@@ -7,6 +7,7 @@
 #include "movable_game_object_3D.h"
 #include "state.h"
 #include "state_machine.h"
+#include "window.h"
 
 class Game
 {
@@ -38,6 +39,8 @@ private:
 
    std::vector<std::unique_ptr<State<Game>>> mGameStates;
    std::unique_ptr<StateMachine<Game>>       mStateMachine;
+
+   std::unique_ptr<Window>                   mWindow;
 };
 
 #endif

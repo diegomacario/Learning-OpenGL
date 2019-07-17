@@ -3,16 +3,14 @@
 
 #include <iostream>
 
+#include "window.h"
 #include "resource_manager.h"
 #include "shader_loader.h"
 #include "model_loader.h"
 #include "camera.h"
 #include "state_machine.h"
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height);
-void cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
-void scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
-void processInput(GLFWwindow* window);
+void processInput(Window& window);
 
 const unsigned int kWindowWidth = 1280;
 const unsigned int kWindowHeight = 720;
@@ -25,61 +23,20 @@ Camera camera(glm::vec3(0.0f, 0.0f, 1.0f), // Position
               2.5f,                        // Movement speed
               0.1f);                       // Mouse sensitivity
 
-float lastX = (float)kWindowWidth / 2.0;
-float lastY = (float)kWindowHeight / 2.0;
-bool  firstMouse = true;
-
-float deltaTime = 0.0f;
-float lastFrame = 0.0f;
+double deltaTime = 0.0;
+double lastFrame = 0.0;
 
 glm::vec3 lightPos = glm::vec3(0.2f, 0.2f, 0.2f);
 
 int main(int argc, char* argv[])
 {
-   // Initialize GLFW
-   glfwInit();
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-   //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE);
+   Window window(1280, 720, "TeaPong");
 
-   // TODO: Is this necessary?
-#ifdef __APPLE__
-   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-#endif
-
-   // Create the GLFW window
-   // TODO: Use a unique_ptr to call glfwDestroyWindow and glfwTerminate when this object goes out of scope. Remember to remove all the calls to glfwTerminate when you do this.
-   GLFWwindow* window = glfwCreateWindow(kWindowWidth, kWindowHeight, "TeaPong", nullptr, nullptr);
-   if (!window)
+   if (!window.initialize())
    {
-      std::cout << "Error - main - Failed to create the GLFW window" << "\n";
-      glfwTerminate();
+      std::cout << "Error - main - Failed to initialize the window" << "\n";
       return -1;
    }
-
-   // Set the input callbacks
-   glfwMakeContextCurrent(window);
-   glfwSetFramebufferSizeCallback(window, framebufferSizeCallback);
-   glfwSetCursorPosCallback(window, cursorPosCallback);
-   glfwSetScrollCallback(window, scrollCallback);
-
-   // Capture the mouse
-   glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
-
-   // Load pointers to OpenGL functions using GLAD
-   if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-   {
-      std::cout << "Error - main - Failed to load pointers to OpenGL functions using GLAD" << "\n";
-      glfwTerminate();
-      return -1;
-   }
-
-   // Global OpenGL configuration
-   glViewport(0, 0, kWindowWidth, kWindowHeight);
-   //glEnable(GL_CULL_FACE);
-   glEnable(GL_BLEND);
-   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
    // Load the shaders
    ResourceManager<Shader> shaderManager;
@@ -195,10 +152,10 @@ int main(int argc, char* argv[])
    glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
 
    // Execute the render loop
-   while (!glfwWindowShouldClose(window))
+   while (!window.shouldClose())
    {
       // Per-frame time logic
-      float currentFrame = glfwGetTime();
+      double currentFrame = glfwGetTime();
       deltaTime = currentFrame - lastFrame;
       lastFrame = currentFrame;
 
@@ -296,57 +253,35 @@ int main(int argc, char* argv[])
       glBindVertexArray(lampVAO);
       glDrawArrays(GL_TRIANGLES, 0, 36);
 
-      glfwSwapBuffers(window);
-      glfwPollEvents();
+      window.swapBuffers();
+      window.pollEvents();
    }
 
    glDeleteVertexArrays(1, &lampVAO);
    glDeleteBuffers(1, &lampVBO);
 
-   glfwTerminate();
    return 0;
 }
 
-void processInput(GLFWwindow* window)
+void processInput(Window& window)
 {
-   if (glfwGetKey(window, GLFW_KEY_ESCAPE) == GLFW_PRESS)
-      glfwSetWindowShouldClose(window, true);
+   if (window.isKeyPressed(GLFW_KEY_ESCAPE))
+      window.setShouldClose(true);
 
-   if (glfwGetKey(window, GLFW_KEY_W) == GLFW_PRESS)
+   if (window.isKeyPressed(GLFW_KEY_W))
       camera.processKeyboard(MovementDirection::Forward, deltaTime);
-   if (glfwGetKey(window, GLFW_KEY_S) == GLFW_PRESS)
+   if (window.isKeyPressed(GLFW_KEY_S))
       camera.processKeyboard(MovementDirection::Backward, deltaTime);
-   if (glfwGetKey(window, GLFW_KEY_A) == GLFW_PRESS)
+   if (window.isKeyPressed(GLFW_KEY_A))
       camera.processKeyboard(MovementDirection::Left, deltaTime);
-   if (glfwGetKey(window, GLFW_KEY_D) == GLFW_PRESS)
+   if (window.isKeyPressed(GLFW_KEY_D))
       camera.processKeyboard(MovementDirection::Right, deltaTime);
-}
 
-void framebufferSizeCallback(GLFWwindow* window, int width, int height)
-{
-   // Make sure the viewport matches the new window dimensions
-   glViewport(0, 0, width, height);
-}
-
-void cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
-{
-   if (firstMouse)
+   if (window.mCursorMoved)
    {
-      lastX = xPos;
-      lastY = yPos;
-      firstMouse = false;
+      camera.processMouseMovement(window.getCursorXOffset(), window.getCursorYOffset());
+      window.mCursorMoved = false;
    }
 
-   float xoffset = xPos - lastX;
-   float yoffset = lastY - yPos; // Reversed since Y-coordinates go from the bottom to the top
-
-   lastX = xPos;
-   lastY = yPos;
-
-   camera.processMouseMovement(xoffset, yoffset);
-}
-
-void scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
-{
-   camera.processMouseScroll(yOffset);
+   camera.processMouseScroll(window.getScrollYOffset());
 }
