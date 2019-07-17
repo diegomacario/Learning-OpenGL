@@ -22,18 +22,22 @@ public:
 
 private:
 
-   GLFWwindow*                mWindow;
+   GLFWwindow*                    mWindow;
 
-   GLuint                     mWidth;
-   GLuint                     mHeight;
-   std::string                mTitle;
+   GLuint                         mWidth;
+   GLuint                         mHeight;
+   std::string                    mTitle;
 
-   std::bitset<GLFW_KEY_LAST> mKeyboard;
-   std::bitset<GLFW_KEY_LAST> mProcessedKeyboard;
+   std::bitset<GLFW_KEY_LAST + 1> mKeyboard;
+   std::bitset<GLFW_KEY_LAST + 1> mProcessedKeyboard;
 
-   float                      mLastCursorXPos;
-   float                      mLastCursorYPos;
-   bool                       mFirstCursorPosCallback;
+   float                          mLastCursorXPos;
+   float                          mLastCursorYPos;
+   float                          mCursorXOffset;
+   float                          mCursorYOffset;
+   bool                           mFirstCursorPosCallback;
+
+   float                          mScrollYOffset;
 
    void framebufferSizeCallback(GLFWwindow* window, int width, int height);
    void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods);
