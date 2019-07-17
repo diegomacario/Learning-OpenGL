@@ -1,8 +1,6 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <bitset>
-
 #include "model.h"
 #include "renderer_2D.h"
 #include "movable_game_object_2D.h"
@@ -27,12 +25,6 @@ public:
    void update(GLfloat deltaTime);
 
 private:
-
-   GLuint                                    mWindowWidth;
-   GLuint                                    mWindowHeight;
-
-   std::bitset<348>                          mKeyboard;
-   std::bitset<348>                          mProcessedKeyboard;
 
    ResourceManager<Texture>                  mTextureManager;
    ResourceManager<Model>                    mModelManager;
