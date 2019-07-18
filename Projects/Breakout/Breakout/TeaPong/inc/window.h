@@ -6,6 +6,7 @@
 
 #include <bitset>
 
+// TODO: Take advantage of inlining in this class
 class Window
 {
 public:
@@ -32,13 +33,15 @@ public:
    void   setKeyAsProcessed(int key);
 
    // Cursor
+   bool   mouseMoved() const;
+   void   resetMouseMoved();
    double getCursorXOffset() const;
    double getCursorYOffset() const;
 
    // Scroll wheel
+   bool   scrollWheelMoved() const;
+   void   resetScrollWheelMoved();
    double getScrollYOffset() const;
-
-   bool                           mCursorMoved;
 
 private:
 
@@ -53,6 +56,7 @@ private:
    std::bitset<GLFW_KEY_LAST + 1> mProcessedKeys;
 
    // Cursor
+   bool                           mMouseMoved;
    bool                           mFirstCursorPosCallback;
    double                         mLastCursorXPos;
    double                         mLastCursorYPos;
@@ -60,6 +64,7 @@ private:
    double                         mCursorYOffset;
 
    // Scroll wheel
+   bool                           mScrollWheelMoved;
    double                         mScrollYOffset;
 
    void framebufferSizeCallback(GLFWwindow* window, int width, int height);

@@ -3,18 +3,19 @@
 #include "window.h"
 
 Window::Window(GLuint width, GLuint height, const std::string& title)
-   : mCursorMoved(false)
-   , mWindow(nullptr)
+   : mWindow(nullptr)
    , mWidth(width)
    , mHeight(height)
    , mTitle(title)
    , mKeys()
    , mProcessedKeys()
+   , mMouseMoved(false)
    , mFirstCursorPosCallback(true)
    , mLastCursorXPos(0.0)
    , mLastCursorYPos(0.0)
    , mCursorXOffset(0.0)
    , mCursorYOffset(0.0)
+   , mScrollWheelMoved(false)
    , mScrollYOffset(0.0)
 {
 
@@ -138,6 +139,16 @@ void Window::setKeyAsProcessed(int key)
    mProcessedKeys.set(key);
 }
 
+bool Window::mouseMoved() const
+{
+   return mMouseMoved;
+}
+
+void Window::resetMouseMoved()
+{
+   mMouseMoved = false;
+}
+
 double Window::getCursorXOffset() const
 {
    return mCursorXOffset;
@@ -146,6 +157,16 @@ double Window::getCursorXOffset() const
 double Window::getCursorYOffset() const
 {
    return mCursorYOffset;
+}
+
+bool Window::scrollWheelMoved() const
+{
+   return mScrollWheelMoved;
+}
+
+void Window::resetScrollWheelMoved()
+{
+   mScrollWheelMoved = false;
 }
 
 double Window::getScrollYOffset() const
@@ -191,7 +212,7 @@ void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
    mLastCursorXPos = xPos;
    mLastCursorYPos = yPos;
 
-   mCursorMoved = true;
+   mMouseMoved = true;
 }
 
 void Window::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
@@ -199,4 +220,6 @@ void Window::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
    // TODO: Ideally this function would tell the camera to update its FOVY based on the Y offset.
    // I'm going to make the camera ask the window if it should update its FOVY. Is there a better way to do this?
    mScrollYOffset = yOffset;
+
+   mScrollWheelMoved = true;
 }

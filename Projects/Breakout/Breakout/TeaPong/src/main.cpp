@@ -277,11 +277,15 @@ void processInput(Window& window)
    if (window.isKeyPressed(GLFW_KEY_D))
       camera.processKeyboard(MovementDirection::Right, deltaTime);
 
-   if (window.mCursorMoved)
+   if (window.mouseMoved())
    {
       camera.processMouseMovement(window.getCursorXOffset(), window.getCursorYOffset());
-      window.mCursorMoved = false;
+      window.resetMouseMoved();
    }
 
-   camera.processMouseScroll(window.getScrollYOffset());
+   if (window.scrollWheelMoved())
+   {
+      camera.processMouseScroll(window.getScrollYOffset());
+      window.resetScrollWheelMoved();
+   }
 }
