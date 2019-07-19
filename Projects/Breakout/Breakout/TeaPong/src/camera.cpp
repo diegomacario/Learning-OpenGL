@@ -59,6 +59,7 @@ void Camera::processKeyboard(MovementDirection direction, float deltaTime)
 
 void Camera::processMouseMovement(float xOffset, float yOffset)
 {
+   // TODO: Should the offsets also be scaled by deltaTime?
    xOffset *= mMouseSensitivity;
    yOffset *= mMouseSensitivity;
 

@@ -1,22 +1,28 @@
 #version 330 core
-layout (location = 0) in vec3 aPos;
-layout (location = 1) in vec3 aNormal;
-layout (location = 2) in vec2 aTexCoords;
 
-out vec3 FragPos;
-out vec3 Normal;
-out vec2 TexCoords;
+layout (location = 0) in vec3 inPosition;
+layout (location = 1) in vec3 inNormal;
+layout (location = 2) in vec2 inTexCoords;
 
-uniform mat4 model;
-uniform mat4 view;
-uniform mat4 projection;
+uniform Uniforms
+{
+   mat4 model;
+   mat4 view;
+   mat4 projection;
+} u;
+
+out VertexData
+{
+   vec3 worldPosition;
+   vec3 worldNormal;
+   vec2 texCoords;
+} o;
 
 void main()
 {
-   FragPos     = vec3(model * vec4(aPos, 1.0));
-   Normal      = mat3(transpose(inverse(model))) * aNormal; // We only take upper-left 3x3 because normals should not be affected by translations,
-                                                            // and we take the transpose of the inverse to take care of non-uniform scales
-   TexCoords   = aTexCoords;
+   o.worldPosition = vec3(u.model * vec4(inPosition, 1.0));
+   o.worldNormal   = mat3(transpose(inverse(u.model))) * inNormal; // We only take upper-left 3x3 because normals should not be affected by translations, and we take the transpose of the inverse to handle non-uniform scales
+   o.texCoords     = inTexCoords;
 
-   gl_Position = projection * view * vec4(FragPos, 1.0);
+   gl_Position   = u.projection * u.view * vec4(o.worldPosition, 1.0);
 }

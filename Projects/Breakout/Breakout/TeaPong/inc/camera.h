@@ -24,6 +24,8 @@ public:
           float     movementSpeed,
           float     mouseSensitivity);
 
+   // TODO: Implement copy/move constructors/assignment operators
+
    glm::vec3 getPosition();
    float     getFieldOfViewY();
    glm::mat4 getViewMatrix();

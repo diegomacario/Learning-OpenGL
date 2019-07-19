@@ -124,6 +124,16 @@ void Window::pollEvents()
    glfwPollEvents();
 }
 
+GLuint Window::getWidth() const
+{
+   return mWidth;
+}
+
+GLuint Window::getHeight() const
+{
+   return mHeight;
+}
+
 bool Window::isKeyPressed(int key) const
 {
    return mKeys.test(key);

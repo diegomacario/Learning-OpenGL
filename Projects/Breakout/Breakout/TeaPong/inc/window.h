@@ -20,12 +20,15 @@ public:
    Window(Window&&) = delete;
    Window& operator=(Window&&) = delete;
 
-   bool   initialize();
+   bool   initialize(); // TODO: Split this function up
 
    bool   shouldClose() const;
    void   setShouldClose(bool shouldClose); // TODO: Could this be considered to be const?
    void   swapBuffers();                    // TODO: Could this be considered to be const?
    void   pollEvents();                     // TODO: Could this be considered to be const?
+
+   GLuint getWidth() const;
+   GLuint getHeight() const;
 
    // Keyboard
    bool   isKeyPressed(int key) const;
