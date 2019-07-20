@@ -1,3 +1,4 @@
+/*
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
@@ -49,7 +50,7 @@ int main(int argc, char* argv[])
 
    // Load the model
    ResourceManager<Model> modelManager;
-   modelManager.loadResource<ModelLoader>("teapot", "objects/teapot/teapot.obj");
+   modelManager.loadResource<ModelLoader>("teapot", "models/teapot/teapot.obj");
    auto teapotModel = modelManager.getResource("teapot");
 
    // Create the lamp
@@ -289,3 +290,4 @@ void processInput(Window& window)
       window.resetScrollWheelMoved();
    }
 }
+*/

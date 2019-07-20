@@ -32,6 +32,8 @@ Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 
 void Mesh::render(const Shader& shader) const
 {
+   shader.use();
+
    // Bind the textures
    bindTextures(shader);
 

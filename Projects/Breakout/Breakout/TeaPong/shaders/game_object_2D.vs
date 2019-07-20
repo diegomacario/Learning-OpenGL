@@ -2,11 +2,8 @@
 
 layout (location = 0) in vec4 inPosAndTexCoords; // The first two elements correspond to the position, while the second two elements corresponds to the texture coordinates
 
-uniform Uniforms
-{
-   mat4 model;
-   mat4 projection;
-} u;
+uniform mat4 model;
+uniform mat4 projection;
 
 out VertexData
 {
@@ -16,5 +13,5 @@ out VertexData
 void main()
 {
    o.texCoords = inPosAndTexCoords.zw;
-   gl_Position = u.projection * u.model * vec4(inPosAndTexCoords.xy, 0.0, 1.0);
+   gl_Position = projection * model * vec4(inPosAndTexCoords.xy, 0.0, 1.0);
 }

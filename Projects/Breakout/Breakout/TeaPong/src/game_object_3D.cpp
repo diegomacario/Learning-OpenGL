@@ -45,14 +45,27 @@ glm::mat4 GameObject3D::getModelMatrix() const
    return mModelMat;
 }
 
+void GameObject3D::render(const Shader& shader) const
+{
+   mModel->render(shader);
+}
+
 void GameObject3D::calculateModelMatrix()
 {
    // 3) Translate the model
    mModelMat = glm::translate(glm::mat4(1.0f), mPosition);
 
    // 2) Rotate the model
-   mModelMat = glm::rotate(mModelMat, mAngleOfRotInDeg, mAxisOfRot);
+   // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
+   if (mAxisOfRot != glm::vec3(0.0f, 0.0f, 0.0f))
+   {
+      mModelMat = glm::rotate(mModelMat, glm::radians(mAngleOfRotInDeg), mAxisOfRot);
+   }
 
    // 1) Scale the model
-   mModelMat = glm::scale(mModelMat, mScalingFactors);
+   // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
+   if (mScalingFactors != glm::vec3(0.0f, 0.0f, 0.0f))
+   {
+      mModelMat = glm::scale(mModelMat, mScalingFactors);
+   }
 }

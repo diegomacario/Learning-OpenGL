@@ -148,8 +148,7 @@ std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial*         
            material->GetTexture(texType, i, &texFilename);
 
            // Note that we assume that the textures are in the same directory as the model
-           textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()),
-               uniformName + std::to_string(i));
+           textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
        }
 
        // We jump here if we are asked to process textures of an invalid type

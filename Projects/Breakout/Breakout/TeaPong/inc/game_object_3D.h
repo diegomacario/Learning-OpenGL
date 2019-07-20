@@ -24,7 +24,9 @@ public:
    GameObject3D(GameObject3D&& rhs) noexcept;
    GameObject3D& operator=(GameObject3D&& rhs) noexcept;
 
-   glm::mat4 getModelMatrix() const;
+   glm::mat4 getModelMatrix() const; // TODO: Is this necessary for 3D objects? It makes sense for 2D objects because they use the 2D renderer, but I don't think it's necessary here.
+
+   void render(const Shader& shader) const;
 
 private:
 
