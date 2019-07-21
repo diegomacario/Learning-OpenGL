@@ -21,10 +21,10 @@ public:
 
 private:
 
+   void configureVAO();
+
    std::shared_ptr<Shader> mShader;
    GLuint                  mVAO;
-
-   void configureVAO();
 };
 
 #endif

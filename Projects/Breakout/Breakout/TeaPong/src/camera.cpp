@@ -2,9 +2,9 @@
 
 Camera::Camera(glm::vec3 position,
                glm::vec3 worldUp,
-               float     yaw,
-               float     pitch,
-               float     fieldOfViewY,
+               float     yawInDeg,
+               float     pitchInDeg,
+               float     fieldOfViewYInDeg,
                float     movementSpeed,
                float     mouseSensitivity)
    : mPosition(position)
@@ -12,13 +12,43 @@ Camera::Camera(glm::vec3 position,
    , mUp()
    , mRight()
    , mWorldUp(worldUp)
-   , mYaw(yaw)
-   , mPitch(pitch)
-   , mFieldOfViewY(fieldOfViewY)
+   , mYawInDeg(yawInDeg)
+   , mPitchInDeg(pitchInDeg)
+   , mFieldOfViewYInDeg(fieldOfViewYInDeg)
    , mMovementSpeed(movementSpeed)
    , mMouseSensitivity(mouseSensitivity)
 {
    updateCameraVectors();
+}
+
+Camera::Camera(Camera&& rhs) noexcept
+   : mPosition(std::exchange(rhs.mPosition, glm::vec3()))
+   , mFront(std::exchange(rhs.mFront, glm::vec3()))
+   , mUp(std::exchange(rhs.mUp, glm::vec3()))
+   , mRight(std::exchange(rhs.mRight, glm::vec3()))
+   , mWorldUp(std::exchange(rhs.mWorldUp, glm::vec3()))
+   , mYawInDeg(std::exchange(rhs.mYawInDeg, 0.0f))
+   , mPitchInDeg(std::exchange(rhs.mPitchInDeg, 0.0f))
+   , mFieldOfViewYInDeg(std::exchange(rhs.mFieldOfViewYInDeg, 0.0f))
+   , mMovementSpeed(std::exchange(rhs.mMovementSpeed, 0.0f))
+   , mMouseSensitivity(std::exchange(rhs.mMouseSensitivity, 0.0f))
+{
+
+}
+
+Camera& Camera::operator=(Camera&& rhs) noexcept
+{
+   mPosition          = std::exchange(rhs.mPosition, glm::vec3())
+   mFront             = std::exchange(rhs.mFront, glm::vec3())
+   mUp                = std::exchange(rhs.mUp, glm::vec3())
+   mRight             = std::exchange(rhs.mRight, glm::vec3())
+   mWorldUp           = std::exchange(rhs.mWorldUp, glm::vec3())
+   mYawInDeg          = std::exchange(rhs.mYawInDeg, 0.0f)
+   mPitchInDeg        = std::exchange(rhs.mPitchInDeg, 0.0f)
+   mFieldOfViewYInDeg = std::exchange(rhs.mFieldOfViewYInDeg, 0.0f)
+   mMovementSpeed     = std::exchange(rhs.mMovementSpeed, 0.0f)
+   mMouseSensitivity  = std::exchange(rhs.mMouseSensitivity, 0.0f)
+   return *this;
 }
 
 glm::vec3 Camera::getPosition()
@@ -26,17 +56,18 @@ glm::vec3 Camera::getPosition()
    return mPosition;
 }
 
-float Camera::getFieldOfViewY()
+float Camera::getFieldOfViewYInDeg()
 {
-   return mFieldOfViewY;
+   return mFieldOfViewYInDeg;
 }
 
 glm::mat4 Camera::getViewMatrix()
 {
+   // TODO: Could we optimize things by storing the lookAt matrix and only recalculating it if the camera's settings changed?
    return glm::lookAt(mPosition, mPosition + mFront, mUp);
 }
 
-void Camera::processKeyboard(MovementDirection direction, float deltaTime)
+void Camera::processKeyboardInput(MovementDirection direction, float deltaTime)
 {
    float velocity = mMovementSpeed * deltaTime;
 
@@ -63,38 +94,38 @@ void Camera::processMouseMovement(float xOffset, float yOffset)
    xOffset *= mMouseSensitivity;
    yOffset *= mMouseSensitivity;
 
-   mYaw   += xOffset;
-   mPitch += yOffset;
+   mYawInDeg   += xOffset;
+   mPitchInDeg += yOffset;
 
    // Make sure that when the pitch is out of bounds, the screen doesn't get flipped
-   if (mPitch > 89.0f)
+   if (mPitchInDeg > 89.0f)
    {
-      mPitch = 89.0f;
+      mPitchInDeg = 89.0f;
    }
-   else if (mPitch < -89.0f)
+   else if (mPitchInDeg < -89.0f)
    {
-      mPitch = -89.0f;
+      mPitchInDeg = -89.0f;
    }
 
    // Update the front, right and up vectors using the updated Euler angles
    updateCameraVectors();
 }
 
-void Camera::processMouseScroll(float yOffset)
+void Camera::processScrollWheelMovement(float yOffset)
 {
    // The larger the FOV, the smaller things appear on the screen
    // The smaller the FOV, the larger things appear on the screen
-   if (mFieldOfViewY >= 1.0f && mFieldOfViewY <= 45.0f)
+   if (mFieldOfViewYInDeg >= 1.0f && mFieldOfViewYInDeg <= 45.0f)
    {
-      mFieldOfViewY -= yOffset;
+      mFieldOfViewYInDeg -= yOffset;
    }
-   else if (mFieldOfViewY < 1.0f)
+   else if (mFieldOfViewYInDeg < 1.0f)
    {
-      mFieldOfViewY = 1.0f;
+      mFieldOfViewYInDeg = 1.0f;
    }
-   else if (mFieldOfViewY > 45.0f)
+   else if (mFieldOfViewYInDeg > 45.0f)
    {
-      mFieldOfViewY = 45.0f;
+      mFieldOfViewYInDeg = 45.0f;
    }
 }
 
@@ -102,9 +133,9 @@ void Camera::updateCameraVectors()
 {
    // Calculate the new front vector
    glm::vec3 newFront;
-   newFront.x = sin(glm::radians(mYaw)) * cos(glm::radians(mPitch));
-   newFront.y = sin(glm::radians(mPitch));
-   newFront.z = -1.0f * cos(glm::radians(mYaw)) * cos(glm::radians(mPitch));
+   newFront.x = sin(glm::radians(mYawInDeg)) * cos(glm::radians(mPitchInDeg));
+   newFront.y = sin(glm::radians(mPitchInDeg));
+   newFront.z = -1.0f * cos(glm::radians(mYawInDeg)) * cos(glm::radians(mPitchInDeg));
    mFront = glm::normalize(newFront);
 
    // Calculate the new right and up vectors

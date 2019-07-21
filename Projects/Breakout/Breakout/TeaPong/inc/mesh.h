@@ -56,12 +56,12 @@ public:
 
 private:
 
+   void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+   void bindTextures(const Shader& shader) const;
+
    GLsizei                  mNumIndices;
    std::vector<MeshTexture> mTextures;
    GLuint                   mVAO;
-
-   void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
-   void bindTextures(const Shader& shader) const;
 };
 
 #endif

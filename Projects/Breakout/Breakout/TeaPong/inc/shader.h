@@ -40,9 +40,9 @@ public:
 
 private:
 
-   GLuint mShaderProgID;
-
    GLint  getUniformLocation(const std::string& name) const;
+
+   GLuint mShaderProgID;
 };
 
 #endif

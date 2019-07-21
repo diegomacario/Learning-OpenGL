@@ -16,7 +16,7 @@ public:
                 float                           angleOfRotInDeg,
                 float                           widthInPix,
                 float                           heightInPix);
-   virtual ~GameObject2D() = default;
+   ~GameObject2D() = default;
 
    GameObject2D(const GameObject2D&) = default;
    GameObject2D& operator=(const GameObject2D&) = default;
@@ -25,16 +25,11 @@ public:
    GameObject2D& operator=(GameObject2D&& rhs) noexcept;
 
    std::shared_ptr<Texture> getTexture() const;
-   // TODO: Remove?
-   /*
-   glm::vec2                getPosOfTopLeftCornerInPix() const;
-   float                    getAngleOfRotInDeg() const;
-   float                    getWidthInPix() const;
-   float                    getHeightInPix() const;
-   */
    glm::mat4                getModelMatrix() const;
 
 private:
+
+   void                     calculateModelMatrix();
 
    std::shared_ptr<Texture> mTexture;
 
@@ -42,9 +37,7 @@ private:
    float                    mAngleOfRotInDeg;
    float                    mWidthInPix;
    float                    mHeightInPix;
-   glm::mat4                mModelMat;
-
-   void calculateModelMatrix();
+   glm::mat4                mModelMatrix;
 };
 
 #endif

@@ -18,23 +18,30 @@ public:
 
    Camera(glm::vec3 position,
           glm::vec3 worldUp,
-          float     yaw,
-          float     pitch,
-          float     fieldOfViewY,
+          float     yawInDeg,
+          float     pitchInDeg,
+          float     fieldOfViewYInDeg,
           float     movementSpeed,
           float     mouseSensitivity);
+   ~Camera() = default;
 
-   // TODO: Implement copy/move constructors/assignment operators
+   Camera(const Camera&) = default;
+   Camera& operator=(const Camera&) = default;
+
+   Camera(Camera&& rhs) noexcept;
+   Camera& operator=(Camera&& rhs) noexcept;
 
    glm::vec3 getPosition();
-   float     getFieldOfViewY();
+   float     getFieldOfViewYInDeg();
    glm::mat4 getViewMatrix();
 
-   void processKeyboard(MovementDirection direction, float deltaTime);
-   void processMouseMovement(float xOffset, float yOffset);
-   void processMouseScroll(float yOffset);
+   void      processKeyboardInput(MovementDirection direction, float deltaTime);
+   void      processMouseMovement(float xOffset, float yOffset);
+   void      processScrollWheelMovement(float yOffset);
 
 private:
+
+   void      updateCameraVectors(); // TODO: Change the name of this function to something more appropriate like updateCoordinateSystem().
 
    glm::vec3 mPosition;
    glm::vec3 mFront;
@@ -42,15 +49,13 @@ private:
    glm::vec3 mRight;
    glm::vec3 mWorldUp;
 
-   float mYaw;
-   float mPitch;
+   float     mYawInDeg;
+   float     mPitchInDeg;
 
-   float mFieldOfViewY;
+   float     mFieldOfViewYInDeg;
 
-   float mMovementSpeed;
-   float mMouseSensitivity;
-
-   void updateCameraVectors();
+   float     mMovementSpeed;
+   float     mMouseSensitivity;
 };
 
 #endif

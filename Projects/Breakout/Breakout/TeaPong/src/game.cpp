@@ -5,7 +5,7 @@
 #include <model_loader.h>
 #include "game.h"
 
-Game::Game(GLuint width, GLuint height, const std::string& title)
+Game::Game()
    : mWindow()
    , mStateMachine()
    , mGameStates()
@@ -19,7 +19,7 @@ Game::Game(GLuint width, GLuint height, const std::string& title)
    , mRightPaddle()
    , mBall()
 {
-   initialize(width, height, title);
+
 }
 
 Game::~Game()
@@ -61,7 +61,7 @@ bool Game::initialize(GLuint width, GLuint height, const std::string& title)
    mRenderer2D = std::make_unique<Renderer2D>(gameObject2DShader);
 
    // Load the shaders
-   glm::mat4 perspectiveProjection = glm::perspective(glm::radians(mCamera->getFieldOfViewY()),                                               // FOVY
+   glm::mat4 perspectiveProjection = glm::perspective(glm::radians(mCamera->getFieldOfViewYInDeg()),                                               // FOVY
                                                       static_cast<GLfloat>(mWindow->getWidth()) / static_cast<GLfloat>(mWindow->getHeight()), // Aspect ratio
                                                       0.1f,                                                                                   // Near
                                                       100.0f);                                                                                // Far
@@ -115,13 +115,13 @@ void Game::gameLoop()
          mWindow->setShouldClose(true);
 
       if (mWindow->isKeyPressed(GLFW_KEY_W))
-         mCamera->processKeyboard(MovementDirection::Forward, deltaTime);
+         mCamera->processKeyboardInput(MovementDirection::Forward, deltaTime);
       if (mWindow->isKeyPressed(GLFW_KEY_S))
-         mCamera->processKeyboard(MovementDirection::Backward, deltaTime);
+         mCamera->processKeyboardInput(MovementDirection::Backward, deltaTime);
       if (mWindow->isKeyPressed(GLFW_KEY_A))
-         mCamera->processKeyboard(MovementDirection::Left, deltaTime);
+         mCamera->processKeyboardInput(MovementDirection::Left, deltaTime);
       if (mWindow->isKeyPressed(GLFW_KEY_D))
-         mCamera->processKeyboard(MovementDirection::Right, deltaTime);
+         mCamera->processKeyboardInput(MovementDirection::Right, deltaTime);
 
       if (mWindow->mouseMoved())
       {
@@ -131,7 +131,7 @@ void Game::gameLoop()
 
       if (mWindow->scrollWheelMoved())
       {
-         mCamera->processMouseScroll(mWindow->getScrollYOffset());
+         mCamera->processScrollWheelMovement(mWindow->getScrollYOffset());
          mWindow->resetScrollWheelMoved();
       }
 

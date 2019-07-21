@@ -196,7 +196,7 @@ int main(int argc, char* argv[])
       model      = glm::translate(glm::mat4(), glm::vec3(-0.5f * 0.4f, -0.5f * 0.4f, 0.0f));
       model      = glm::scale(model, glm::vec3(0.4f, 0.4f, 1.0f));
       view       = camera.getViewMatrix();
-      projection = glm::perspective(glm::radians(camera.getFieldOfViewY()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
+      projection = glm::perspective(glm::radians(camera.getFieldOfViewYInDeg()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
 
       basicShader->use();
       basicShader->setMat4("model", model);
@@ -219,7 +219,7 @@ int main(int argc, char* argv[])
       model      = glm::rotate(glm::mat4(), glm::radians(90.0f), glm::vec3(1.0f, 0.0f, 0.0f));
       model      = glm::scale(model, glm::vec3(0.01f));
       view       = camera.getViewMatrix();
-      projection = glm::perspective(glm::radians(camera.getFieldOfViewY()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
+      projection = glm::perspective(glm::radians(camera.getFieldOfViewYInDeg()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
 
       modelShader->use();
       modelShader->setMat4("model", model);
@@ -244,7 +244,7 @@ int main(int argc, char* argv[])
       model      = glm::translate(glm::mat4(), rotatedLightPos);
       model      = glm::scale(model, glm::vec3(0.01f));
       view       = camera.getViewMatrix();
-      projection = glm::perspective(glm::radians(camera.getFieldOfViewY()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
+      projection = glm::perspective(glm::radians(camera.getFieldOfViewYInDeg()), (float)kWindowWidth / (float)kWindowHeight, 0.1f, 100.0f);
 
       lampShader->use();
       lampShader->setMat4("model", model);
@@ -270,13 +270,13 @@ void processInput(Window& window)
       window.setShouldClose(true);
 
    if (window.isKeyPressed(GLFW_KEY_W))
-      camera.processKeyboard(MovementDirection::Forward, deltaTime);
+      camera.processKeyboardInput(MovementDirection::Forward, deltaTime);
    if (window.isKeyPressed(GLFW_KEY_S))
-      camera.processKeyboard(MovementDirection::Backward, deltaTime);
+      camera.processKeyboardInput(MovementDirection::Backward, deltaTime);
    if (window.isKeyPressed(GLFW_KEY_A))
-      camera.processKeyboard(MovementDirection::Left, deltaTime);
+      camera.processKeyboardInput(MovementDirection::Left, deltaTime);
    if (window.isKeyPressed(GLFW_KEY_D))
-      camera.processKeyboard(MovementDirection::Right, deltaTime);
+      camera.processKeyboardInput(MovementDirection::Right, deltaTime);
 
    if (window.mouseMoved())
    {
@@ -286,7 +286,7 @@ void processInput(Window& window)
 
    if (window.scrollWheelMoved())
    {
-      camera.processMouseScroll(window.getScrollYOffset());
+      camera.processScrollWheelMovement(window.getScrollYOffset());
       window.resetScrollWheelMoved();
    }
 }
