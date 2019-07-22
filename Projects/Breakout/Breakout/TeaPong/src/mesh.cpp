@@ -2,9 +2,13 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures)
+Mesh::Mesh(const std::vector<Vertex>&       vertices,
+           const std::vector<unsigned int>& indices,
+           const std::vector<MeshTexture>&  textures,
+           const MaterialConstants&         materialConstants)
    : mNumIndices(indices.size())
    , mTextures(textures)
+   , mMaterialConstants(materialConstants)
 {
    configureVAO(vertices, indices);
 }
@@ -16,7 +20,8 @@ Mesh::~Mesh()
 
 Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
-   , mTextures(std::move(rhs.mTextures))
+   , mTextures(std::move(rhs.mTextures))                   // TODO: Is this move working?
+   , mMaterialConstants(std::move(rhs.mMaterialConstants)) // TODO: Is this move working?
    , mVAO(std::exchange(rhs.mVAO, 0))
 {
 
@@ -24,18 +29,29 @@ Mesh::Mesh(Mesh&& rhs) noexcept
 
 Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
-   mNumIndices = std::exchange(rhs.mNumIndices, 0);
-   mTextures   = std::move(rhs.mTextures);
-   mVAO        = std::exchange(rhs.mVAO, 0);
+   mNumIndices        = std::exchange(rhs.mNumIndices, 0);
+   mTextures          = std::move(rhs.mTextures);          // TODO: Is this move working?
+   mMaterialConstants = std::move(rhs.mMaterialConstants); // TODO: Is this move working?
+   mVAO               = std::exchange(rhs.mVAO, 0);
    return *this;
 }
 
-void Mesh::render(const Shader& shader) const
+void Mesh::render(const Shader& shader, bool useTextures) const
 {
    shader.use();
 
-   // Bind the textures
-   bindTextures(shader);
+   if (useTextures)
+   {
+      bindTextures(shader);
+   }
+   else
+   {
+      shader.setVec3("ambientColor", mMaterialConstants.ambientColor);
+      shader.setVec3("diffuseColor", mMaterialConstants.diffuseColor);
+      shader.setVec3("specularColor", mMaterialConstants.specularColor);
+      shader.setVec3("emissiveColor", mMaterialConstants.emissiveColor);
+      shader.setFloat("shininess", mMaterialConstants.shininess);
+   }
 
    // Draw the mesh
    glBindVertexArray(mVAO);

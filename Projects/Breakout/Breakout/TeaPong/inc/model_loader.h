@@ -33,9 +33,11 @@ private:
 
    std::vector<unsigned int> processIndices(const aiMesh* mesh) const;
 
-   std::vector<MeshTexture>  processMaterial(const aiMaterial*         material,
+   std::vector<MeshTexture>  processTextures(const aiMaterial*         material,
                                              const std::string&        modelDir,
                                              ResourceManager<Texture>& texManager) const;
+
+   MaterialConstants         processMaterialConstants(const aiMaterial* material) const;
 };
 
 #endif

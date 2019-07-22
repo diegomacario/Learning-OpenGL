@@ -17,7 +17,7 @@ public:
    Model(Model&& rhs) = default;
    Model& operator=(Model&& rhs) = default;
 
-   void render(const Shader& shader) const;
+   void render(const Shader& shader, bool useTextures) const;
 
 private:
 

@@ -14,7 +14,7 @@ class Game
 {
 public:
 
-   Game(GLuint width, GLuint height, const std::string& title);
+   Game();
    ~Game();
 
    Game(const Game&) = delete;

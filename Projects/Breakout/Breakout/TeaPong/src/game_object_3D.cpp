@@ -39,9 +39,9 @@ GameObject3D& GameObject3D::operator=(GameObject3D&& rhs) noexcept
    return *this;
 }
 
-void GameObject3D::render(const Shader& shader) const
+void GameObject3D::render(const Shader& shader, bool useTextures) const
 {
-   mModel->render(shader);
+   mModel->render(shader, useTextures);
 }
 
 glm::mat4 GameObject3D::getModelMatrix() const

@@ -39,11 +39,37 @@ struct MeshTexture
    std::string              uniformName;
 };
 
+struct MaterialConstants
+{
+   MaterialConstants(const glm::vec3& ambientColor,
+                     const glm::vec3& diffuseColor,
+                     const glm::vec3& specularColor,
+                     const glm::vec3& emissiveColor,
+                     float            shininess)
+      : ambientColor(ambientColor)
+      , diffuseColor(diffuseColor)
+      , specularColor(specularColor)
+      , emissiveColor(emissiveColor)
+      , shininess(shininess)
+   {
+
+   }
+
+   glm::vec3 ambientColor;
+   glm::vec3 diffuseColor;
+   glm::vec3 specularColor;
+   glm::vec3 emissiveColor;
+   float     shininess;
+};
+
 class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices, const std::vector<MeshTexture>& textures);
+   Mesh(const std::vector<Vertex>&       vertices,
+        const std::vector<unsigned int>& indices,
+        const std::vector<MeshTexture>&  textures,
+        const MaterialConstants&         materialConstants);
    ~Mesh();
 
    Mesh(const Mesh&) = delete;
@@ -52,7 +78,7 @@ public:
    Mesh(Mesh&& rhs) noexcept;
    Mesh& operator=(Mesh&& rhs) noexcept;
 
-   void render(const Shader& shader) const;
+   void render(const Shader& shader, bool useTextures) const;
 
 private:
 
@@ -61,6 +87,7 @@ private:
 
    GLsizei                  mNumIndices;
    std::vector<MeshTexture> mTextures;
+   MaterialConstants        mMaterialConstants; // TODO: Create separate classes for meshes that only use textures or constants. A base class pointer could be used in the ModelLoader.
    GLuint                   mVAO;
 };
 

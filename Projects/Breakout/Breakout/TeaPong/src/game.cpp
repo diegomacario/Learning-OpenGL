@@ -155,7 +155,7 @@ void Game::gameLoop()
       gameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().
       gameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This shoud be done internally
       gameObject3DShader->setMat4("view", mCamera->getViewMatrix());
-      mBall->render(*gameObject3DShader);
+      mBall->render(*gameObject3DShader, true);
 
       // ----------------------------------------------------------------------------------------------------
 

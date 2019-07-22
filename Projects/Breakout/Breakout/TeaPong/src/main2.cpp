@@ -7,12 +7,12 @@
 
 int main(int argc, char* argv[])
 {
-   Game game();
+   Game game;
 
-   if (game.initialize(1280, 720, "TeaPong"))
+   if (!game.initialize(1280, 720, "TeaPong"))
    {
       std::cout << "Error - main - Failed to initialize the game" << "\n";
-      return -1;     
+      return -1;
    }
 
    game.gameLoop();

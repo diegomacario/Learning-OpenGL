@@ -45,7 +45,8 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode*             node
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
       meshes.emplace_back(processVertices(mesh),                                                           // Vertices
                           processIndices(mesh),                                                            // Indices
-                          processMaterial(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager)); // Textures
+                          processTextures(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager),  // Textures
+                          processMaterialConstants(scene->mMaterials[mesh->mMaterialIndex]));              // Material constants
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
@@ -102,7 +103,7 @@ std::vector<unsigned int> ModelLoader::processIndices(const aiMesh* mesh) const
    return indices;
 }
 
-std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial*         material,
+std::vector<MeshTexture> ModelLoader::processTextures(const aiMaterial*         material,
                                                       const std::string&        modelDir,
                                                       ResourceManager<Texture>& texManager) const
 {
@@ -156,4 +157,16 @@ std::vector<MeshTexture> ModelLoader::processMaterial(const aiMaterial*         
    }
 
    return textures;
+}
+
+MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* material) const
+{
+   aiColor3D color(0.0f, 0.0f, 0.0f);
+   float     shininess = 0.0f;
+
+   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
 }

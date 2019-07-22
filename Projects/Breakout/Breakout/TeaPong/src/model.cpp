@@ -7,10 +7,10 @@ Model::Model(std::vector<Mesh>&& meshes, ResourceManager<Texture>&& texManager)
 
 }
 
-void Model::render(const Shader& shader) const
+void Model::render(const Shader& shader, bool useTextures) const
 {
    for (auto &mesh : mMeshes)
    {
-      mesh.render(shader);
+      mesh.render(shader, useTextures);
    }
 }
