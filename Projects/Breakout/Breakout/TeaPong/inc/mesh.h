@@ -86,7 +86,7 @@ private:
    void bindTextures(const Shader& shader) const;
 
    GLsizei                  mNumIndices;
-   std::vector<MeshTexture> mTextures;
+   std::vector<MeshTexture> mTextures;          // TODO: Shininess should be available to textured objects too.
    MaterialConstants        mMaterialConstants; // TODO: Create separate classes for meshes that only use textures or constants. A base class pointer could be used in the ModelLoader.
    GLuint                   mVAO;
 };
