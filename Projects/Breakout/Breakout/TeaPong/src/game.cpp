@@ -27,10 +27,10 @@ Game::~Game()
 
 }
 
-bool Game::initialize(GLuint width, GLuint height, const std::string& title)
+bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& title)
 {
    // Initialize the window
-   mWindow = std::make_unique<Window>(width, height, title);
+   mWindow = std::make_unique<Window>(widthInPix, heightInPix, title);
 
    if (!mWindow->initialize())
    {
@@ -48,12 +48,12 @@ bool Game::initialize(GLuint width, GLuint height, const std::string& title)
                                       0.1f);                       // Mouse sensitivity
 
    // Initialize the 2D renderer
-   glm::mat4 orthographicProjection = glm::ortho(0.0f,                                       // Left
-                                                 static_cast<GLfloat>(mWindow->getWidth()),  // Right
-                                                 static_cast<GLfloat>(mWindow->getHeight()), // Bottom
-                                                 0.0f,                                       // Top
-                                                -1.0f,                                       // Near
-                                                 1.0f);                                      // Far
+   glm::mat4 orthographicProjection = glm::ortho(0.0f,                                            // Left
+                                                 static_cast<GLfloat>(mWindow->getWidthInPix()),  // Right
+                                                 static_cast<GLfloat>(mWindow->getHeightInPix()), // Bottom
+                                                 0.0f,                                            // Top
+                                                -1.0f,                                            // Near
+                                                 1.0f);                                           // Far
    auto gameObject2DShader = mShaderManager.loadResource<ShaderLoader>("game_object_2D", "shaders/game_object_2D.vs", "shaders/game_object_2D.fs");
    gameObject2DShader->use();
    gameObject2DShader->setInt("image", 0);
@@ -61,10 +61,10 @@ bool Game::initialize(GLuint width, GLuint height, const std::string& title)
    mRenderer2D = std::make_unique<Renderer2D>(gameObject2DShader);
 
    // Load the shaders
-   glm::mat4 perspectiveProjection = glm::perspective(glm::radians(mCamera->getFieldOfViewYInDeg()),                                               // FOVY
-                                                      static_cast<GLfloat>(mWindow->getWidth()) / static_cast<GLfloat>(mWindow->getHeight()), // Aspect ratio
-                                                      0.1f,                                                                                   // Near
-                                                      100.0f);                                                                                // Far
+   glm::mat4 perspectiveProjection = glm::perspective(glm::radians(mCamera->getFieldOfViewYInDeg()),                                                    // FOVY
+                                                      static_cast<GLfloat>(mWindow->getWidthInPix()) / static_cast<GLfloat>(mWindow->getHeightInPix()), // Aspect ratio
+                                                      0.1f,                                                                                             // Near
+                                                      100.0f);                                                                                          // Far
    auto gameObject3DShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D", "shaders/game_object_3D.vs", "shaders/game_object_3D.fs");
    gameObject3DShader->use();
    gameObject3DShader->setMat4("projection", perspectiveProjection);
@@ -79,8 +79,8 @@ bool Game::initialize(GLuint width, GLuint height, const std::string& title)
    mBackground = std::make_unique<GameObject2D>(mTextureManager.getResource("table_cloth"),
                                                 glm::vec2(0.0f, 0.0f),
                                                 0.0f,
-                                                static_cast<float>(mWindow->getWidth()),
-                                                static_cast<float>(mWindow->getHeight()));
+                                                static_cast<float>(mWindow->getWidthInPix()),
+                                                static_cast<float>(mWindow->getHeightInPix()));
 
    mBall = std::make_unique<MovableGameObject3D>(mModelManager.getResource("teapot"),
                                                  glm::vec3(0.0f, 0.0f, 0.0f),

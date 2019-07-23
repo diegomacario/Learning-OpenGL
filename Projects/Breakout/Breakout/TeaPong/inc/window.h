@@ -11,7 +11,7 @@ class Window
 {
 public:
 
-   Window(GLuint width, GLuint height, const std::string& title);
+   Window(GLuint widthInPix, GLuint heightInPix, const std::string& title);
    ~Window();
 
    Window(const Window&) = delete;
@@ -27,8 +27,8 @@ public:
    void   swapBuffers();                    // TODO: Could this be considered to be const?
    void   pollEvents();                     // TODO: Could this be considered to be const?
 
-   GLuint getWidth() const;
-   GLuint getHeight() const;
+   GLuint getWidthInPix() const;
+   GLuint getHeightInPix() const;
 
    // Keyboard
    bool   isKeyPressed(int key) const;
@@ -55,8 +55,8 @@ private:
 
    GLFWwindow*                    mWindow;
 
-   GLuint                         mWidth;
-   GLuint                         mHeight;
+   GLuint                         mWidthInPix;
+   GLuint                         mHeightInPix;
    std::string                    mTitle;
 
    // Keyboard

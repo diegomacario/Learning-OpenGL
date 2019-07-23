@@ -23,7 +23,7 @@ public:
    Game(Game&&) = delete;
    Game& operator=(Game&&) = delete;
 
-   bool initialize(GLuint width, GLuint height, const std::string& title);
+   bool initialize(GLuint widthInPix, GLuint heightInPix, const std::string& title);
    void update(GLfloat deltaTime);
    void gameLoop();
 

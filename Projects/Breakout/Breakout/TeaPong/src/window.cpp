@@ -2,10 +2,10 @@
 
 #include "window.h"
 
-Window::Window(GLuint width, GLuint height, const std::string& title)
+Window::Window(GLuint widthInPix, GLuint heightInPix, const std::string& title)
    : mWindow(nullptr)
-   , mWidth(width)
-   , mHeight(height)
+   , mWidthInPix(widthInPix)
+   , mHeightInPix(heightInPix)
    , mTitle(title)
    , mKeys()
    , mProcessedKeys()
@@ -48,7 +48,7 @@ bool Window::initialize()
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif
 
-   mWindow = glfwCreateWindow(mWidth, mHeight, mTitle.c_str(), nullptr, nullptr);
+   mWindow = glfwCreateWindow(mWidthInPix, mHeightInPix, mTitle.c_str(), nullptr, nullptr);
    if (!mWindow)
    {
       std::cout << "Error - Window::initialize - Failed to create the GLFW window" << "\n";
@@ -96,7 +96,7 @@ bool Window::initialize()
       return false;
    }
 
-   glViewport(0, 0, mWidth, mHeight);
+   glViewport(0, 0, mWidthInPix, mHeightInPix);
    //glEnable(GL_CULL_FACE); // TODO: Figure out what is causing problems when I enable this.
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -124,14 +124,14 @@ void Window::pollEvents()
    glfwPollEvents();
 }
 
-GLuint Window::getWidth() const
+GLuint Window::getWidthInPix() const
 {
-   return mWidth;
+   return mWidthInPix;
 }
 
-GLuint Window::getHeight() const
+GLuint Window::getHeightInPix() const
 {
-   return mHeight;
+   return mHeightInPix;
 }
 
 bool Window::isKeyPressed(int key) const
@@ -186,8 +186,8 @@ double Window::getScrollYOffset() const
 
 void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 {
-   mWidth = width;
-   mHeight = height;
+   mWidthInPix = width;
+   mHeightInPix = height;
    glViewport(0, 0, width, height);
 }
 

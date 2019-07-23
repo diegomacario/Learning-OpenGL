@@ -1,6 +1,6 @@
 #version 330 core
 
-layout (location = 0) in vec4 inPosAndTexCoords; // The first two elements correspond to the position, while the second two elements corresponds to the texture coordinates
+layout (location = 0) in vec4 inPosAndTexCoords; // The first two elements correspond to the position, while the second two elements correspond to the texture coordinates
 
 uniform mat4 model;
 uniform mat4 projection;
