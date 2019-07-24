@@ -3,12 +3,8 @@
 #include "mesh.h"
 
 Mesh::Mesh(const std::vector<Vertex>&       vertices,
-           const std::vector<unsigned int>& indices,
-           const std::vector<MeshTexture>&  textures,
-           const MaterialConstants&         materialConstants)
+           const std::vector<unsigned int>& indices)
    : mNumIndices(indices.size())
-   , mTextures(textures)
-   , mMaterialConstants(materialConstants)
 {
    configureVAO(vertices, indices);
 }
@@ -20,8 +16,6 @@ Mesh::~Mesh()
 
 Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
-   , mTextures(std::move(rhs.mTextures))                   // TODO: Is this move working?
-   , mMaterialConstants(std::move(rhs.mMaterialConstants)) // TODO: Is this move working?
    , mVAO(std::exchange(rhs.mVAO, 0))
 {
 
@@ -29,35 +23,9 @@ Mesh::Mesh(Mesh&& rhs) noexcept
 
 Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
-   mNumIndices        = std::exchange(rhs.mNumIndices, 0);
-   mTextures          = std::move(rhs.mTextures);          // TODO: Is this move working?
-   mMaterialConstants = std::move(rhs.mMaterialConstants); // TODO: Is this move working?
-   mVAO               = std::exchange(rhs.mVAO, 0);
+   mNumIndices = std::exchange(rhs.mNumIndices, 0);
+   mVAO        = std::exchange(rhs.mVAO, 0);
    return *this;
-}
-
-void Mesh::render(const Shader& shader, bool useTextures) const
-{
-   shader.use();
-
-   if (useTextures)
-   {
-      bindTextures(shader);
-      // TODO: The shininess should be set in both cases.
-   }
-   else
-   {
-      shader.setVec3("materialConstants.ambient", mMaterialConstants.ambientColor);
-      shader.setVec3("materialConstants.diffuse", mMaterialConstants.diffuseColor);
-      shader.setVec3("materialConstants.specular", mMaterialConstants.specularColor);
-      shader.setVec3("materialConstants.emissive", mMaterialConstants.emissiveColor);
-      shader.setFloat("materialConstants.shininess", mMaterialConstants.shininess);
-   }
-
-   // Draw the mesh
-   glBindVertexArray(mVAO);
-   glDrawElements(GL_TRIANGLES, mNumIndices, GL_UNSIGNED_INT, 0);
-   glBindVertexArray(0);
 }
 
 void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
@@ -96,33 +64,4 @@ void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<u
 
    glDeleteBuffers(1, &VBO);
    glDeleteBuffers(1, &EBO);
-}
-
-void Mesh::bindTextures(const Shader& shader) const
-{
-   unsigned int texUnit = GL_TEXTURE0;
-
-   for (unsigned int i = 0; i < mTextures.size(); ++i)
-   {
-      // Get the location of the sampler2D uniform that should exist in the shader
-      GLint uniformLoc = glGetUniformLocation(shader.getID(), mTextures[i].uniformName.c_str());
-
-      if (uniformLoc != -1)
-      {
-         // Activate the proper texture unit before binding the current texture
-         glActiveTexture(texUnit);
-         // Tell the sampler2D uniform in what texture unit to look for the texture data
-         glUniform1i(uniformLoc, texUnit);
-         // Bind the texture
-         mTextures[i].texture->bind();
-
-         ++texUnit;
-      }
-      else
-      {
-         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << mTextures[i].uniformName << "\n";
-      }
-   }
-
-   glActiveTexture(GL_TEXTURE0);
 }

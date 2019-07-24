@@ -4,10 +4,8 @@
 #include <assimp/scene.h>
 
 #include <vector>
-#include <memory>
 
 #include "shader.h"
-#include "texture.h"
 
 struct Vertex
 {
@@ -26,51 +24,13 @@ struct Vertex
    glm::vec2 texCoords;
 };
 
-struct MeshTexture
-{
-   MeshTexture(const std::shared_ptr<Texture>& texture, const std::string& uniformName)
-      : texture(texture)
-      , uniformName(uniformName)
-   {
-
-   }
-
-   std::shared_ptr<Texture> texture;
-   std::string              uniformName;
-};
-
-struct MaterialConstants
-{
-   MaterialConstants(const glm::vec3& ambientColor,
-                     const glm::vec3& diffuseColor,
-                     const glm::vec3& specularColor,
-                     const glm::vec3& emissiveColor,
-                     float            shininess)
-      : ambientColor(ambientColor)
-      , diffuseColor(diffuseColor)
-      , specularColor(specularColor)
-      , emissiveColor(emissiveColor)
-      , shininess(shininess)
-   {
-
-   }
-
-   glm::vec3 ambientColor;
-   glm::vec3 diffuseColor;
-   glm::vec3 specularColor;
-   glm::vec3 emissiveColor;
-   float     shininess;
-};
-
 class Mesh
 {
 public:
 
    Mesh(const std::vector<Vertex>&       vertices,
-        const std::vector<unsigned int>& indices,
-        const std::vector<MeshTexture>&  textures,
-        const MaterialConstants&         materialConstants);
-   ~Mesh();
+        const std::vector<unsigned int>& indices);
+   virtual ~Mesh();
 
    Mesh(const Mesh&) = delete;
    Mesh& operator=(const Mesh&) = delete;
@@ -78,17 +38,14 @@ public:
    Mesh(Mesh&& rhs) noexcept;
    Mesh& operator=(Mesh&& rhs) noexcept;
 
-   void render(const Shader& shader, bool useTextures) const;
+   virtual void render(const Shader& shader) const = 0;
 
 private:
 
    void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
-   void bindTextures(const Shader& shader) const;
 
-   GLsizei                  mNumIndices;
-   std::vector<MeshTexture> mTextures;          // TODO: Shininess should be available to textured objects too.
-   MaterialConstants        mMaterialConstants; // TODO: Create separate classes for meshes that only use textures or constants. A base class pointer could be used in the ModelLoader.
-   GLuint                   mVAO;
+   GLsizei mNumIndices;
+   GLuint  mVAO;
 };
 
 #endif
