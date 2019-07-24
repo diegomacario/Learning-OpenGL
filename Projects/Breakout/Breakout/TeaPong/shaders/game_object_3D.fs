@@ -65,7 +65,7 @@ vec3 calculateContributionOfPointLight(PointLight light, vec3 viewDir)
 
    // Specular
    vec3 reflectedDir = reflect(-lightDir, i.worldNormal);
-   vec3 specular     = pow(max(dot(reflectedDir, viewDir), 0.0), shininess) * materialConstants.specular * light.color * attenuation;
+   vec3 specular     = pow(max(dot(reflectedDir, viewDir), 0.0), materialConstants.shininess) * materialConstants.specular * light.color * attenuation;
 
    // Emissive
    vec3 emissive     = materialConstants.emissive;

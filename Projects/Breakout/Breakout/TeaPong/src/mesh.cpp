@@ -43,14 +43,15 @@ void Mesh::render(const Shader& shader, bool useTextures) const
    if (useTextures)
    {
       bindTextures(shader);
+      // TODO: The shininess should be set in both cases.
    }
    else
    {
-      shader.setVec3("ambientColor", mMaterialConstants.ambientColor);
-      shader.setVec3("diffuseColor", mMaterialConstants.diffuseColor);
-      shader.setVec3("specularColor", mMaterialConstants.specularColor);
-      shader.setVec3("emissiveColor", mMaterialConstants.emissiveColor);
-      shader.setFloat("shininess", mMaterialConstants.shininess);
+      shader.setVec3("materialConstants.ambient", mMaterialConstants.ambientColor);
+      shader.setVec3("materialConstants.diffuse", mMaterialConstants.diffuseColor);
+      shader.setVec3("materialConstants.specular", mMaterialConstants.specularColor);
+      shader.setVec3("materialConstants.emissive", mMaterialConstants.emissiveColor);
+      shader.setFloat("materialConstants.shininess", mMaterialConstants.shininess);
    }
 
    // Draw the mesh
