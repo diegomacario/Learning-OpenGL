@@ -134,12 +134,12 @@ GLuint Window::getHeightInPix() const
    return mHeightInPix;
 }
 
-bool Window::isKeyPressed(int key) const
+bool Window::keyIsPressed(int key) const
 {
    return mKeys.test(key);
 }
 
-bool Window::hasKeyBeenProcessed(int key) const
+bool Window::keyHasBeenProcessed(int key) const
 {
    return mProcessedKeys.test(key);
 }

@@ -3,6 +3,8 @@
 
 #include <unordered_map>
 
+#include "constant_mesh.h"
+#include "textured_mesh.h"
 #include "model.h"
 #include "resource_manager.h"
 
@@ -19,25 +21,27 @@ public:
    ModelLoader(ModelLoader&&) = default;
    ModelLoader& operator=(ModelLoader&&) = default;
 
-   std::shared_ptr<Model>    loadResource(const std::string& modelFilePath) const;
+   std::shared_ptr<Model>       loadResource(const std::string& modelFilePath) const;
 
 private:
 
-   void processNodeHierarchyRecursively(const aiNode*             node,
-                                        const aiScene*            scene,
-                                        const std::string&        modelDir,
-                                        ResourceManager<Texture>& texManager,
-                                        std::vector<Mesh>&        meshes) const;
+   void                         processNodeHierarchyRecursively(const aiNode*                       node,
+                                                                const aiScene*                      scene,
+                                                                const std::string&                  modelDir,
+                                                                ResourceManager<Texture>&           texManager,
+                                                                std::vector<std::unique_ptr<Mesh>>& meshes) const;
 
-   std::vector<Vertex>       processVertices(const aiMesh* mesh) const;
+   bool                         meshIsTextured(const aiMaterial* material) const;
 
-   std::vector<unsigned int> processIndices(const aiMesh* mesh) const;
+   std::vector<Vertex>          processVertices(const aiMesh* mesh) const;
 
-   std::vector<MeshTexture>  processTextures(const aiMaterial*         material,
-                                             const std::string&        modelDir,
-                                             ResourceManager<Texture>& texManager) const;
+   std::vector<unsigned int>    processIndices(const aiMesh* mesh) const;
 
-   MaterialConstants         processMaterialConstants(const aiMaterial* material) const;
+   std::vector<MaterialTexture> processMaterialTextures(const aiMaterial*         material,
+                                                        const std::string&        modelDir,
+                                                        ResourceManager<Texture>& texManager) const;
+
+   MaterialConstants            processMaterialConstants(const aiMaterial* material) const;
 };
 
 #endif

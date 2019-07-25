@@ -2,9 +2,9 @@
 
 #include "textured_mesh.h"
 
-TexturedMesh::TexturedMesh(const std::vector<Vertex>&       vertices,
-                           const std::vector<unsigned int>& indices,
-                           const std::vector<MeshTexture>&  textures)
+TexturedMesh::TexturedMesh(const std::vector<Vertex>&          vertices,
+                           const std::vector<unsigned int>&    indices,
+                           const std::vector<MaterialTexture>& textures)
    : Mesh(vertices, indices)
    , mTextures(textures)
 {
@@ -32,9 +32,7 @@ void TexturedMesh::render(const Shader& shader) const
    bindMaterialTextures(shader);
 
    // Draw the mesh
-   glBindVertexArray(mVAO);
-   glDrawElements(GL_TRIANGLES, mNumIndices, GL_UNSIGNED_INT, 0);
-   glBindVertexArray(0);
+   Mesh::render(shader);
 }
 
 void TexturedMesh::bindMaterialTextures(const Shader& shader) const

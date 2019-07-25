@@ -31,8 +31,8 @@ public:
    GLuint getHeightInPix() const;
 
    // Keyboard
-   bool   isKeyPressed(int key) const;
-   bool   hasKeyBeenProcessed(int key) const;
+   bool   keyIsPressed(int key) const;
+   bool   keyHasBeenProcessed(int key) const;
    void   setKeyAsProcessed(int key);
 
    // Cursor

@@ -130,16 +130,16 @@ void Game::gameLoop()
       // Process input
       // ----------------------------------------------------------------------------------------------------
 
-      if (mWindow->isKeyPressed(GLFW_KEY_ESCAPE))
+      if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE))
          mWindow->setShouldClose(true);
 
-      if (mWindow->isKeyPressed(GLFW_KEY_W))
+      if (mWindow->keyIsPressed(GLFW_KEY_W))
          mCamera->processKeyboardInput(MovementDirection::Forward, deltaTime);
-      if (mWindow->isKeyPressed(GLFW_KEY_S))
+      if (mWindow->keyIsPressed(GLFW_KEY_S))
          mCamera->processKeyboardInput(MovementDirection::Backward, deltaTime);
-      if (mWindow->isKeyPressed(GLFW_KEY_A))
+      if (mWindow->keyIsPressed(GLFW_KEY_A))
          mCamera->processKeyboardInput(MovementDirection::Left, deltaTime);
-      if (mWindow->isKeyPressed(GLFW_KEY_D))
+      if (mWindow->keyIsPressed(GLFW_KEY_D))
          mCamera->processKeyboardInput(MovementDirection::Right, deltaTime);
 
       if (mWindow->mouseMoved())
@@ -182,8 +182,8 @@ void Game::gameLoop()
       gameObject3DShader->setMat4("view", mCamera->getViewMatrix());
       gameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
-      //mBall->render(*texturedGameObject3DShader, true);
-      mBall->render(*gameObject3DShader, false);
+      //mBall->render(*texturedGameObject3DShader);
+      mBall->render(*gameObject3DShader);
 
       // ----------------------------------------------------------------------------------------------------
 

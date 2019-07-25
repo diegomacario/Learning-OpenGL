@@ -32,9 +32,7 @@ void ConstantMesh::render(const Shader& shader) const
    setMaterialConstants(shader);
 
    // Draw the mesh
-   glBindVertexArray(mVAO);
-   glDrawElements(GL_TRIANGLES, mNumIndices, GL_UNSIGNED_INT, 0);
-   glBindVertexArray(0);
+   Mesh::render(shader);
 }
 
 void ConstantMesh::setMaterialConstants(const Shader& shader) const

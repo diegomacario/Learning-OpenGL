@@ -28,6 +28,13 @@ Mesh& Mesh::operator=(Mesh&& rhs) noexcept
    return *this;
 }
 
+void Mesh::render(const Shader& /*shader*/) const
+{
+   glBindVertexArray(mVAO);
+   glDrawElements(GL_TRIANGLES, mNumIndices, GL_UNSIGNED_INT, 0);
+   glBindVertexArray(0);
+}
+
 void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
 {
    GLuint VBO, EBO;

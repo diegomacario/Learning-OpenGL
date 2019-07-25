@@ -9,9 +9,9 @@
 #include "mesh.h"
 
 // TODO: Change the name of this struct to MaterialTexture
-struct MeshTexture
+struct MaterialTexture
 {
-   MeshTexture(const std::shared_ptr<Texture>& texture, const std::string& uniformName)
+   MaterialTexture(const std::shared_ptr<Texture>& texture, const std::string& uniformName)
       : texture(texture)
       , uniformName(uniformName)
    {
@@ -26,9 +26,9 @@ class TexturedMesh : public Mesh
 {
 public:
 
-   TexturedMesh(const std::vector<Vertex>&       vertices,
-                const std::vector<unsigned int>& indices,
-                const std::vector<MeshTexture>&  textures);
+   TexturedMesh(const std::vector<Vertex>&          vertices,
+                const std::vector<unsigned int>&    indices,
+                const std::vector<MaterialTexture>& textures);
    ~TexturedMesh() = default;
 
    TexturedMesh(const TexturedMesh&) = delete;
@@ -44,7 +44,7 @@ private:
 
    void bindMaterialTextures(const Shader& shader) const;
 
-   std::vector<MeshTexture> mTextures; // TODO: Shininess should be available to textured meshes too.
+   std::vector<MaterialTexture> mTextures; // TODO: Shininess should be available to textured meshes too.
 };
 
 #endif
