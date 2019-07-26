@@ -19,7 +19,7 @@ public:
    ModelLoader(ModelLoader&&) = default;
    ModelLoader& operator=(ModelLoader&&) = default;
 
-   std::shared_ptr<Model>    loadResource(const std::string& modelFilePath) const;
+   std::shared_ptr<Model>       loadResource(const std::string& modelFilePath) const;
 
 private:
 

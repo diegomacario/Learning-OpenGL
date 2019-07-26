@@ -20,9 +20,9 @@ Mesh::~Mesh()
 
 Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
-   , mVAO(std::exchange(rhs.mVAO, 0))
    , mMaterialTextures(std::move(rhs.mMaterialTextures)) // TODO: Is this move working?
    , mMaterialConstants(std::move(rhs.mMaterialConstants)) // TODO: Is this move working?
+   , mVAO(std::exchange(rhs.mVAO, 0))
 {
 
 }
@@ -30,9 +30,9 @@ Mesh::Mesh(Mesh&& rhs) noexcept
 Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
    mNumIndices        = std::exchange(rhs.mNumIndices, 0);
-   mVAO               = std::exchange(rhs.mVAO, 0);
    mMaterialTextures  = std::move(rhs.mMaterialTextures); // TODO: Is this move working?
    mMaterialConstants = std::move(rhs.mMaterialConstants); // TODO: Is this move working?
+   mVAO               = std::exchange(rhs.mVAO, 0);
    return *this;
 }
 

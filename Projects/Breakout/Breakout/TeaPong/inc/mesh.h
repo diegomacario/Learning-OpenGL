@@ -26,7 +26,6 @@ struct Vertex
    glm::vec2 texCoords;
 };
 
-// TODO: Change the name of this struct to MaterialTexture
 struct MaterialTexture
 {
    MaterialTexture(const std::shared_ptr<Texture>& texture, const std::string& uniformName)
@@ -79,22 +78,19 @@ public:
    Mesh(Mesh&& rhs) noexcept;
    Mesh& operator=(Mesh&& rhs) noexcept;
 
-   void render(const Shader& shader) const;
+   void         render(const Shader& shader) const;
 
 private:
 
    void         configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 
    void         bindMaterialTextures(const Shader& shader) const;
-
    void         setMaterialConstants(const Shader& shader) const;
 
    GLsizei                      mNumIndices;
-   GLuint                       mVAO;
-
    std::vector<MaterialTexture> mMaterialTextures; // TODO: Shininess should be available to textured meshes too.
-
    MaterialConstants            mMaterialConstants;
+   GLuint                       mVAO;
 };
 
 #endif
