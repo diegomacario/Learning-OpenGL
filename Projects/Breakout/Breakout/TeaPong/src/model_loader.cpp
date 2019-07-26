@@ -18,8 +18,8 @@ std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePat
       return nullptr;
    }
 
-   ResourceManager<Texture>           texManager;
-   std::vector<std::unique_ptr<Mesh>> meshes;
+   ResourceManager<Texture> texManager;
+   std::vector<Mesh>        meshes;
    processNodeHierarchyRecursively(scene->mRootNode,
                                    scene,
                                    modelFilePath.substr(0, modelFilePath.find_last_of('/')),
@@ -30,11 +30,11 @@ std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePat
    return std::make_shared<Model>(std::move(meshes), std::move(texManager));
 }
 
-void ModelLoader::processNodeHierarchyRecursively(const aiNode*                       node,
-                                                  const aiScene*                      scene,
-                                                  const std::string&                  modelDir,
-                                                  ResourceManager<Texture>&           texManager,
-                                                  std::vector<std::unique_ptr<Mesh>>& meshes) const
+void ModelLoader::processNodeHierarchyRecursively(const aiNode*             node,
+                                                  const aiScene*            scene,
+                                                  const std::string&        modelDir,
+                                                  ResourceManager<Texture>& texManager,
+                                                  std::vector<Mesh>&        meshes) const
 {
    // Create a Mesh object for each mesh referenced by the current node
    for (unsigned int i = 0; i < node->mNumMeshes; i++)
@@ -43,20 +43,10 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode*                 
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-
-      // Can we take advantage of emplace_back here?
-      if (meshIsTextured(scene->mMaterials[mesh->mMaterialIndex]))
-      {
-         meshes.push_back(std::make_unique<TexturedMesh>(processVertices(mesh),
-                                                         processIndices(mesh),
-                                                         processMaterialTextures(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager)));
-      }
-      else
-      {
-         meshes.push_back(std::make_unique<ConstantMesh>(processVertices(mesh),
-                                                         processIndices(mesh),
-                                                         processMaterialConstants(scene->mMaterials[mesh->mMaterialIndex])));
-      }
+      meshes.emplace_back(processVertices(mesh),                                                                  // Vertices
+                          processIndices(mesh),                                                                   // Indices
+                          processMaterialTextures(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager), // Textures
+                          processMaterialConstants(scene->mMaterials[mesh->mMaterialIndex]));                     // Material constants
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
@@ -67,22 +57,6 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode*                 
                                       modelDir,
                                       texManager,
                                       meshes);
-   }
-}
-
-bool ModelLoader::meshIsTextured(const aiMaterial* material) const
-{
-   // TODO: Allow the user to select which texture types to consider
-   if (material->GetTextureCount(aiTextureType_AMBIENT)  ||
-       material->GetTextureCount(aiTextureType_EMISSIVE) ||
-       material->GetTextureCount(aiTextureType_DIFFUSE)  ||
-       material->GetTextureCount(aiTextureType_SPECULAR))
-   {
-      return true;
-   }
-   else
-   {
-      return false;
    }
 }
 
@@ -133,7 +107,7 @@ std::vector<MaterialTexture> ModelLoader::processMaterialTextures(const aiMateri
                                                                   const std::string&        modelDir,
                                                                   ResourceManager<Texture>& texManager) const
 {
-   std::vector<MaterialTexture> textures;
+   std::vector<MaterialTexture> materialTextures;
 
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
@@ -175,14 +149,14 @@ std::vector<MaterialTexture> ModelLoader::processMaterialTextures(const aiMateri
            material->GetTexture(texType, i, &texFilename);
 
            // Note that we assume that the textures are in the same directory as the model
-           textures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
+           materialTextures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
        }
 
        // We jump here if we are asked to process textures of an invalid type
        skip:;
    }
 
-   return textures;
+   return materialTextures;
 }
 
 MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* material) const
@@ -190,7 +164,6 @@ MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* materi
    aiColor3D color(0.0f, 0.0f, 0.0f);
    float     shininess = 0.0f;
 
-   // TODO: Allow the user to select which constant types to consider
    return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
                             ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
                             ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),

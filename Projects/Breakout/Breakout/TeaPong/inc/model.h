@@ -2,7 +2,6 @@
 #define MODEL_H
 
 #include "shader.h"
-#include "texture.h"
 #include "mesh.h"
 #include "resource_manager.h"
 
@@ -10,7 +9,7 @@ class Model
 {
 public:
 
-   Model(std::vector<std::unique_ptr<Mesh>>&& meshes, ResourceManager<Texture>&& texManager);
+   Model(std::vector<Mesh>&& meshes, ResourceManager<Texture>&& texManager);
 
    Model(const Model&) = delete;
    Model& operator=(const Model&) = delete;
@@ -22,8 +21,8 @@ public:
 
 private:
 
-   std::vector<std::unique_ptr<Mesh>> mMeshes;
-   ResourceManager<Texture>           mTexManager;
+   std::vector<Mesh>        mMeshes;
+   ResourceManager<Texture> mTexManager;
 };
 
 #endif

@@ -118,7 +118,6 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\camera.cpp" />
-    <ClCompile Include="src\constant_mesh.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\game_object_2D.cpp" />
     <ClCompile Include="src\game_object_3D.cpp" />
@@ -136,13 +135,11 @@
     <ClCompile Include="src\shader_loader.cpp" />
     <ClCompile Include="src\stb_image.cpp" />
     <ClCompile Include="src\texture.cpp" />
-    <ClCompile Include="src\textured_mesh.cpp" />
     <ClCompile Include="src\texture_loader.cpp" />
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\camera.h" />
-    <ClInclude Include="inc\constant_mesh.h" />
     <ClInclude Include="inc\game.h" />
     <ClInclude Include="inc\game_object_2D.h" />
     <ClInclude Include="inc\game_object_3D.h" />
@@ -160,7 +157,6 @@
     <ClInclude Include="inc\shader_loader.h" />
     <ClInclude Include="inc\stb_image.h" />
     <ClInclude Include="inc\texture.h" />
-    <ClInclude Include="inc\textured_mesh.h" />
     <ClInclude Include="inc\texture_loader.h" />
     <ClInclude Include="inc\window.h" />
   </ItemGroup>

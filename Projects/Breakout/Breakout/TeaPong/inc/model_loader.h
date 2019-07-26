@@ -3,8 +3,6 @@
 
 #include <unordered_map>
 
-#include "constant_mesh.h"
-#include "textured_mesh.h"
 #include "model.h"
 #include "resource_manager.h"
 
@@ -21,17 +19,15 @@ public:
    ModelLoader(ModelLoader&&) = default;
    ModelLoader& operator=(ModelLoader&&) = default;
 
-   std::shared_ptr<Model>       loadResource(const std::string& modelFilePath) const;
+   std::shared_ptr<Model>    loadResource(const std::string& modelFilePath) const;
 
 private:
 
-   void                         processNodeHierarchyRecursively(const aiNode*                       node,
-                                                                const aiScene*                      scene,
-                                                                const std::string&                  modelDir,
-                                                                ResourceManager<Texture>&           texManager,
-                                                                std::vector<std::unique_ptr<Mesh>>& meshes) const;
-
-   bool                         meshIsTextured(const aiMaterial* material) const;
+   void                         processNodeHierarchyRecursively(const aiNode*             node,
+                                                                const aiScene*            scene,
+                                                                const std::string&        modelDir,
+                                                                ResourceManager<Texture>& texManager,
+                                                                std::vector<Mesh>&        meshes) const;
 
    std::vector<Vertex>          processVertices(const aiMesh* mesh) const;
 
