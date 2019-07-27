@@ -5,6 +5,7 @@
 
 #include <memory>
 #include <vector>
+#include <bitset>
 
 #include "shader.h"
 #include "texture.h"
@@ -39,37 +40,70 @@ struct MaterialTexture
    std::string              uniformName;
 };
 
+struct MaterialTextureAvailabilities
+{
+   MaterialTextureAvailabilities::MaterialTextureAvailabilities()
+      : ambientTexIsAvailable(false)
+      , emissiveTexIsAvailable(false)
+      , diffuseTexIsAvailable(false)
+      , specularTexIsAvailable(false)
+   {
+
+   }
+
+   bool ambientTexIsAvailable;
+   bool emissiveTexIsAvailable;
+   bool diffuseTexIsAvailable;
+   bool specularTexIsAvailable;
+};
+
 struct MaterialConstants
 {
    MaterialConstants(const glm::vec3& ambientColor,
+                     const glm::vec3& emissiveColor,
                      const glm::vec3& diffuseColor,
                      const glm::vec3& specularColor,
-                     const glm::vec3& emissiveColor,
                      float            shininess)
       : ambientColor(ambientColor)
+      , emissiveColor(emissiveColor)
       , diffuseColor(diffuseColor)
       , specularColor(specularColor)
-      , emissiveColor(emissiveColor)
       , shininess(shininess)
    {
 
    }
 
    glm::vec3 ambientColor;
+   glm::vec3 emissiveColor;
    glm::vec3 diffuseColor;
    glm::vec3 specularColor;
-   glm::vec3 emissiveColor;
    float     shininess;
+};
+
+struct Material
+{
+   Material::Material(const std::vector<MaterialTexture>& materialTextures,
+                      MaterialTextureAvailabilities       materialTextureAvailabilities,
+                      const MaterialConstants&            materialConstants)
+      : textures(materialTextures)
+      , textureAvailabilities(materialTextureAvailabilities)
+      , constants(materialConstants)
+   {
+
+   }
+
+   std::vector<MaterialTexture>  textures;
+   MaterialTextureAvailabilities textureAvailabilities;
+   MaterialConstants             constants;
 };
 
 class Mesh
 {
 public:
 
-   Mesh(const std::vector<Vertex>&          vertices,
-        const std::vector<unsigned int>&    indices,
-        const std::vector<MaterialTexture>& materialTextures,
-        const MaterialConstants&            materialConstants);
+   Mesh(const std::vector<Vertex>&       vertices,
+        const std::vector<unsigned int>& indices,
+        const Material&                  material);
    ~Mesh();
 
    Mesh(const Mesh&) = delete;
@@ -78,19 +112,19 @@ public:
    Mesh(Mesh&& rhs) noexcept;
    Mesh& operator=(Mesh&& rhs) noexcept;
 
-   void         render(const Shader& shader) const;
+   void render(const Shader& shader) const;
 
 private:
 
-   void         configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
+   void configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices);
 
-   void         bindMaterialTextures(const Shader& shader) const;
-   void         setMaterialConstants(const Shader& shader) const;
+   void bindMaterialTextures(const Shader& shader) const;
+   void setMaterialTextureAvailabilities(const Shader& shader) const;
+   void setMaterialConstants(const Shader& shader) const;
 
-   GLsizei                      mNumIndices;
-   std::vector<MaterialTexture> mMaterialTextures; // TODO: Shininess should be available to textured meshes too.
-   MaterialConstants            mMaterialConstants;
-   GLuint                       mVAO;
+   GLsizei  mNumIndices;
+   Material mMaterial; // TODO: Shininess should be available to textured meshes too.
+   GLuint   mVAO;
 };
 
 #endif

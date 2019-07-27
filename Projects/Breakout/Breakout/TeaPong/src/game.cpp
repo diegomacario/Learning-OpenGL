@@ -67,15 +67,15 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                                       0.1f,                                                                                             // Near
                                                       100.0f);                                                                                          // Far
 
-   auto texturedGameObject3DShader = mShaderManager.loadResource<ShaderLoader>("textured_game_object_3D", "shaders/textured_game_object_3D.vs", "shaders/textured_game_object_3D.fs");
-   texturedGameObject3DShader->use();
-   texturedGameObject3DShader->setMat4("projection", perspectiveProjection);
-   texturedGameObject3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.5f, 0.5f, 0.5f));
-   texturedGameObject3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
-   texturedGameObject3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
-   texturedGameObject3DShader->setFloat("pointLights[0].linearAtt", 0.0f);
-   texturedGameObject3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
-   texturedGameObject3DShader->setInt("numPointLightsInScene", 1);
+   //auto texturedGameObject3DShader = mShaderManager.loadResource<ShaderLoader>("textured_game_object_3D", "shaders/textured_game_object_3D.vs", "shaders/textured_game_object_3D.fs");
+   //texturedGameObject3DShader->use();
+   //texturedGameObject3DShader->setMat4("projection", perspectiveProjection);
+   //texturedGameObject3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.5f, 0.5f, 0.5f));
+   //texturedGameObject3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
+   //texturedGameObject3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
+   //texturedGameObject3DShader->setFloat("pointLights[0].linearAtt", 0.0f);
+   //texturedGameObject3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
+   //texturedGameObject3DShader->setInt("numPointLightsInScene", 1);
 
    auto gameObject3DShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D", "shaders/game_object_3D.vs", "shaders/game_object_3D.fs");
    gameObject3DShader->use();
@@ -88,8 +88,8 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    gameObject3DShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
-   //mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_emissive/teapot.obj");
-   mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_constants/teapot.obj");
+   mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_emissive/teapot.obj");
+   //mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_constants/teapot.obj");
 
    // Load the textures
    mTextureManager.loadResource<TextureLoader>("table_cloth", "textures/table_cloth.jpg");
@@ -170,11 +170,11 @@ void Game::gameLoop()
       // Enable depth testing for 3D objects
       glEnable(GL_DEPTH_TEST);
 
-      auto texturedGameObject3DShader = mShaderManager.getResource("textured_game_object_3D");
-      texturedGameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().
-      texturedGameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
-      texturedGameObject3DShader->setMat4("view", mCamera->getViewMatrix());
-      texturedGameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
+      //auto texturedGameObject3DShader = mShaderManager.getResource("textured_game_object_3D");
+      //texturedGameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().
+      //texturedGameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
+      //texturedGameObject3DShader->setMat4("view", mCamera->getViewMatrix());
+      //texturedGameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
       auto gameObject3DShader = mShaderManager.getResource("game_object_3D");
       gameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().

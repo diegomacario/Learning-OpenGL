@@ -2,13 +2,11 @@
 
 #include "mesh.h"
 
-Mesh::Mesh(const std::vector<Vertex>&          vertices,
-           const std::vector<unsigned int>&    indices,
-           const std::vector<MaterialTexture>& materialTextures,
-           const MaterialConstants&            materialConstants)
+Mesh::Mesh(const std::vector<Vertex>&       vertices,
+           const std::vector<unsigned int>& indices,
+           const Material&                  material)
    : mNumIndices(indices.size())
-   , mMaterialTextures(materialTextures)
-   , mMaterialConstants(materialConstants)
+   , mMaterial(material)
 {
    configureVAO(vertices, indices);
 }
@@ -20,8 +18,7 @@ Mesh::~Mesh()
 
 Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
-   , mMaterialTextures(std::move(rhs.mMaterialTextures)) // TODO: Is this move working?
-   , mMaterialConstants(std::move(rhs.mMaterialConstants)) // TODO: Is this move working?
+   , mMaterial(std::move(rhs.mMaterial)) // TODO: Is this move working?
    , mVAO(std::exchange(rhs.mVAO, 0))
 {
 
@@ -29,10 +26,9 @@ Mesh::Mesh(Mesh&& rhs) noexcept
 
 Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
-   mNumIndices        = std::exchange(rhs.mNumIndices, 0);
-   mMaterialTextures  = std::move(rhs.mMaterialTextures); // TODO: Is this move working?
-   mMaterialConstants = std::move(rhs.mMaterialConstants); // TODO: Is this move working?
-   mVAO               = std::exchange(rhs.mVAO, 0);
+   mNumIndices = std::exchange(rhs.mNumIndices, 0);
+   mMaterial   = std::move(rhs.mMaterial); // TODO: Is this move working?
+   mVAO        = std::exchange(rhs.mVAO, 0);
    return *this;
 }
 
@@ -41,6 +37,8 @@ void Mesh::render(const Shader& shader) const
    shader.use();
 
    // TODO: Set the uniforms here...
+   bindMaterialTextures(shader);
+   setMaterialTextureAvailabilities(shader);
    setMaterialConstants(shader);
 
    glBindVertexArray(mVAO);
@@ -86,23 +84,14 @@ void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<u
    glDeleteBuffers(1, &EBO);
 }
 
-void Mesh::setMaterialConstants(const Shader& shader) const
-{
-   shader.setVec3("materialConstants.ambient", mMaterialConstants.ambientColor);
-   shader.setVec3("materialConstants.diffuse", mMaterialConstants.diffuseColor);
-   shader.setVec3("materialConstants.specular", mMaterialConstants.specularColor);
-   shader.setVec3("materialConstants.emissive", mMaterialConstants.emissiveColor);
-   shader.setFloat("materialConstants.shininess", mMaterialConstants.shininess);
-}
-
 void Mesh::bindMaterialTextures(const Shader& shader) const
 {
    unsigned int texUnit = GL_TEXTURE0;
 
-   for (unsigned int i = 0; i < mMaterialTextures.size(); ++i)
+   for (unsigned int i = 0; i < mMaterial.textures.size(); ++i)
    {
       // Get the location of the sampler2D uniform that should exist in the shader
-      GLint uniformLoc = glGetUniformLocation(shader.getID(), mMaterialTextures[i].uniformName.c_str());
+      GLint uniformLoc = glGetUniformLocation(shader.getID(), mMaterial.textures[i].uniformName.c_str());
 
       if (uniformLoc != -1)
       {
@@ -111,15 +100,32 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
          // Tell the sampler2D uniform in what texture unit to look for the texture data
          glUniform1i(uniformLoc, texUnit);
          // Bind the texture
-         mMaterialTextures[i].texture->bind();
+         mMaterial.textures[i].texture->bind();
 
          ++texUnit;
       }
       else
       {
-         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << mMaterialTextures[i].uniformName << "\n";
+         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << mMaterial.textures[i].uniformName << "\n";
       }
    }
 
    glActiveTexture(GL_TEXTURE0);
+}
+
+void Mesh::setMaterialTextureAvailabilities(const Shader& shader) const
+{
+   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.ambientTexIsAvailable ? 1 : 0);
+   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.emissiveTexIsAvailable ? 1 : 0);
+   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.diffuseTexIsAvailable ? 1 : 0);
+   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.specularTexIsAvailable ? 1 : 0);
+}
+
+void Mesh::setMaterialConstants(const Shader& shader) const
+{
+   shader.setVec3("materialConstants.ambient", mMaterial.constants.ambientColor);
+   shader.setVec3("materialConstants.emissive", mMaterial.constants.emissiveColor);
+   shader.setVec3("materialConstants.diffuse", mMaterial.constants.diffuseColor);
+   shader.setVec3("materialConstants.specular", mMaterial.constants.specularColor);
+   shader.setFloat("materialConstants.shininess", mMaterial.constants.shininess);
 }

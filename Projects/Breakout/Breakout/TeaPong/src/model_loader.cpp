@@ -43,10 +43,9 @@ void ModelLoader::processNodeHierarchyRecursively(const aiNode*             node
       // All the meshes are stored in the scene struct
       // Nodes only contain indices that can be used to access meshes from said struct
       aiMesh* mesh = scene->mMeshes[node->mMeshes[i]];
-      meshes.emplace_back(processVertices(mesh),                                                                  // Vertices
-                          processIndices(mesh),                                                                   // Indices
-                          processMaterialTextures(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager), // Textures
-                          processMaterialConstants(scene->mMaterials[mesh->mMaterialIndex]));                     // Material constants
+      meshes.emplace_back(processVertices(mesh),                                                           // Vertices
+                          processIndices(mesh),                                                            // Indices
+                          processMaterial(scene->mMaterials[mesh->mMaterialIndex], modelDir, texManager)); // Material textures and constants
    }
 
    // After we have processed all the meshes referenced by the current node, we recursively process its children
@@ -103,11 +102,12 @@ std::vector<unsigned int> ModelLoader::processIndices(const aiMesh* mesh) const
    return indices;
 }
 
-std::vector<MaterialTexture> ModelLoader::processMaterialTextures(const aiMaterial*         material,
-                                                                  const std::string&        modelDir,
-                                                                  ResourceManager<Texture>& texManager) const
+Material ModelLoader::processMaterial(const aiMaterial*         material,
+                                      const std::string&        modelDir,
+                                      ResourceManager<Texture>& texManager) const
 {
-   std::vector<MaterialTexture> materialTextures;
+   std::vector<MaterialTexture>  materialTextures;
+   MaterialTextureAvailabilities materialTextureAvailabilities;
 
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
@@ -117,46 +117,56 @@ std::vector<MaterialTexture> ModelLoader::processMaterialTextures(const aiMateri
                                             aiTextureType_DIFFUSE,
                                             aiTextureType_SPECULAR};
 
-   std::string uniformName;
+   unsigned int texCount = 0;
+   std::string  uniformName;
    for (aiTextureType texType : texTypes)
    {
-       // Compose the name of the sampler2D uniform that should exist in the shader
-       // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
-       switch (texType)
-       {
-           // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
-       case aiTextureType_AMBIENT:
-           uniformName = "ambientTex";
-           break;
-       case aiTextureType_EMISSIVE:
-           uniformName = "emissiveTex";
-           break;
-       case aiTextureType_DIFFUSE:
-           uniformName = "diffuseTex";
-           break;
-       case aiTextureType_SPECULAR:
-           uniformName = "specularTex";
-           break;
-       default:
-           std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
-           goto skip;
-       }
+      // Get the number of textures of the specified type
+      texCount = material->GetTextureCount(texType);
 
-       // Load all the textures of the specified type
-       for (unsigned int i = 0; i < material->GetTextureCount(texType); i++)
-       {
-           aiString texFilename;
-           material->GetTexture(texType, i, &texFilename);
+      // Compose the name of the sampler2D uniform that should exist in the shader
+      // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
+      switch (texType)
+      {
+         // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
+      case aiTextureType_AMBIENT:
+         materialTextureAvailabilities.ambientTexIsAvailable  = (texCount != 0);
+         uniformName = "ambientTex";
+         break;
+      case aiTextureType_EMISSIVE:
+         materialTextureAvailabilities.emissiveTexIsAvailable = (texCount != 0);
+         uniformName = "emissiveTex";
+         break;
+      case aiTextureType_DIFFUSE:
+         materialTextureAvailabilities.diffuseTexIsAvailable  = (texCount != 0);
+         uniformName = "diffuseTex";
+         break;
+      case aiTextureType_SPECULAR:
+         materialTextureAvailabilities.specularTexIsAvailable = (texCount != 0);
+         uniformName = "specularTex";
+         break;
+      default:
+         std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
+         goto skip;
+      }
 
-           // Note that we assume that the textures are in the same directory as the model
-           materialTextures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
-       }
+      // Load all the textures of the specified type
+      for (unsigned int i = 0; i < texCount; i++)
+      {
+         aiString texFilename;
+         material->GetTexture(texType, i, &texFilename);
 
-       // We jump here if we are asked to process textures of an invalid type
-       skip:;
+         // Note that we assume that the textures are in the same directory as the model
+         materialTextures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
+      }
+
+      // We jump here if we are asked to process textures of an invalid type
+      skip:;
    }
 
-   return materialTextures;
+   return Material(materialTextures,
+                   materialTextureAvailabilities,
+                   processMaterialConstants(material));
 }
 
 MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* material) const
@@ -164,9 +174,9 @@ MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* materi
    aiColor3D color(0.0f, 0.0f, 0.0f);
    float     shininess = 0.0f;
 
-   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
                             ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
+                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) ? shininess : 0.0f));
 }
