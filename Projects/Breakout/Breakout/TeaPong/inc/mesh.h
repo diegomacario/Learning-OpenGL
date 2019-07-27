@@ -40,6 +40,15 @@ struct MaterialTexture
    std::string              uniformName;
 };
 
+enum class MaterialTextureTypes : unsigned int
+{
+   ambient  = 0,
+   emissive = 1,
+   diffuse  = 2,
+   specular = 3,
+   count    = 4
+};
+
 struct MaterialConstants
 {
    MaterialConstants(const glm::vec3& ambientColor,
@@ -65,9 +74,9 @@ struct MaterialConstants
 
 struct Material
 {
-   Material::Material(const std::vector<MaterialTexture>& materialTextures,
-                      std::bitset<4>                      materialTextureAvailabilities,
-                      const MaterialConstants&            materialConstants)
+   Material::Material(const std::vector<MaterialTexture>&                                 materialTextures,
+                      std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)> materialTextureAvailabilities,
+                      const MaterialConstants&                                            materialConstants)
       : textures(materialTextures)
       , textureAvailabilities(materialTextureAvailabilities)
       , constants(materialConstants)
@@ -75,9 +84,9 @@ struct Material
 
    }
 
-   std::vector<MaterialTexture> textures;
-   std::bitset<4>               textureAvailabilities;
-   MaterialConstants            constants;
+   std::vector<MaterialTexture>                                        textures;
+   std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)> textureAvailabilities;
+   MaterialConstants                                                   constants;
 };
 
 class Mesh
@@ -106,7 +115,7 @@ private:
    void setMaterialConstants(const Shader& shader) const;
 
    GLsizei  mNumIndices;
-   Material mMaterial; // TODO: Shininess should be available to textured meshes too.
+   Material mMaterial;
    GLuint   mVAO;
 };
 

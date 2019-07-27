@@ -59,32 +59,7 @@ bool Window::initialize()
 
    glfwMakeContextCurrent(mWindow);
 
-   glfwSetWindowUserPointer(mWindow, this);
-
-   auto framebufferSizeCallback = [](GLFWwindow* window, int width, int height)
-   {
-      static_cast<Window*>(glfwGetWindowUserPointer(window))->framebufferSizeCallback(window, width, height);
-   };
-
-   auto keyCallback = [](GLFWwindow* window, int key, int scancode, int action, int mods)
-   {
-      static_cast<Window*>(glfwGetWindowUserPointer(window))->keyCallback(window, key, scancode, action, mods);
-   };
-
-   auto cursorPosCallback = [](GLFWwindow* window, double xPos, double yPos)
-   {
-      static_cast<Window*>(glfwGetWindowUserPointer(window))->cursorPosCallback(window, xPos, yPos);
-   };
-
-   auto scrollCallback = [](GLFWwindow* window, double xOffset, double yOffset)
-   {
-      static_cast<Window*>(glfwGetWindowUserPointer(window))->scrollCallback(window, xOffset, yOffset);
-   };
-
-   glfwSetFramebufferSizeCallback(mWindow, framebufferSizeCallback);
-   glfwSetKeyCallback(mWindow, keyCallback);
-   glfwSetCursorPosCallback(mWindow, cursorPosCallback);
-   glfwSetScrollCallback(mWindow, scrollCallback);
+   setInputCallbacks();
 
    glfwSetInputMode(mWindow, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
@@ -182,6 +157,36 @@ void Window::resetScrollWheelMoved()
 double Window::getScrollYOffset() const
 {
    return mScrollYOffset;
+}
+
+void Window::setInputCallbacks()
+{
+   glfwSetWindowUserPointer(mWindow, this);
+
+   auto framebufferSizeCallback = [](GLFWwindow* window, int width, int height)
+   {
+      static_cast<Window*>(glfwGetWindowUserPointer(window))->framebufferSizeCallback(window, width, height);
+   };
+
+   auto keyCallback = [](GLFWwindow* window, int key, int scancode, int action, int mods)
+   {
+      static_cast<Window*>(glfwGetWindowUserPointer(window))->keyCallback(window, key, scancode, action, mods);
+   };
+
+   auto cursorPosCallback = [](GLFWwindow* window, double xPos, double yPos)
+   {
+      static_cast<Window*>(glfwGetWindowUserPointer(window))->cursorPosCallback(window, xPos, yPos);
+   };
+
+   auto scrollCallback = [](GLFWwindow* window, double xOffset, double yOffset)
+   {
+      static_cast<Window*>(glfwGetWindowUserPointer(window))->scrollCallback(window, xOffset, yOffset);
+   };
+
+   glfwSetFramebufferSizeCallback(mWindow, framebufferSizeCallback);
+   glfwSetKeyCallback(mWindow, keyCallback);
+   glfwSetCursorPosCallback(mWindow, cursorPosCallback);
+   glfwSetScrollCallback(mWindow, scrollCallback);
 }
 
 void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)

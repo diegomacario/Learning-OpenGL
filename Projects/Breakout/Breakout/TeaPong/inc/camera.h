@@ -41,7 +41,7 @@ public:
 
 private:
 
-   void      updateCameraVectors(); // TODO: Change the name of this function to something more appropriate like updateCoordinateSystem().
+   void      updateCoordinateFrame();
 
    glm::vec3 mPosition;
    glm::vec3 mFront;

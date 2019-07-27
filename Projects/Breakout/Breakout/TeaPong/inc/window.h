@@ -6,7 +6,7 @@
 
 #include <bitset>
 
-// TODO: Take advantage of inlining in this class
+// TODO: Take advantage of inlining in this class.
 class Window
 {
 public:
@@ -20,7 +20,7 @@ public:
    Window(Window&&) = delete;
    Window& operator=(Window&&) = delete;
 
-   bool   initialize(); // TODO: Split this function up
+   bool   initialize();
 
    bool   shouldClose() const;
    void   setShouldClose(bool shouldClose); // TODO: Could this be considered to be const?
@@ -48,6 +48,7 @@ public:
 
 private:
 
+   void   setInputCallbacks();
    void   framebufferSizeCallback(GLFWwindow* window, int width, int height);
    void   keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
    void   cursorPosCallback(GLFWwindow* window, double xPos, double yPos);

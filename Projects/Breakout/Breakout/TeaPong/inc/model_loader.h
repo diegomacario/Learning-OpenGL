@@ -36,8 +36,6 @@ private:
    Material                  processMaterial(const aiMaterial*         material,
                                              const std::string&        modelDir,
                                              ResourceManager<Texture>& texManager) const;
-
-   MaterialConstants         processMaterialConstants(const aiMaterial* material) const;
 };
 
 #endif

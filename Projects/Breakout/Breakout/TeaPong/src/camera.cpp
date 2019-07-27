@@ -20,7 +20,7 @@ Camera::Camera(glm::vec3 position,
    , mMovementSpeed(movementSpeed)
    , mMouseSensitivity(mouseSensitivity)
 {
-   updateCameraVectors();
+   updateCoordinateFrame();
 }
 
 Camera::Camera(Camera&& rhs) noexcept
@@ -110,7 +110,7 @@ void Camera::processMouseMovement(float xOffset, float yOffset)
    }
 
    // Update the front, right and up vectors using the updated Euler angles
-   updateCameraVectors();
+   updateCoordinateFrame();
 }
 
 void Camera::processScrollWheelMovement(float yOffset)
@@ -131,7 +131,7 @@ void Camera::processScrollWheelMovement(float yOffset)
    }
 }
 
-void Camera::updateCameraVectors()
+void Camera::updateCoordinateFrame()
 {
    // Calculate the new front vector
    glm::vec3 newFront;

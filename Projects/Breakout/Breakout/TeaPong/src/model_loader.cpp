@@ -10,11 +10,11 @@
 std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePath) const
 {
    Assimp::Importer importer;
-   const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs); // TODO: Allow the user to select which flags to use
+   const aiScene* scene = importer.ReadFile(modelFilePath, aiProcess_Triangulate | aiProcess_FlipUVs);
 
    if (!scene || scene->mFlags & AI_SCENE_FLAGS_INCOMPLETE || !scene->mRootNode)
    {
-      std::cout << "Error - Model::loadModel - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
+      std::cout << "Error - ModelLoader::loadResource - The error below occurred while importing this model: " << modelFilePath << "\n" << importer.GetErrorString() << "\n";
       return nullptr;
    }
 
@@ -26,7 +26,6 @@ std::shared_ptr<Model> ModelLoader::loadResource(const std::string& modelFilePat
                                    texManager,
                                    meshes);
 
-   // TODO: Would it be possible to use move semantics to avoid copying the vector of meshes when creating the model? Or to optimize this in any other way?
    return std::make_shared<Model>(std::move(meshes), std::move(texManager));
 }
 
@@ -83,7 +82,6 @@ std::vector<unsigned int> ModelLoader::processIndices(const aiMesh* mesh) const
 {
    // We assume that the mesh is made out of triangles, which is why we multiply the number of faces by 3 when reserving space in the indices vector
    // This will always be true if the aiProcess_Triangulate flag continues to be used when loading the model
-   // TODO: Multiply by a different factor if we begin supporting other flags besides aiProcess_Triangulate
    std::vector<unsigned int> indices;
    indices.reserve(mesh->mNumFaces * 3);
 
@@ -106,77 +104,73 @@ Material ModelLoader::processMaterial(const aiMaterial*         material,
                                       const std::string&        modelDir,
                                       ResourceManager<Texture>& texManager) const
 {
-   std::vector<MaterialTexture> materialTextures;
-   std::bitset<4>               materialTextureAvailabilities;
+   // Load the textures
+   std::vector<MaterialTexture>                                        materialTextures;
+   std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)> materialTextureAvailabilities;
 
-   // The material can consist of many textures of different types
-   // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
-   // TODO: Allow the user to select which texture types to process
+   // The material can consist of many textures and constants of different types
+   // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular textures or constants
+   // A constant is only used during rendering if its corresponding texture is not available
    std::array<aiTextureType, 4> texTypes = {aiTextureType_AMBIENT,
                                             aiTextureType_EMISSIVE,
                                             aiTextureType_DIFFUSE,
                                             aiTextureType_SPECULAR};
 
-   unsigned int texCount = 0;
-   std::string  uniformName;
    for (aiTextureType texType : texTypes)
    {
-      // Get the number of textures of the specified type
-      texCount = material->GetTextureCount(texType);
+      // Get the number of textures of the current type
+      unsigned int texCount = material->GetTextureCount(texType);
 
-      // Compose the name of the sampler2D uniform that should exist in the shader
-      // The numbering of the names starts at 0, so if we are processing 3 ambient textures, for example, the names of their corresponding sampler2D uniforms should be: ambientTex0, ambientTex1 and ambientTex2
-      switch (texType)
+      if (texCount > 0)
       {
-         // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
-      case aiTextureType_AMBIENT:
-         materialTextureAvailabilities[0] = (texCount != 0);
-         uniformName = "ambientTex";
-         break;
-      case aiTextureType_EMISSIVE:
-         materialTextureAvailabilities[1] = (texCount != 0);
-         uniformName = "emissiveTex";
-         break;
-      case aiTextureType_DIFFUSE:
-         materialTextureAvailabilities[2] = (texCount != 0);
-         uniformName = "diffuseTex";
-         break;
-      case aiTextureType_SPECULAR:
-         materialTextureAvailabilities[3] = (texCount != 0);
-         uniformName = "specularTex";
-         break;
-      default:
-         std::cout << "Error - ModelLoader::processTextures - Attempted to process textures of an invalid type: " << texType << "\n";
-         goto skip;
-      }
+         if (texCount > 1)
+         {
+            std::cout << "Warning - ModelLoader::processMaterial - Mesh uses more than one texture of the following type: " << texType << ". Only the first texture will be loaded." << "\n";
+         }
 
-      // Load all the textures of the specified type
-      for (unsigned int i = 0; i < texCount; i++)
-      {
+         // Compose the name of the sampler2D uniform that should exist in the shader,
+         // and set the availability of the current texture type to true so that a texture of said type is used during rendering instead of its corresponding constant
+         std::string uniformName;
+         switch (texType)
+         {
+         case aiTextureType_AMBIENT:
+            uniformName = "ambientTex";
+            materialTextureAvailabilities[static_cast<unsigned int>(MaterialTextureTypes::ambient)] = true;
+            break;
+         case aiTextureType_EMISSIVE:
+            uniformName = "emissiveTex";
+            materialTextureAvailabilities[static_cast<unsigned int>(MaterialTextureTypes::emissive)] = true;
+            break;
+         case aiTextureType_DIFFUSE:
+            uniformName = "diffuseTex";
+            materialTextureAvailabilities[static_cast<unsigned int>(MaterialTextureTypes::diffuse)] = true;
+            break;
+         case aiTextureType_SPECULAR:
+            uniformName = "specularTex";
+            materialTextureAvailabilities[static_cast<unsigned int>(MaterialTextureTypes::specular)] = true;
+            break;
+         }
+
          aiString texFilename;
-         material->GetTexture(texType, i, &texFilename);
+         material->GetTexture(texType, 0, &texFilename);
 
          // Note that we assume that the textures are in the same directory as the model
-         materialTextures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName + std::to_string(i));
+         materialTextures.emplace_back(texManager.loadResource<TextureLoader>(texFilename.C_Str(), modelDir + '/' + texFilename.C_Str()), uniformName);
       }
-
-      // We jump here if we are asked to process textures of an invalid type
-      skip:;
    }
 
-   return Material(materialTextures,
-                   materialTextureAvailabilities,
-                   processMaterialConstants(material));
-}
-
-MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* material) const
-{
+   // Load the constants
    aiColor3D color(0.0f, 0.0f, 0.0f);
    float     shininess = 0.0f;
 
-   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
+   MaterialConstants materialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                                       ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
+
+   // TODO: Could we take advantage of move semantics here?
+   return Material(materialTextures,
+                   materialTextureAvailabilities,
+                   materialConstants);
 }

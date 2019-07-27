@@ -22,10 +22,10 @@ uniform int numPointLightsInScene;
 
 uniform vec3 cameraPos;
 
-uniform sampler2D ambientTex0;
-uniform sampler2D emissiveTex0;
-uniform sampler2D diffuseTex0;
-uniform sampler2D specularTex0;
+uniform sampler2D ambientTex;
+uniform sampler2D emissiveTex;
+uniform sampler2D diffuseTex;
+uniform sampler2D specularTex;
 
 struct MaterialTextureAvailabilities
 {
@@ -72,21 +72,21 @@ vec3 calculateContributionOfPointLight(PointLight light, vec3 viewDir)
    float attenuation = 1.0 / (light.constantAtt + (light.linearAtt * distance) + (light.quadraticAtt * distance * distance));
 
    // Ambient
-   vec3 ambient      =   (vec3(texture(ambientTex0, i.texCoords)) * attenuation) *  materialTextureAvailabilities.ambientTexIsAvailable
+   vec3 ambient      =   (vec3(texture(ambientTex, i.texCoords)) * attenuation) *  materialTextureAvailabilities.ambientTexIsAvailable
                        - (materialConstants.ambient               * attenuation) * (materialTextureAvailabilities.ambientTexIsAvailable - 1);
 
    // Emissive
-   vec3 emissive     =   vec3(texture(emissiveTex0, i.texCoords)) *  materialTextureAvailabilities.emissiveTexIsAvailable
+   vec3 emissive     =   vec3(texture(emissiveTex, i.texCoords)) *  materialTextureAvailabilities.emissiveTexIsAvailable
                        - materialConstants.emissive               * (materialTextureAvailabilities.emissiveTexIsAvailable - 1);
 
    // Diffuse
    vec3  lightDir    = normalize(light.worldPos - i.worldPos);
-   vec3  diffuse     =   (max(dot(lightDir, i.worldNormal), 0.0) * vec3(texture(diffuseTex0, i.texCoords)) * light.color * attenuation) *  materialTextureAvailabilities.diffuseTexIsAvailable
+   vec3  diffuse     =   (max(dot(lightDir, i.worldNormal), 0.0) * vec3(texture(diffuseTex, i.texCoords)) * light.color * attenuation) *  materialTextureAvailabilities.diffuseTexIsAvailable
                        - (max(dot(lightDir, i.worldNormal), 0.0) * materialConstants.diffuse               * light.color * attenuation) * (materialTextureAvailabilities.diffuseTexIsAvailable - 1);
 
    // Specular
    vec3 reflectedDir = reflect(-lightDir, i.worldNormal);
-   vec3 specular     =   (pow(max(dot(reflectedDir, viewDir), 0.0), materialConstants.shininess) * vec3(texture(specularTex0, i.texCoords)) * light.color * attenuation) *  materialTextureAvailabilities.specularTexIsAvailable
+   vec3 specular     =   (pow(max(dot(reflectedDir, viewDir), 0.0), materialConstants.shininess) * vec3(texture(specularTex, i.texCoords)) * light.color * attenuation) *  materialTextureAvailabilities.specularTexIsAvailable
                        - (pow(max(dot(reflectedDir, viewDir), 0.0), materialConstants.shininess) * materialConstants.specular               * light.color * attenuation) * (materialTextureAvailabilities.specularTexIsAvailable - 1);
 
    return (ambient + diffuse + specular + emissive);

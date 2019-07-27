@@ -36,7 +36,6 @@ void Mesh::render(const Shader& shader) const
 {
    shader.use();
 
-   // TODO: Set the uniforms here...
    bindMaterialTextures(shader);
    setMaterialTextureAvailabilities(shader);
    setMaterialConstants(shader);
@@ -115,10 +114,10 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
 
 void Mesh::setMaterialTextureAvailabilities(const Shader& shader) const
 {
-   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.test(0));
-   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.test(1));
-   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.test(2));
-   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.test(3));
+   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::ambient)));
+   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::emissive)));
+   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::diffuse)));
+   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::specular)));
 }
 
 void Mesh::setMaterialConstants(const Shader& shader) const
