@@ -115,10 +115,10 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
 
 void Mesh::setMaterialTextureAvailabilities(const Shader& shader) const
 {
-   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.ambientTexIsAvailable ? 1 : 0);
-   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.emissiveTexIsAvailable ? 1 : 0);
-   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.diffuseTexIsAvailable ? 1 : 0);
-   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.specularTexIsAvailable ? 1 : 0);
+   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.test(0));
+   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.test(1));
+   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.test(2));
+   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.test(3));
 }
 
 void Mesh::setMaterialConstants(const Shader& shader) const

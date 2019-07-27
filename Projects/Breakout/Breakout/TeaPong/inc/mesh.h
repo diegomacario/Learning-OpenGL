@@ -40,23 +40,6 @@ struct MaterialTexture
    std::string              uniformName;
 };
 
-struct MaterialTextureAvailabilities
-{
-   MaterialTextureAvailabilities::MaterialTextureAvailabilities()
-      : ambientTexIsAvailable(false)
-      , emissiveTexIsAvailable(false)
-      , diffuseTexIsAvailable(false)
-      , specularTexIsAvailable(false)
-   {
-
-   }
-
-   bool ambientTexIsAvailable;
-   bool emissiveTexIsAvailable;
-   bool diffuseTexIsAvailable;
-   bool specularTexIsAvailable;
-};
-
 struct MaterialConstants
 {
    MaterialConstants(const glm::vec3& ambientColor,
@@ -83,7 +66,7 @@ struct MaterialConstants
 struct Material
 {
    Material::Material(const std::vector<MaterialTexture>& materialTextures,
-                      MaterialTextureAvailabilities       materialTextureAvailabilities,
+                      std::bitset<4>                      materialTextureAvailabilities,
                       const MaterialConstants&            materialConstants)
       : textures(materialTextures)
       , textureAvailabilities(materialTextureAvailabilities)
@@ -92,9 +75,9 @@ struct Material
 
    }
 
-   std::vector<MaterialTexture>  textures;
-   MaterialTextureAvailabilities textureAvailabilities;
-   MaterialConstants             constants;
+   std::vector<MaterialTexture> textures;
+   std::bitset<4>               textureAvailabilities;
+   MaterialConstants            constants;
 };
 
 class Mesh

@@ -106,8 +106,8 @@ Material ModelLoader::processMaterial(const aiMaterial*         material,
                                       const std::string&        modelDir,
                                       ResourceManager<Texture>& texManager) const
 {
-   std::vector<MaterialTexture>  materialTextures;
-   MaterialTextureAvailabilities materialTextureAvailabilities;
+   std::vector<MaterialTexture> materialTextures;
+   std::bitset<4>               materialTextureAvailabilities;
 
    // The material can consist of many textures of different types
    // We make the assumption that we will only use models that have ambient, emissive, diffuse and specular maps
@@ -130,19 +130,19 @@ Material ModelLoader::processMaterial(const aiMaterial*         material,
       {
          // TODO: Would it be a good idea to somehow incorporate the filename of the texture into our naming convention?
       case aiTextureType_AMBIENT:
-         materialTextureAvailabilities.ambientTexIsAvailable  = (texCount != 0);
+         materialTextureAvailabilities[0] = (texCount != 0);
          uniformName = "ambientTex";
          break;
       case aiTextureType_EMISSIVE:
-         materialTextureAvailabilities.emissiveTexIsAvailable = (texCount != 0);
+         materialTextureAvailabilities[1] = (texCount != 0);
          uniformName = "emissiveTex";
          break;
       case aiTextureType_DIFFUSE:
-         materialTextureAvailabilities.diffuseTexIsAvailable  = (texCount != 0);
+         materialTextureAvailabilities[2] = (texCount != 0);
          uniformName = "diffuseTex";
          break;
       case aiTextureType_SPECULAR:
-         materialTextureAvailabilities.specularTexIsAvailable = (texCount != 0);
+         materialTextureAvailabilities[3] = (texCount != 0);
          uniformName = "specularTex";
          break;
       default:
@@ -174,9 +174,9 @@ MaterialConstants ModelLoader::processMaterialConstants(const aiMaterial* materi
    aiColor3D color(0.0f, 0.0f, 0.0f);
    float     shininess = 0.0f;
 
-   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+   return MaterialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
                             ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+                            ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
                             ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                            ((material->Get(AI_MATKEY_SHININESS, shininess) == AI_SUCCESS) ? shininess : 0.0f));
+                            ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
 }
