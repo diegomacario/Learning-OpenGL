@@ -105,7 +105,7 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
       }
       else
       {
-         std::cout << "Error - Mesh::bindTextures - The following sampler2D uniform does not exist: " << mMaterial.textures[i].uniformName << "\n";
+         std::cout << "Error - Mesh::bindMaterialTextures - The following sampler2D uniform does not exist: " << mMaterial.textures[i].uniformName << "\n";
       }
    }
 
