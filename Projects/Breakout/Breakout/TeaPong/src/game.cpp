@@ -5,6 +5,7 @@
 #include <model_loader.h>
 #include "game.h"
 
+// TODO: Disallow non-uniform scales
 Game::Game()
    : mWindow()
    , mStateMachine()
@@ -14,7 +15,7 @@ Game::Game()
    , mModelManager()
    , mTextureManager()
    , mShaderManager()
-   , mBackground()
+   , mTable()
    , mLeftPaddle()
    , mRightPaddle()
    , mBall()
@@ -39,13 +40,13 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    }
 
    // Initialize the camera
-   mCamera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 1.0f), // Position
-                                      glm::vec3(0.0f, 1.0f, 0.0f), // World up
-                                      0.0f,                        // Yaw
-                                      0.0f,                        // Pitch
-                                      45.0f,                       // Fovy
-                                      2.5f,                        // Movement speed
-                                      0.1f);                       // Mouse sensitivity
+   mCamera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 80.0f), // Position
+                                      glm::vec3(0.0f, 1.0f, 0.0f),  // World up
+                                      0.0f,                         // Yaw
+                                      0.0f,                         // Pitch
+                                      45.0f,                        // Fovy
+                                      10.0f,                         // Movement speed
+                                      0.1f);                        // Mouse sensitivity
 
    // Initialize the 2D renderer
    glm::mat4 orthographicProjection = glm::ortho(0.0f,                                            // Left
@@ -70,32 +71,28 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    auto gameObject3DShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D", "shaders/game_object_3D.vs", "shaders/game_object_3D.fs");
    gameObject3DShader->use();
    gameObject3DShader->setMat4("projection", perspectiveProjection);
-   gameObject3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.5f, 0.5f, 0.5f));
+   gameObject3DShader->setVec3("pointLights[0].worldPos", glm::vec3(40.0f, 30.0f, 80.0f));
    gameObject3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
    gameObject3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
-   gameObject3DShader->setFloat("pointLights[0].linearAtt", 0.0f);
+   gameObject3DShader->setFloat("pointLights[0].linearAtt", 0.01f);
    gameObject3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
    gameObject3DShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
-   mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_emissive/teapot.obj");
-   //mModelManager.loadResource<ModelLoader>("teapot", "models/teapot_w_constants/teapot.obj");
+   mModelManager.loadResource<ModelLoader>("table", "models/table/table.obj");
+   mModelManager.loadResource<ModelLoader>("teapot", "models/teapot/teapot.obj");
 
-   // Load the textures
-   mTextureManager.loadResource<TextureLoader>("table_cloth", "textures/table_cloth.jpg");
-
-   // Create the game objects
-   mBackground = std::make_unique<GameObject2D>(mTextureManager.getResource("table_cloth"),
-                                                glm::vec2(0.0f, 0.0f),
-                                                0.0f,
-                                                static_cast<float>(mWindow->getWidthInPix()),
-                                                static_cast<float>(mWindow->getHeightInPix()));
+   mTable = std::make_unique<GameObject3D>(mModelManager.getResource("table"),
+                                           glm::vec3(0.0f, 0.0f, 0.0f),
+                                           90.0f,
+                                           glm::vec3(1.0f, 0.0f, 0.0f),
+                                           glm::vec3(1.0f, 1.0f, 1.0f));
 
    mBall = std::make_unique<MovableGameObject3D>(mModelManager.getResource("teapot"),
                                                  glm::vec3(0.0f, 0.0f, 0.0f),
                                                  90.0f,
                                                  glm::vec3(1.0f, 0.0f, 0.0f),
-                                                 glm::vec3(0.1f, 0.1f, 0.1f),
+                                                 glm::vec3(1.0f, 1.0f, 1.0f),
                                                  glm::vec3(0.0f, 0.0f, 0.0f));
 
    return true;
@@ -152,22 +149,20 @@ void Game::gameLoop()
       // Render
       // ----------------------------------------------------------------------------------------------------
 
-      // Disable depth testing for 2D objects
-      glDisable(GL_DEPTH_TEST);
-
-      mRenderer2D->render(*mBackground);
-
       // Enable depth testing for 3D objects
       glEnable(GL_DEPTH_TEST);
 
       auto gameObject3DShader = mShaderManager.getResource("game_object_3D");
       gameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().
-      gameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
       gameObject3DShader->setMat4("view", mCamera->getViewMatrix());
-      gameObject3DShader->setMat3("normal", glm::mat3(glm::transpose(glm::inverse(mBall->getModelMatrix()))));
       gameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
-      //mBall->render(*texturedGameObject3DShader);
+      gameObject3DShader->setMat4("model", mTable->getModelMatrix()); // TODO: This should be done internally
+      gameObject3DShader->setMat3("normal", glm::mat3(glm::transpose(glm::inverse(mTable->getModelMatrix()))));
+      mTable->render(*gameObject3DShader);
+
+      gameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
+      gameObject3DShader->setMat3("normal", glm::mat3(glm::transpose(glm::inverse(mBall->getModelMatrix()))));
       mBall->render(*gameObject3DShader);
 
       // ----------------------------------------------------------------------------------------------------

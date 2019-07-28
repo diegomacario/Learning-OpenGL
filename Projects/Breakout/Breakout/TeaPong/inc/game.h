@@ -42,7 +42,7 @@ private:
    ResourceManager<Texture>                  mTextureManager;
    ResourceManager<Shader>                   mShaderManager;
 
-   std::unique_ptr<GameObject2D>             mBackground;
+   std::unique_ptr<GameObject3D>             mTable;
    std::unique_ptr<MovableGameObject2D>      mLeftPaddle;
    std::unique_ptr<MovableGameObject2D>      mRightPaddle;
    std::unique_ptr<MovableGameObject3D>      mBall;
