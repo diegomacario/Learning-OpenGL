@@ -15,7 +15,7 @@ public:
                 const glm::vec3&              position,
                 float                         angleOfRotInDeg,
                 const glm::vec3&              axisOfRot,
-                const glm::vec3&              scalingFactors);
+                float                         scalingFactor);
    ~GameObject3D() = default;
 
    GameObject3D(const GameObject3D&) = default;
@@ -37,7 +37,7 @@ private:
    glm::vec3              mPosition;
    float                  mAngleOfRotInDeg;
    glm::vec3              mAxisOfRot;
-   glm::vec3              mScalingFactors;
+   float                  mScalingFactor;
    glm::mat4              mModelMatrix;
 };
 

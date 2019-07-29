@@ -6,12 +6,12 @@ GameObject3D::GameObject3D(const std::shared_ptr<Model>& model,
                            const glm::vec3&              position,
                            float                         angleOfRotInDeg,
                            const glm::vec3&              axisOfRot,
-                           const glm::vec3&              scalingFactors)
+                           float                         scalingFactor)
    : mModel(model)
    , mPosition(position)
    , mAngleOfRotInDeg(angleOfRotInDeg)
    , mAxisOfRot(axisOfRot)
-   , mScalingFactors(scalingFactors)
+   , mScalingFactor(scalingFactor)
    , mModelMatrix(1.0f)
 {
    calculateModelMatrix();
@@ -22,7 +22,7 @@ GameObject3D::GameObject3D(GameObject3D&& rhs) noexcept
    , mPosition(std::exchange(rhs.mPosition, glm::vec3()))
    , mAngleOfRotInDeg(std::exchange(rhs.mAngleOfRotInDeg, 0.0f))
    , mAxisOfRot(std::exchange(rhs.mAxisOfRot, glm::vec3()))
-   , mScalingFactors(std::exchange(rhs.mScalingFactors, glm::vec3()))
+   , mScalingFactor(std::exchange(rhs.mScalingFactor, 0.0f))
    , mModelMatrix(std::exchange(rhs.mModelMatrix, glm::mat4(1.0f)))
 {
 
@@ -34,7 +34,7 @@ GameObject3D& GameObject3D::operator=(GameObject3D&& rhs) noexcept
    mPosition        = std::exchange(rhs.mPosition, glm::vec3());
    mAngleOfRotInDeg = std::exchange(rhs.mAngleOfRotInDeg, 0.0f);
    mAxisOfRot       = std::exchange(rhs.mAxisOfRot, glm::vec3());
-   mScalingFactors  = std::exchange(rhs.mScalingFactors, glm::vec3());
+   mScalingFactor   = std::exchange(rhs.mScalingFactor, 0.0f);
    mModelMatrix     = std::exchange(rhs.mModelMatrix, glm::mat4(1.0f));
    return *this;
 }
@@ -64,8 +64,8 @@ void GameObject3D::calculateModelMatrix()
 
    // 1) Scale the model
    // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
-   if (mScalingFactors != glm::vec3(0.0f, 0.0f, 0.0f))
+   if (mScalingFactor != 0.0f)
    {
-      mModelMatrix = glm::scale(mModelMatrix, mScalingFactors);
+      mModelMatrix = glm::scale(mModelMatrix, glm::vec3(mScalingFactor));
    }
 }

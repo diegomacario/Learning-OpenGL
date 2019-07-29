@@ -4,13 +4,13 @@ MovableGameObject3D::MovableGameObject3D(const std::shared_ptr<Model>& model,
                                          const glm::vec3&              position,
                                          float                         angleOfRotInDeg,
                                          const glm::vec3&              axisOfRot,
-                                         const glm::vec3&              scalingFactors,
+                                         float                         scalingFactor,
                                          const glm::vec3&              velocity)
    : GameObject3D(model,
                   position,
                   angleOfRotInDeg,
                   axisOfRot,
-                  scalingFactors)
+                  scalingFactor)
    , mVelocity(velocity)
 {
 

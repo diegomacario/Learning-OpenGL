@@ -7,7 +7,6 @@ layout (location = 2) in vec2 inTexCoords;
 uniform mat4 model;
 uniform mat4 view;
 uniform mat4 projection;
-uniform mat3 normal;
 
 out VertexData
 {
@@ -19,7 +18,7 @@ out VertexData
 void main()
 {
    o.worldPos    = vec3(model * vec4(inPos, 1.0));
-   o.worldNormal = normalize(normal * inNormal);
+   o.worldNormal = normalize(mat3(model) * inNormal);
    o.texCoords   = inTexCoords;
 
    gl_Position = projection * view * vec4(o.worldPos, 1.0);

@@ -45,7 +45,7 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                       0.0f,                         // Yaw
                                       0.0f,                         // Pitch
                                       45.0f,                        // Fovy
-                                      10.0f,                         // Movement speed
+                                      10.0f,                        // Movement speed
                                       0.1f);                        // Mouse sensitivity
 
    // Initialize the 2D renderer
@@ -86,13 +86,13 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                            glm::vec3(0.0f, 0.0f, 0.0f),
                                            90.0f,
                                            glm::vec3(1.0f, 0.0f, 0.0f),
-                                           glm::vec3(1.0f, 1.0f, 1.0f));
+                                           1.0f);
 
    mBall = std::make_unique<MovableGameObject3D>(mModelManager.getResource("teapot"),
                                                  glm::vec3(0.0f, 0.0f, 0.0f),
                                                  90.0f,
                                                  glm::vec3(1.0f, 0.0f, 0.0f),
-                                                 glm::vec3(1.0f, 1.0f, 1.0f),
+                                                 1.0f,
                                                  glm::vec3(0.0f, 0.0f, 0.0f));
 
    return true;
@@ -158,11 +158,9 @@ void Game::gameLoop()
       gameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
       gameObject3DShader->setMat4("model", mTable->getModelMatrix()); // TODO: This should be done internally
-      gameObject3DShader->setMat3("normal", glm::mat3(glm::transpose(glm::inverse(mTable->getModelMatrix()))));
       mTable->render(*gameObject3DShader);
 
       gameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
-      gameObject3DShader->setMat3("normal", glm::mat3(glm::transpose(glm::inverse(mBall->getModelMatrix()))));
       mBall->render(*gameObject3DShader);
 
       // ----------------------------------------------------------------------------------------------------

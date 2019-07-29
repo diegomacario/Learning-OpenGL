@@ -11,7 +11,7 @@ public:
                        const glm::vec3&              position,
                        float                         angleOfRotInDeg,
                        const glm::vec3&              axisOfRot,
-                       const glm::vec3&              scalingFactors,
+                       float                         scalingFactor,
                        const glm::vec3&              velocity);
    ~MovableGameObject3D() = default;
 
