@@ -28,6 +28,10 @@ public:
 
    glm::mat4 getModelMatrix() const; // TODO: Is this necessary for 3D objects? It makes sense for 2D objects because they use the 2D renderer, but I don't think it's necessary here.
 
+   void      translate(const glm::vec3& translation);
+   void      rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot);
+   void      scale(float scalingFactor);
+
 private:
 
    void      calculateModelMatrix();

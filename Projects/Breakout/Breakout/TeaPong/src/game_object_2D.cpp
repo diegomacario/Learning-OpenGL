@@ -50,6 +50,22 @@ glm::mat4 GameObject2D::getModelMatrix() const
    return mModelMatrix;
 }
 
+void GameObject2D::translate(const glm::vec2& translation)
+{
+   mPosOfTopLeftCornerInPix += translation;
+}
+
+void GameObject2D::rotate(float angleOfRotInDeg)
+{
+   mAngleOfRotInDeg += angleOfRotInDeg;
+}
+
+void GameObject2D::scale(const glm::vec2& scalingFactors)
+{
+   mWidthInPix  *= scalingFactors.x;
+   mHeightInPix *= scalingFactors.y;
+}
+
 void GameObject2D::calculateModelMatrix()
 {
    // 5) Translate the quad

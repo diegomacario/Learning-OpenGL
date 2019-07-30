@@ -27,6 +27,10 @@ public:
    std::shared_ptr<Texture> getTexture() const;
    glm::mat4                getModelMatrix() const;
 
+   void                     translate(const glm::vec2& translation);
+   void                     rotate(float angleOfRotInDeg);
+   void                     scale(const glm::vec2& scalingFactors);
+
 private:
 
    void                     calculateModelMatrix();

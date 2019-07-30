@@ -50,6 +50,21 @@ glm::mat4 GameObject3D::getModelMatrix() const
    return mModelMatrix;
 }
 
+void GameObject3D::translate(const glm::vec3& translation)
+{
+   mPosition += translation;
+}
+
+void GameObject3D::rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot)
+{
+
+}
+
+void GameObject3D::scale(float scalingFactor)
+{
+   mScalingFactor *= scalingFactor;
+}
+
 void GameObject3D::calculateModelMatrix()
 {
    // 3) Translate the model
