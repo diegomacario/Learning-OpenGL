@@ -143,11 +143,11 @@ void Game::gameLoop()
 
       // ----------------------------------------------------------------------------------------------------
 
-      glm::vec3 ballPos = mBall->getPosition();
-      if (ballPos.x >= 0.0f && ballPos.x < 40.0f)
-      {
-         mBall->translate(glm::vec3(0.1f, 0.0f, 0.0f));
-      }
+      //glm::vec3 ballPos = mBall->getPosition();
+      //if (ballPos.x >= 0.0f && ballPos.x < 40.0f)
+      //{
+      //   mBall->translate(glm::vec3(0.1f, 0.0f, 0.0f));
+      //}
 
       // ----------------------------------------------------------------------------------------------------
 
@@ -161,14 +161,12 @@ void Game::gameLoop()
       glEnable(GL_DEPTH_TEST);
 
       auto gameObject3DShader = mShaderManager.getResource("game_object_3D");
-      gameObject3DShader->use(); // TODO: This is being done twice. Here and inside GameObject3D::Render().
+      gameObject3DShader->use();
       gameObject3DShader->setMat4("view", mCamera->getViewMatrix());
       gameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
-      gameObject3DShader->setMat4("model", mTable->getModelMatrix()); // TODO: This should be done internally
       mTable->render(*gameObject3DShader);
 
-      gameObject3DShader->setMat4("model", mBall->getModelMatrix()); // TODO: This should be done internally
       mBall->render(*gameObject3DShader);
 
       // ----------------------------------------------------------------------------------------------------

@@ -27,7 +27,6 @@ public:
    void      render(const Shader& shader) const;
 
    glm::vec3 getPosition() const;
-   glm::mat4 getModelMatrix() const;
 
    void      translate(const glm::vec3& translation);
    void      rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot);

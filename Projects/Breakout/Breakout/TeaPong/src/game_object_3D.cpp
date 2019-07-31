@@ -9,17 +9,11 @@ GameObject3D::GameObject3D(const std::shared_ptr<Model>& model,
                            float                         scalingFactor)
    : mModel(model)
    , mPosition(position)
-   , mRotationMatrix(1.0f)
-   , mScalingFactor(scalingFactor)
+   , mRotationMatrix(axisOfRot != glm::vec3(0.0f, 0.0f, 0.0f) ? glm::rotate(glm::mat4(1.0f), glm::radians(angleOfRotInDeg), axisOfRot) : glm::mat4(1.0f))
+   , mScalingFactor(scalingFactor != 0.0f ? scalingFactor : 1.0f)
    , mModelMatrix(1.0f)
    , mCalculateModelMatrix(true)
 {
-   // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
-   if (axisOfRot != glm::vec3(0.0f, 0.0f, 0.0f))
-   {
-      mRotationMatrix = glm::rotate(mRotationMatrix, glm::radians(angleOfRotInDeg), axisOfRot);
-   }
-
    calculateModelMatrix();
 }
 
@@ -47,22 +41,20 @@ GameObject3D& GameObject3D::operator=(GameObject3D&& rhs) noexcept
 
 void GameObject3D::render(const Shader& shader) const
 {
+   if (mCalculateModelMatrix)
+   {
+      calculateModelMatrix();
+   }
+
+   // TODO: Should a call to shader.use() be made here?
+   shader.setMat4("model", mModelMatrix);
+
    mModel->render(shader);
 }
 
 glm::vec3 GameObject3D::getPosition() const
 {
    return mPosition;
-}
-
-glm::mat4 GameObject3D::getModelMatrix() const
-{
-   if (mCalculateModelMatrix)
-   {
-      calculateModelMatrix();
-   }
-
-   return mModelMatrix;
 }
 
 void GameObject3D::translate(const glm::vec3& translation)
@@ -73,19 +65,20 @@ void GameObject3D::translate(const glm::vec3& translation)
 
 void GameObject3D::rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot)
 {
-   // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
    if (axisOfRot != glm::vec3(0.0f, 0.0f, 0.0f))
    {
-      mRotationMatrix *= glm::rotate(mRotationMatrix, glm::radians(angleOfRotInDeg), axisOfRot);
+      mRotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angleOfRotInDeg), axisOfRot) * mRotationMatrix;
+      mCalculateModelMatrix = true;
    }
-
-   mCalculateModelMatrix = true;
 }
 
 void GameObject3D::scale(float scalingFactor)
 {
-   mScalingFactor *= scalingFactor;
-   mCalculateModelMatrix = true;
+   if (scalingFactor != 0.0f)
+   {
+      mScalingFactor *= scalingFactor;
+      mCalculateModelMatrix = true;
+   }
 }
 
 void GameObject3D::calculateModelMatrix() const
@@ -97,11 +90,7 @@ void GameObject3D::calculateModelMatrix() const
    mModelMatrix *= mRotationMatrix;
 
    // 1) Scale the model
-   // TODO: This if statement prevents the model matrix from becoming a zero matrix. Is there a cleaner way to do this?
-   if (mScalingFactor != 0.0f)
-   {
-      mModelMatrix = glm::scale(mModelMatrix, glm::vec3(mScalingFactor));
-   }
+   mModelMatrix = glm::scale(mModelMatrix, glm::vec3(mScalingFactor));
 
    mCalculateModelMatrix = false;
 }
