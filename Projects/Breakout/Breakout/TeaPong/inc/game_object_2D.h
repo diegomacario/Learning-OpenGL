@@ -33,7 +33,7 @@ public:
 
 private:
 
-   void                     calculateModelMatrix();
+   void                     calculateModelMatrix() const;
 
    std::shared_ptr<Texture> mTexture;
 
@@ -41,7 +41,9 @@ private:
    float                    mAngleOfRotInDeg;
    float                    mWidthInPix;
    float                    mHeightInPix;
-   glm::mat4                mModelMatrix;
+
+   mutable glm::mat4        mModelMatrix;
+   mutable bool             mCalculateModelMatrix;
 };
 
 #endif

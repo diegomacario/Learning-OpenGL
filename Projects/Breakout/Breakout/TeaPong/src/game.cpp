@@ -143,6 +143,14 @@ void Game::gameLoop()
 
       // ----------------------------------------------------------------------------------------------------
 
+      glm::vec3 ballPos = mBall->getPosition();
+      if (ballPos.x >= 0.0f && ballPos.x < 40.0f)
+      {
+         mBall->translate(glm::vec3(0.1f, 0.0f, 0.0f));
+      }
+
+      // ----------------------------------------------------------------------------------------------------
+
       glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
       glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 

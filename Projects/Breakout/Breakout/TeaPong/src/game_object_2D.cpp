@@ -13,6 +13,7 @@ GameObject2D::GameObject2D(const std::shared_ptr<Texture>& texture,
    , mWidthInPix(widthInPix)
    , mHeightInPix(heightInPix)
    , mModelMatrix(1.0f)
+   , mCalculateModelMatrix(true)
 {
    calculateModelMatrix();
 }
@@ -24,6 +25,7 @@ GameObject2D::GameObject2D(GameObject2D&& rhs) noexcept
    , mWidthInPix(std::exchange(rhs.mWidthInPix, 0.0f))
    , mHeightInPix(std::exchange(rhs.mHeightInPix, 0.0f))
    , mModelMatrix(std::exchange(rhs.mModelMatrix, glm::mat4(1.0f)))
+   , mCalculateModelMatrix(std::exchange(rhs.mCalculateModelMatrix, true))
 {
 
 }
@@ -36,6 +38,7 @@ GameObject2D& GameObject2D::operator=(GameObject2D&& rhs) noexcept
    mWidthInPix              = std::exchange(rhs.mWidthInPix, 0.0f);
    mHeightInPix             = std::exchange(rhs.mHeightInPix, 0.0f);
    mModelMatrix             = std::exchange(rhs.mModelMatrix, glm::mat4(1.0f));
+   mCalculateModelMatrix    = std::exchange(rhs.mCalculateModelMatrix, true);
    return *this;
 }
 
@@ -46,27 +49,34 @@ std::shared_ptr<Texture> GameObject2D::getTexture() const
 
 glm::mat4 GameObject2D::getModelMatrix() const
 {
-   // TODO: Come up with a system to only recalculate the model matrix when necessary.
+   if (mCalculateModelMatrix)
+   {
+      calculateModelMatrix();
+   }
+
    return mModelMatrix;
 }
 
 void GameObject2D::translate(const glm::vec2& translation)
 {
    mPosOfTopLeftCornerInPix += translation;
+   mCalculateModelMatrix = true;
 }
 
 void GameObject2D::rotate(float angleOfRotInDeg)
 {
    mAngleOfRotInDeg += angleOfRotInDeg;
+   mCalculateModelMatrix = true;
 }
 
 void GameObject2D::scale(const glm::vec2& scalingFactors)
 {
    mWidthInPix  *= scalingFactors.x;
    mHeightInPix *= scalingFactors.y;
+   mCalculateModelMatrix = true;
 }
 
-void GameObject2D::calculateModelMatrix()
+void GameObject2D::calculateModelMatrix() const
 {
    // 5) Translate the quad
    mModelMatrix = glm::translate(glm::mat4(1.0f), glm::vec3(mPosOfTopLeftCornerInPix, 0.0f));
@@ -80,4 +90,6 @@ void GameObject2D::calculateModelMatrix()
 
    // 1) Scale the quad
    mModelMatrix = glm::scale(mModelMatrix, glm::vec3(mWidthInPix, mHeightInPix, 1.0f));
+
+   mCalculateModelMatrix = false;
 }

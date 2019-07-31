@@ -26,7 +26,8 @@ public:
 
    void      render(const Shader& shader) const;
 
-   glm::mat4 getModelMatrix() const; // TODO: Is this necessary for 3D objects? It makes sense for 2D objects because they use the 2D renderer, but I don't think it's necessary here.
+   glm::vec3 getPosition() const;
+   glm::mat4 getModelMatrix() const;
 
    void      translate(const glm::vec3& translation);
    void      rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot);
@@ -34,15 +35,16 @@ public:
 
 private:
 
-   void      calculateModelMatrix();
+   void      calculateModelMatrix() const;
 
    std::shared_ptr<Model> mModel;
 
    glm::vec3              mPosition;
-   float                  mAngleOfRotInDeg;
-   glm::vec3              mAxisOfRot;
+   glm::mat4              mRotationMatrix;
    float                  mScalingFactor;
-   glm::mat4              mModelMatrix;
+
+   mutable glm::mat4      mModelMatrix;
+   mutable bool           mCalculateModelMatrix;
 };
 
 #endif
