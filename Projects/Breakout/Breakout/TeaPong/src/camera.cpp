@@ -24,11 +24,11 @@ Camera::Camera(glm::vec3 position,
 }
 
 Camera::Camera(Camera&& rhs) noexcept
-   : mPosition(std::exchange(rhs.mPosition, glm::vec3()))
-   , mFront(std::exchange(rhs.mFront, glm::vec3()))
-   , mUp(std::exchange(rhs.mUp, glm::vec3()))
-   , mRight(std::exchange(rhs.mRight, glm::vec3()))
-   , mWorldUp(std::exchange(rhs.mWorldUp, glm::vec3()))
+   : mPosition(std::exchange(rhs.mPosition, glm::vec3(0.0f)))
+   , mFront(std::exchange(rhs.mFront, glm::vec3(0.0f)))
+   , mUp(std::exchange(rhs.mUp, glm::vec3(0.0f)))
+   , mRight(std::exchange(rhs.mRight, glm::vec3(0.0f)))
+   , mWorldUp(std::exchange(rhs.mWorldUp, glm::vec3(0.0f)))
    , mYawInDeg(std::exchange(rhs.mYawInDeg, 0.0f))
    , mPitchInDeg(std::exchange(rhs.mPitchInDeg, 0.0f))
    , mFieldOfViewYInDeg(std::exchange(rhs.mFieldOfViewYInDeg, 0.0f))
@@ -40,11 +40,11 @@ Camera::Camera(Camera&& rhs) noexcept
 
 Camera& Camera::operator=(Camera&& rhs) noexcept
 {
-   mPosition          = std::exchange(rhs.mPosition, glm::vec3());
-   mFront             = std::exchange(rhs.mFront, glm::vec3());
-   mUp                = std::exchange(rhs.mUp, glm::vec3());
-   mRight             = std::exchange(rhs.mRight, glm::vec3());
-   mWorldUp           = std::exchange(rhs.mWorldUp, glm::vec3());
+   mPosition          = std::exchange(rhs.mPosition, glm::vec3(0.0f));
+   mFront             = std::exchange(rhs.mFront, glm::vec3(0.0f));
+   mUp                = std::exchange(rhs.mUp, glm::vec3(0.0f));
+   mRight             = std::exchange(rhs.mRight, glm::vec3(0.0f));
+   mWorldUp           = std::exchange(rhs.mWorldUp, glm::vec3(0.0f));
    mYawInDeg          = std::exchange(rhs.mYawInDeg, 0.0f);
    mPitchInDeg        = std::exchange(rhs.mPitchInDeg, 0.0f);
    mFieldOfViewYInDeg = std::exchange(rhs.mFieldOfViewYInDeg, 0.0f);

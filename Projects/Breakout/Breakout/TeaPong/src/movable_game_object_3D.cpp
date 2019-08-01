@@ -18,7 +18,7 @@ MovableGameObject3D::MovableGameObject3D(const std::shared_ptr<Model>& model,
 
 MovableGameObject3D::MovableGameObject3D(MovableGameObject3D&& rhs) noexcept
    : GameObject3D(std::move(rhs))
-   , mVelocity(std::exchange(rhs.mVelocity, glm::vec3()))
+   , mVelocity(std::exchange(rhs.mVelocity, glm::vec3(0.0f)))
 {
 
 }
@@ -26,6 +26,6 @@ MovableGameObject3D::MovableGameObject3D(MovableGameObject3D&& rhs) noexcept
 MovableGameObject3D& MovableGameObject3D::operator=(MovableGameObject3D&& rhs) noexcept
 {
    GameObject3D::operator=(std::move(rhs));
-   mVelocity = std::exchange(rhs.mVelocity, glm::vec3());
+   mVelocity = std::exchange(rhs.mVelocity, glm::vec3(0.0f));
    return *this;
 }

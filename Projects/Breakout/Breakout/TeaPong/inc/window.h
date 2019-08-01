@@ -38,13 +38,13 @@ public:
    // Cursor
    bool   mouseMoved() const;
    void   resetMouseMoved();
-   double getCursorXOffset() const;
-   double getCursorYOffset() const;
+   float  getCursorXOffset() const;
+   float  getCursorYOffset() const;
 
    // Scroll wheel
    bool   scrollWheelMoved() const;
    void   resetScrollWheelMoved();
-   double getScrollYOffset() const;
+   float  getScrollYOffset() const;
 
 private:
 
@@ -69,12 +69,12 @@ private:
    bool                           mFirstCursorPosCallback;
    double                         mLastCursorXPos;
    double                         mLastCursorYPos;
-   double                         mCursorXOffset;
-   double                         mCursorYOffset;
+   float                          mCursorXOffset;
+   float                          mCursorYOffset;
 
    // Scroll wheel
    bool                           mScrollWheelMoved;
-   double                         mScrollYOffset;
+   float                          mScrollYOffset;
 };
 
 #endif

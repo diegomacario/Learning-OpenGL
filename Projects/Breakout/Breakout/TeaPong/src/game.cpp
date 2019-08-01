@@ -83,17 +83,17 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    mModelManager.loadResource<ModelLoader>("teapot", "models/teapot/teapot.obj");
 
    mTable = std::make_unique<GameObject3D>(mModelManager.getResource("table"),
-                                           glm::vec3(0.0f, 0.0f, 0.0f),
+                                           glm::vec3(0.0f),
                                            90.0f,
                                            glm::vec3(1.0f, 0.0f, 0.0f),
                                            1.0f);
 
    mBall = std::make_unique<MovableGameObject3D>(mModelManager.getResource("teapot"),
-                                                 glm::vec3(0.0f, 0.0f, 0.0f),
+                                                 glm::vec3(0.0f),
                                                  90.0f,
                                                  glm::vec3(1.0f, 0.0f, 0.0f),
                                                  1.0f,
-                                                 glm::vec3(0.0f, 0.0f, 0.0f));
+                                                 glm::vec3(0.0f));
 
    return true;
 }
@@ -105,14 +105,15 @@ void Game::update(GLfloat deltaTime)
 
 void Game::gameLoop()
 {
-   double deltaTime = 0.0;
-   double lastFrame = 0.0;
+   double currentFrame = 0.0;
+   double lastFrame    = 0.0;
+   float  deltaTime    = 0.0f;
 
    while (!mWindow->shouldClose())
    {
-      double currentFrame = glfwGetTime();
-      deltaTime = currentFrame - lastFrame;
-      lastFrame = currentFrame;
+      currentFrame = glfwGetTime();
+      deltaTime    = static_cast<float>(currentFrame - lastFrame);
+      lastFrame    = currentFrame;
 
       // Process input
       // ----------------------------------------------------------------------------------------------------
@@ -167,7 +168,9 @@ void Game::gameLoop()
 
       mTable->render(*gameObject3DShader);
 
+      glDisable(GL_CULL_FACE);
       mBall->render(*gameObject3DShader);
+      glEnable(GL_CULL_FACE);
 
       // ----------------------------------------------------------------------------------------------------
 

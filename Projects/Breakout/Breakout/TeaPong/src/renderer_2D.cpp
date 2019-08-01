@@ -46,7 +46,7 @@ void Renderer2D::render(const GameObject2D& gameObj2D)
 void Renderer2D::configureVAO()
 {
    /*
-      When the origin is at the top left corner:
+      Origin is at the top left corner because of the way we set up our orthographic projection matrix
       ABC = Counterclockwise
       ADB = Counterclockwise
 
@@ -63,26 +63,6 @@ void Renderer2D::configureVAO()
         | /         |
         |/          |
         A-----------D
-   */
-
-   /*
-      When the origin is at the bottom left corner:
-      ABC = Clockwise
-      ADB = Clockwise
-
-        A-----------D
-        | \         |
-        |  \        |
-        |   \       |
-        |    \      |
-        |  1  \  2  |
-        |      \    |
-        |       \   |
-        |        \  |
-        |         \ |
-        |          \|
-        C-----------B
-      (0,0)
    */
 
                                           // Pos      // Tex coords
@@ -117,9 +97,7 @@ void Renderer2D::configureVAO()
    glEnableVertexAttribArray(0);
    glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
 
-   // TODO: Can I delete the VBO and EBO before unbinding the VAO? Is it necessary to unbind them before deleting them?
    glBindVertexArray(0);
-
    glDeleteBuffers(1, &VBO);
    glDeleteBuffers(1, &EBO);
 }

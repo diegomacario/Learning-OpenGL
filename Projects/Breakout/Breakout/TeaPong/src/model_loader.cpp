@@ -70,9 +70,9 @@ std::vector<Vertex> ModelLoader::processVertices(const aiMesh* mesh) const
       // Note that a vertex can contain up to 8 different sets of texture coordinates
       // We make the assumption that we will only use models that have a single set of texture coordinates per vertex
       // For this reason, we only check for the existence of the first set
-      vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z),                                                // Position
-                            glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z),                                                   // Normal
-                            mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f, 0.0f)); // Texture coordinates
+      vertices.emplace_back(glm::vec3(mesh->mVertices[i].x, mesh->mVertices[i].y, mesh->mVertices[i].z),                                          // Position
+                            glm::vec3(mesh->mNormals[i].x, mesh->mNormals[i].y, mesh->mNormals[i].z),                                             // Normal
+                            mesh->HasTextureCoords(0) ? glm::vec2(mesh->mTextureCoords[0][i].x, mesh->mTextureCoords[0][i].y) : glm::vec2(0.0f)); // Texture coordinates
    }
 
    return vertices;
@@ -163,10 +163,10 @@ Material ModelLoader::processMaterial(const aiMaterial*         material,
    aiColor3D color(0.0f, 0.0f, 0.0f);
    float     shininess = 0.0f;
 
-   MaterialConstants materialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                                       ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                                       ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
-                                       ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f, 0.0f, 0.0f)),
+   MaterialConstants materialConstants(((material->Get(AI_MATKEY_COLOR_AMBIENT, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_EMISSIVE, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_DIFFUSE, color)  == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f)),
+                                       ((material->Get(AI_MATKEY_COLOR_SPECULAR, color) == AI_SUCCESS) ? glm::vec3(color.r, color.g, color.b) : glm::vec3(0.0f)),
                                        ((material->Get(AI_MATKEY_SHININESS, shininess)  == AI_SUCCESS) ? shininess : 0.0f));
 
    // TODO: Could we take advantage of move semantics here?

@@ -72,7 +72,7 @@ bool Window::initialize()
    }
 
    glViewport(0, 0, mWidthInPix, mHeightInPix);
-   //glEnable(GL_CULL_FACE); // TODO: Figure out what is causing problems when I enable this.
+   glEnable(GL_CULL_FACE);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
@@ -134,12 +134,12 @@ void Window::resetMouseMoved()
    mMouseMoved = false;
 }
 
-double Window::getCursorXOffset() const
+float Window::getCursorXOffset() const
 {
    return mCursorXOffset;
 }
 
-double Window::getCursorYOffset() const
+float Window::getCursorYOffset() const
 {
    return mCursorYOffset;
 }
@@ -154,7 +154,7 @@ void Window::resetScrollWheelMoved()
    mScrollWheelMoved = false;
 }
 
-double Window::getScrollYOffset() const
+float Window::getScrollYOffset() const
 {
    return mScrollYOffset;
 }
@@ -221,8 +221,8 @@ void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)
 
    // TODO: Ideally this function would tell the camera to update its position based on the offsets.
    // I'm going to make the camera ask the window if it should update its position. Is there a better way to do this?
-   mCursorXOffset = xPos - mLastCursorXPos;
-   mCursorYOffset = mLastCursorYPos - yPos; // Reversed since the Y-coordinates of the mouse go from the bottom to the top
+   mCursorXOffset = static_cast<float>(xPos - mLastCursorXPos);
+   mCursorYOffset = static_cast<float>(mLastCursorYPos - yPos); // Reversed since the Y-coordinates of the mouse go from the bottom to the top
 
    mLastCursorXPos = xPos;
    mLastCursorYPos = yPos;
@@ -234,7 +234,7 @@ void Window::scrollCallback(GLFWwindow* window, double xOffset, double yOffset)
 {
    // TODO: Ideally this function would tell the camera to update its FOVY based on the Y offset.
    // I'm going to make the camera ask the window if it should update its FOVY. Is there a better way to do this?
-   mScrollYOffset = yOffset;
+   mScrollYOffset = static_cast<float>(yOffset);
 
    mScrollWheelMoved = true;
 }

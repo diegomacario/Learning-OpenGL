@@ -10,8 +10,8 @@ GameObject2D::GameObject2D(const std::shared_ptr<Texture>& texture,
    : mTexture(texture)
    , mPosOfTopLeftCornerInPix(posOfTopLeftCornerInPix)
    , mAngleOfRotInDeg(angleOfRotInDeg)
-   , mWidthInPix(widthInPix)
-   , mHeightInPix(heightInPix)
+   , mWidthInPix(widthInPix != 0.0f ? widthInPix : 1.0f)
+   , mHeightInPix(heightInPix != 0.0f ? heightInPix : 1.0f)
    , mModelMatrix(1.0f)
    , mCalculateModelMatrix(true)
 {
@@ -20,10 +20,10 @@ GameObject2D::GameObject2D(const std::shared_ptr<Texture>& texture,
 
 GameObject2D::GameObject2D(GameObject2D&& rhs) noexcept
    : mTexture(std::move(rhs.mTexture))
-   , mPosOfTopLeftCornerInPix(std::exchange(rhs.mPosOfTopLeftCornerInPix, glm::vec2()))
+   , mPosOfTopLeftCornerInPix(std::exchange(rhs.mPosOfTopLeftCornerInPix, glm::vec2(0.0f)))
    , mAngleOfRotInDeg(std::exchange(rhs.mAngleOfRotInDeg, 0.0f))
-   , mWidthInPix(std::exchange(rhs.mWidthInPix, 0.0f))
-   , mHeightInPix(std::exchange(rhs.mHeightInPix, 0.0f))
+   , mWidthInPix(std::exchange(rhs.mWidthInPix, 1.0f))
+   , mHeightInPix(std::exchange(rhs.mHeightInPix, 1.0f))
    , mModelMatrix(std::exchange(rhs.mModelMatrix, glm::mat4(1.0f)))
    , mCalculateModelMatrix(std::exchange(rhs.mCalculateModelMatrix, true))
 {
@@ -33,10 +33,10 @@ GameObject2D::GameObject2D(GameObject2D&& rhs) noexcept
 GameObject2D& GameObject2D::operator=(GameObject2D&& rhs) noexcept
 {
    mTexture                 = std::move(rhs.mTexture);
-   mPosOfTopLeftCornerInPix = std::exchange(rhs.mPosOfTopLeftCornerInPix, glm::vec2());
+   mPosOfTopLeftCornerInPix = std::exchange(rhs.mPosOfTopLeftCornerInPix, glm::vec2(0.0f));
    mAngleOfRotInDeg         = std::exchange(rhs.mAngleOfRotInDeg, 0.0f);
-   mWidthInPix              = std::exchange(rhs.mWidthInPix, 0.0f);
-   mHeightInPix             = std::exchange(rhs.mHeightInPix, 0.0f);
+   mWidthInPix              = std::exchange(rhs.mWidthInPix, 1.0f);
+   mHeightInPix             = std::exchange(rhs.mHeightInPix, 1.0f);
    mModelMatrix             = std::exchange(rhs.mModelMatrix, glm::mat4(1.0f));
    mCalculateModelMatrix    = std::exchange(rhs.mCalculateModelMatrix, true);
    return *this;
@@ -71,9 +71,12 @@ void GameObject2D::rotate(float angleOfRotInDeg)
 
 void GameObject2D::scale(const glm::vec2& scalingFactors)
 {
-   mWidthInPix  *= scalingFactors.x;
-   mHeightInPix *= scalingFactors.y;
-   mCalculateModelMatrix = true;
+   if ((scalingFactors.x != 0.0f) && (scalingFactors.y != 0.0f))
+   {
+      mWidthInPix *= scalingFactors.x;
+      mHeightInPix *= scalingFactors.y;
+      mCalculateModelMatrix = true;
+   }
 }
 
 void GameObject2D::calculateModelMatrix() const

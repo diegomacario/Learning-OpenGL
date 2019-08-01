@@ -18,7 +18,7 @@ Mesh::~Mesh()
 
 Mesh::Mesh(Mesh&& rhs) noexcept
    : mNumIndices(std::exchange(rhs.mNumIndices, 0))
-   , mMaterial(std::move(rhs.mMaterial)) // TODO: Is this move working?
+   , mMaterial(std::move(rhs.mMaterial))
    , mVAO(std::exchange(rhs.mVAO, 0))
 {
 
@@ -27,7 +27,7 @@ Mesh::Mesh(Mesh&& rhs) noexcept
 Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 {
    mNumIndices = std::exchange(rhs.mNumIndices, 0);
-   mMaterial   = std::move(rhs.mMaterial); // TODO: Is this move working?
+   mMaterial   = std::move(rhs.mMaterial);
    mVAO        = std::exchange(rhs.mVAO, 0);
    return *this;
 }
@@ -74,9 +74,7 @@ void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<u
    glEnableVertexAttribArray(2);
    glVertexAttribPointer(2, 2, GL_FLOAT, GL_FALSE, sizeof(Vertex), (void*)offsetof(Vertex, texCoords));
 
-   // TODO: Can I delete the VBO and EBO before unbinding the VAO? Is it necessary to unbind them before deleting them?
    glBindVertexArray(0);
-
    glDeleteBuffers(1, &VBO);
    glDeleteBuffers(1, &EBO);
 }

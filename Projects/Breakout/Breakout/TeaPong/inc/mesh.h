@@ -22,6 +22,27 @@ struct Vertex
 
    }
 
+   ~Vertex() = default;
+
+   Vertex(const Vertex&) = default;
+   Vertex& operator=(const Vertex&) = default;
+
+   Vertex(Vertex&& rhs) noexcept
+      : position(std::exchange(rhs.position, glm::vec3(0.0f)))
+      , normal(std::exchange(rhs.normal, glm::vec3(0.0f)))
+      , texCoords(std::exchange(rhs.texCoords, glm::vec2(0.0f)))
+   {
+
+   }
+
+   Vertex& operator=(Vertex&& rhs) noexcept
+   {
+      position  = std::exchange(rhs.position, glm::vec3(0.0f));
+      normal    = std::exchange(rhs.normal, glm::vec3(0.0f));
+      texCoords = std::exchange(rhs.texCoords, glm::vec2(0.0f));
+      return *this;
+   }
+
    glm::vec3 position;
    glm::vec3 normal;
    glm::vec2 texCoords;
@@ -35,6 +56,14 @@ struct MaterialTexture
    {
 
    }
+
+   ~MaterialTexture() = default;
+
+   MaterialTexture(const MaterialTexture&) = default;
+   MaterialTexture& operator=(const MaterialTexture&) = default;
+
+   MaterialTexture(MaterialTexture&& rhs) = default;
+   MaterialTexture& operator=(MaterialTexture&& rhs) = default;
 
    std::shared_ptr<Texture> texture;
    std::string              uniformName;
@@ -65,6 +94,31 @@ struct MaterialConstants
 
    }
 
+   ~MaterialConstants() = default;
+
+   MaterialConstants(const MaterialConstants&) = default;
+   MaterialConstants& operator=(const MaterialConstants&) = default;
+
+   MaterialConstants(MaterialConstants&& rhs) noexcept
+      : ambientColor(std::exchange(rhs.ambientColor, glm::vec3(0.0f)))
+      , emissiveColor(std::exchange(rhs.emissiveColor, glm::vec3(0.0f)))
+      , diffuseColor(std::exchange(rhs.diffuseColor, glm::vec3(0.0f)))
+      , specularColor(std::exchange(rhs.specularColor, glm::vec3(0.0f)))
+      , shininess(std::exchange(rhs.shininess, 0.0f))
+   {
+
+   }
+
+   MaterialConstants& operator=(MaterialConstants&& rhs) noexcept
+   {
+      ambientColor  = std::exchange(rhs.ambientColor, glm::vec3(0.0f));
+      emissiveColor = std::exchange(rhs.emissiveColor, glm::vec3(0.0f));
+      diffuseColor  = std::exchange(rhs.diffuseColor, glm::vec3(0.0f));
+      specularColor = std::exchange(rhs.specularColor, glm::vec3(0.0f));
+      shininess     = std::exchange(rhs.shininess, 0.0f);
+      return *this;
+   }
+
    glm::vec3 ambientColor;
    glm::vec3 emissiveColor;
    glm::vec3 diffuseColor;
@@ -74,14 +128,35 @@ struct MaterialConstants
 
 struct Material
 {
-   Material::Material(const std::vector<MaterialTexture>&                                 materialTextures,
-                      std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)> materialTextureAvailabilities,
-                      const MaterialConstants&                                            materialConstants)
+   Material(const std::vector<MaterialTexture>&                                 materialTextures,
+            std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)> materialTextureAvailabilities,
+            const MaterialConstants&                                            materialConstants)
       : textures(materialTextures)
       , textureAvailabilities(materialTextureAvailabilities)
       , constants(materialConstants)
    {
 
+   }
+
+   ~Material() = default;
+
+   Material(const Material&) = default;
+   Material& operator=(const Material&) = default;
+
+   Material(Material&& rhs) noexcept
+      : textures(std::move(rhs.textures))
+      , textureAvailabilities(std::exchange(rhs.textureAvailabilities, std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)>())) // TODO: Investigate what happens when you move a std::bitset
+      , constants(std::move(rhs.constants))
+   {
+
+   }
+
+   Material& operator=(Material&& rhs) noexcept
+   {
+      textures              = std::move(rhs.textures);
+      textureAvailabilities = std::exchange(rhs.textureAvailabilities, std::bitset<static_cast<unsigned int>(MaterialTextureTypes::count)>()); // TODO: Investigate what happens when you move a std::bitset
+      constants             = std::move(rhs.constants);
+      return *this;
    }
 
    std::vector<MaterialTexture>                                        textures;

@@ -9,7 +9,7 @@ GameObject3D::GameObject3D(const std::shared_ptr<Model>& model,
                            float                         scalingFactor)
    : mModel(model)
    , mPosition(position)
-   , mRotationMatrix(axisOfRot != glm::vec3(0.0f, 0.0f, 0.0f) ? glm::rotate(glm::mat4(1.0f), glm::radians(angleOfRotInDeg), axisOfRot) : glm::mat4(1.0f))
+   , mRotationMatrix(axisOfRot != glm::vec3(0.0f) ? glm::rotate(glm::mat4(1.0f), glm::radians(angleOfRotInDeg), axisOfRot) : glm::mat4(1.0f))
    , mScalingFactor(scalingFactor != 0.0f ? scalingFactor : 1.0f)
    , mModelMatrix(1.0f)
    , mCalculateModelMatrix(true)
@@ -19,9 +19,9 @@ GameObject3D::GameObject3D(const std::shared_ptr<Model>& model,
 
 GameObject3D::GameObject3D(GameObject3D&& rhs) noexcept
    : mModel(std::move(rhs.mModel))
-   , mPosition(std::exchange(rhs.mPosition, glm::vec3()))
+   , mPosition(std::exchange(rhs.mPosition, glm::vec3(0.0f)))
    , mRotationMatrix(std::exchange(rhs.mRotationMatrix, glm::mat4(1.0f)))
-   , mScalingFactor(std::exchange(rhs.mScalingFactor, 0.0f))
+   , mScalingFactor(std::exchange(rhs.mScalingFactor, 1.0f))
    , mModelMatrix(std::exchange(rhs.mModelMatrix, glm::mat4(1.0f)))
    , mCalculateModelMatrix(std::exchange(rhs.mCalculateModelMatrix, true))
 {
@@ -31,9 +31,9 @@ GameObject3D::GameObject3D(GameObject3D&& rhs) noexcept
 GameObject3D& GameObject3D::operator=(GameObject3D&& rhs) noexcept
 {
    mModel                = std::move(rhs.mModel);
-   mPosition             = std::exchange(rhs.mPosition, glm::vec3());
+   mPosition             = std::exchange(rhs.mPosition, glm::vec3(0.0f));
    mRotationMatrix       = std::exchange(rhs.mRotationMatrix, glm::mat4(1.0f));
-   mScalingFactor        = std::exchange(rhs.mScalingFactor, 0.0f);
+   mScalingFactor        = std::exchange(rhs.mScalingFactor, 1.0f);
    mModelMatrix          = std::exchange(rhs.mModelMatrix, glm::mat4(1.0f));
    mCalculateModelMatrix = std::exchange(rhs.mCalculateModelMatrix, true);
    return *this;
@@ -65,7 +65,7 @@ void GameObject3D::translate(const glm::vec3& translation)
 
 void GameObject3D::rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot)
 {
-   if (axisOfRot != glm::vec3(0.0f, 0.0f, 0.0f))
+   if (axisOfRot != glm::vec3(0.0f))
    {
       mRotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(angleOfRotInDeg), axisOfRot) * mRotationMatrix;
       mCalculateModelMatrix = true;
