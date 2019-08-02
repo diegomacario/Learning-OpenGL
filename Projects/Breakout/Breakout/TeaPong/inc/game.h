@@ -24,15 +24,20 @@ public:
    Game& operator=(Game&&) = delete;
 
    bool initialize(GLuint widthInPix, GLuint heightInPix, const std::string& title);
-   void update(GLfloat deltaTime);
-   void gameLoop();
+   void executeGameLoop();
+
+   const Window&                  getWindow() const;
+   const Camera&                  getCamera() const;
+   const ResourceManager<Shader>& getShaderManager() const;
+   const GameObject3D&            getTable() const;
+   const MovableGameObject3D&     getBall() const;
 
 private:
 
    std::unique_ptr<Window>                   mWindow;
 
    std::unique_ptr<StateMachine<Game>>       mStateMachine;
-   std::vector<std::unique_ptr<State<Game>>> mGameStates;
+   std::unique_ptr<State<Game>>              mPlayState;
 
    std::unique_ptr<Camera>                   mCamera;
 
@@ -46,6 +51,10 @@ private:
    std::unique_ptr<MovableGameObject2D>      mLeftPaddle;
    std::unique_ptr<MovableGameObject2D>      mRightPaddle;
    std::unique_ptr<MovableGameObject3D>      mBall;
+
+   float                                     mDeltaTime;
+
+   friend class PlayState;
 };
 
 #endif

@@ -18,7 +18,7 @@ public:
    StateMachine(StateMachine&&) = delete;
    StateMachine& operator=(StateMachine&&) = delete;
 
-   void update() const;
+   void executeCurrentState() const;
    void changeState(State<TOwner>* newState);
 
 private:
@@ -32,11 +32,11 @@ StateMachine<TOwner>::StateMachine(TOwner* owner, State<TOwner>* initialState)
    : mOwner(owner)
    , mCurrentState(initialState)
 {
-
+   // TODO: Call the enter() function of initialState here
 }
 
 template <class TOwner>
-void StateMachine<TOwner>::update() const
+void StateMachine<TOwner>::executeCurrentState() const
 {
    mCurrentState->execute(mOwner);
 }

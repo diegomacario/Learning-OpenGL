@@ -1,15 +1,16 @@
 #include <iostream>
 
-#include <shader_loader.h>
-#include <texture_loader.h>
-#include <model_loader.h>
+#include "shader_loader.h"
+#include "texture_loader.h"
+#include "model_loader.h"
+#include "play_state.h"
 #include "game.h"
 
 // TODO: Disallow non-uniform scales
 Game::Game()
    : mWindow()
    , mStateMachine()
-   , mGameStates()
+   , mPlayState()
    , mCamera()
    , mRenderer2D()
    , mModelManager()
@@ -19,6 +20,7 @@ Game::Game()
    , mLeftPaddle()
    , mRightPaddle()
    , mBall()
+   , mDeltaTime(0.0f)
 {
 
 }
@@ -95,84 +97,25 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                                  1.0f,
                                                  glm::vec3(0.0f));
 
+   mPlayState = std::make_unique<PlayState>();
+
+   mStateMachine = std::make_unique<StateMachine<Game>>(this, mPlayState.get());
+
    return true;
 }
 
-void Game::update(GLfloat deltaTime)
-{
-   //mStateMachine->update();
-}
-
-void Game::gameLoop()
+void Game::executeGameLoop()
 {
    double currentFrame = 0.0;
    double lastFrame    = 0.0;
-   float  deltaTime    = 0.0f;
 
    while (!mWindow->shouldClose())
    {
       currentFrame = glfwGetTime();
-      deltaTime    = static_cast<float>(currentFrame - lastFrame);
+      mDeltaTime   = static_cast<float>(currentFrame - lastFrame);
       lastFrame    = currentFrame;
 
-      // Process input
-      // ----------------------------------------------------------------------------------------------------
-
-      if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE))
-         mWindow->setShouldClose(true);
-
-      if (mWindow->keyIsPressed(GLFW_KEY_W))
-         mCamera->processKeyboardInput(MovementDirection::Forward, deltaTime);
-      if (mWindow->keyIsPressed(GLFW_KEY_S))
-         mCamera->processKeyboardInput(MovementDirection::Backward, deltaTime);
-      if (mWindow->keyIsPressed(GLFW_KEY_A))
-         mCamera->processKeyboardInput(MovementDirection::Left, deltaTime);
-      if (mWindow->keyIsPressed(GLFW_KEY_D))
-         mCamera->processKeyboardInput(MovementDirection::Right, deltaTime);
-
-      if (mWindow->mouseMoved())
-      {
-         mCamera->processMouseMovement(mWindow->getCursorXOffset(), mWindow->getCursorYOffset());
-         mWindow->resetMouseMoved();
-      }
-
-      if (mWindow->scrollWheelMoved())
-      {
-         mCamera->processScrollWheelMovement(mWindow->getScrollYOffset());
-         mWindow->resetScrollWheelMoved();
-      }
-
-      // ----------------------------------------------------------------------------------------------------
-
-      //glm::vec3 ballPos = mBall->getPosition();
-      //if (ballPos.x >= 0.0f && ballPos.x < 40.0f)
-      //{
-      //   mBall->translate(glm::vec3(0.1f, 0.0f, 0.0f));
-      //}
-
-      // ----------------------------------------------------------------------------------------------------
-
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      // Render
-      // ----------------------------------------------------------------------------------------------------
-
-      // Enable depth testing for 3D objects
-      glEnable(GL_DEPTH_TEST);
-
-      auto gameObject3DShader = mShaderManager.getResource("game_object_3D");
-      gameObject3DShader->use();
-      gameObject3DShader->setMat4("view", mCamera->getViewMatrix());
-      gameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
-
-      mTable->render(*gameObject3DShader);
-
-      glDisable(GL_CULL_FACE);
-      mBall->render(*gameObject3DShader);
-      glEnable(GL_CULL_FACE);
-
-      // ----------------------------------------------------------------------------------------------------
+      mStateMachine->executeCurrentState();
 
       mWindow->swapBuffers();
       mWindow->pollEvents();

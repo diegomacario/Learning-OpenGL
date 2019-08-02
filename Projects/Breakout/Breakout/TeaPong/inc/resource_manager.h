@@ -3,6 +3,7 @@
 
 #include <memory>
 #include <unordered_map>
+#include <iostream>
 
 template<typename TResource>
 class ResourceManager
