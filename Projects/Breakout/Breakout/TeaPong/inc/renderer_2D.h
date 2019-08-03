@@ -17,7 +17,7 @@ public:
    Renderer2D(Renderer2D&& rhs) noexcept;
    Renderer2D& operator=(Renderer2D&& rhs) noexcept;
 
-   void render(const GameObject2D& gameObj2D);
+   void render(const GameObject2D& gameObj2D) const;
 
 private:
 

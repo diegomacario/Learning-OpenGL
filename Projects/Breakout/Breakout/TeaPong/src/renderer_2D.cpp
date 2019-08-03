@@ -29,7 +29,7 @@ Renderer2D& Renderer2D::operator=(Renderer2D&& rhs) noexcept
    return *this;
 }
 
-void Renderer2D::render(const GameObject2D& gameObj2D)
+void Renderer2D::render(const GameObject2D& gameObj2D) const
 {
    mShader->use();
    mShader->setMat4("model", gameObj2D.getModelMatrix());

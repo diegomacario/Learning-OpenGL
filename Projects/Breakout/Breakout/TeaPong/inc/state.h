@@ -1,7 +1,6 @@
 #ifndef STATE_H
 #define STATE_H
 
-template <class TOwner>
 class State
 {
 public:
@@ -15,9 +14,9 @@ public:
    State(State&&) = delete;
    State& operator=(State&&) = delete;
 
-   virtual void enter(TOwner* owner) = 0;
-   virtual void execute(TOwner* owner) = 0;
-   virtual void exit(TOwner* owner) = 0;
+   virtual void enter() = 0;
+   virtual void execute(float deltaTime) = 0;
+   virtual void exit() = 0;
 };
 
 #endif

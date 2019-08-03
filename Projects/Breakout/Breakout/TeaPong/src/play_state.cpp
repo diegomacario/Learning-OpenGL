@@ -1,73 +1,81 @@
 #include "play_state.h"
 
-void PlayState::enter(Game* owner)
+PlayState::PlayState(const std::shared_ptr<Window>&              window,
+                     const std::shared_ptr<Camera>&              camera,
+                     const std::shared_ptr<Shader>&              gameObject3DShader,
+                     const std::shared_ptr<GameObject3D>&        table,
+                     const std::shared_ptr<MovableGameObject2D>& leftPaddle,
+                     const std::shared_ptr<MovableGameObject2D>& rightPaddle,
+                     const std::shared_ptr<MovableGameObject3D>& ball)
+   : mWindow(window)
+   , mCamera(camera)
+   , mGameObject3DShader(gameObject3DShader)
+   , mTable(table)
+   , mLeftPaddle(leftPaddle)
+   , mRightPaddle(rightPaddle)
+   , mBall(ball)
 {
 
 }
 
-void PlayState::execute(Game* owner)
-{
-   processInput(owner);
-   update(owner);
-   render(owner);
-}
-
-void PlayState::exit(Game* owner)
+void PlayState::enter()
 {
 
 }
 
-void PlayState::processInput(Game* owner)
+void PlayState::execute(float deltaTime)
 {
-   if (owner->mWindow->keyIsPressed(GLFW_KEY_ESCAPE))
-      owner->mWindow->setShouldClose(true);
+   processInput(deltaTime);
+   update();
+   render();
+}
 
-   if (owner->mWindow->keyIsPressed(GLFW_KEY_W))
-      owner->mCamera->processKeyboardInput(MovementDirection::Forward, owner->mDeltaTime);
-   if (owner->mWindow->keyIsPressed(GLFW_KEY_S))
-      owner->mCamera->processKeyboardInput(MovementDirection::Backward, owner->mDeltaTime);
-   if (owner->mWindow->keyIsPressed(GLFW_KEY_A))
-      owner->mCamera->processKeyboardInput(MovementDirection::Left, owner->mDeltaTime);
-   if (owner->mWindow->keyIsPressed(GLFW_KEY_D))
-      owner->mCamera->processKeyboardInput(MovementDirection::Right, owner->mDeltaTime);
+void PlayState::exit()
+{
 
-   if (owner->mWindow->mouseMoved())
+}
+
+void PlayState::processInput(float deltaTime)
+{
+   if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
+   if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(MovementDirection::Forward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_S))      { mCamera->processKeyboardInput(MovementDirection::Backward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_A))      { mCamera->processKeyboardInput(MovementDirection::Left, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_D))      { mCamera->processKeyboardInput(MovementDirection::Right, deltaTime); }
+
+   if (mWindow->mouseMoved())
    {
-      owner->mCamera->processMouseMovement(owner->mWindow->getCursorXOffset(), owner->mWindow->getCursorYOffset());
-      owner->mWindow->resetMouseMoved();
+      mCamera->processMouseMovement(mWindow->getCursorXOffset(), mWindow->getCursorYOffset());
+      mWindow->resetMouseMoved();
    }
 
-   if (owner->mWindow->scrollWheelMoved())
+   if (mWindow->scrollWheelMoved())
    {
-      owner->mCamera->processScrollWheelMovement(owner->mWindow->getScrollYOffset());
-      owner->mWindow->resetScrollWheelMoved();
+      mCamera->processScrollWheelMovement(mWindow->getScrollYOffset());
+      mWindow->resetScrollWheelMoved();
    }
 }
 
-void PlayState::update(Game* owner)
+void PlayState::update()
 {
 
 }
 
-void PlayState::render(Game* owner)
+void PlayState::render()
 {
    glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-   // Render
-   // ----------------------------------------------------------------------------------------------------
-
    // Enable depth testing for 3D objects
    glEnable(GL_DEPTH_TEST);
 
-   auto gameObject3DShader = owner->mShaderManager.getResource("game_object_3D");
-   gameObject3DShader->use();
-   gameObject3DShader->setMat4("view", owner->mCamera->getViewMatrix());
-   gameObject3DShader->setVec3("cameraPos", owner->mCamera->getPosition());
+   mGameObject3DShader->use();
+   mGameObject3DShader->setMat4("view", mCamera->getViewMatrix());
+   mGameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
-   owner->mTable->render(*gameObject3DShader);
+   mTable->render(*mGameObject3DShader);
 
    glDisable(GL_CULL_FACE);
-   owner->mBall->render(*gameObject3DShader);
+   mBall->render(*mGameObject3DShader);
    glEnable(GL_CULL_FACE);
 }

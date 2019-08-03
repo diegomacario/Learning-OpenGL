@@ -9,7 +9,7 @@
 // TODO: Disallow non-uniform scales
 Game::Game()
    : mWindow()
-   , mStateMachine()
+   , mFSM()
    , mPlayState()
    , mCamera()
    , mRenderer2D()
@@ -20,7 +20,6 @@ Game::Game()
    , mLeftPaddle()
    , mRightPaddle()
    , mBall()
-   , mDeltaTime(0.0f)
 {
 
 }
@@ -33,7 +32,7 @@ Game::~Game()
 bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& title)
 {
    // Initialize the window
-   mWindow = std::make_unique<Window>(widthInPix, heightInPix, title);
+   mWindow = std::make_shared<Window>(widthInPix, heightInPix, title);
 
    if (!mWindow->initialize())
    {
@@ -42,7 +41,7 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    }
 
    // Initialize the camera
-   mCamera = std::make_unique<Camera>(glm::vec3(0.0f, 0.0f, 80.0f), // Position
+   mCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 80.0f), // Position
                                       glm::vec3(0.0f, 1.0f, 0.0f),  // World up
                                       0.0f,                         // Yaw
                                       0.0f,                         // Pitch
@@ -84,22 +83,28 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    mModelManager.loadResource<ModelLoader>("table", "models/table/table.obj");
    mModelManager.loadResource<ModelLoader>("teapot", "models/teapot/teapot.obj");
 
-   mTable = std::make_unique<GameObject3D>(mModelManager.getResource("table"),
+   mTable = std::make_shared<GameObject3D>(mModelManager.getResource("table"),
                                            glm::vec3(0.0f),
                                            90.0f,
                                            glm::vec3(1.0f, 0.0f, 0.0f),
                                            1.0f);
 
-   mBall = std::make_unique<MovableGameObject3D>(mModelManager.getResource("teapot"),
+   mBall = std::make_shared<MovableGameObject3D>(mModelManager.getResource("teapot"),
                                                  glm::vec3(0.0f),
                                                  90.0f,
                                                  glm::vec3(1.0f, 0.0f, 0.0f),
                                                  1.0f,
                                                  glm::vec3(0.0f));
 
-   mPlayState = std::make_unique<PlayState>();
+   mPlayState = std::make_unique<PlayState>(mWindow,
+                                            mCamera,
+                                            gameObject3DShader,
+                                            mTable,
+                                            mLeftPaddle,
+                                            mRightPaddle,
+                                            mBall);
 
-   mStateMachine = std::make_unique<StateMachine<Game>>(this, mPlayState.get());
+   mFSM = std::make_unique<FiniteStateMachine>(mPlayState.get());
 
    return true;
 }
@@ -108,14 +113,15 @@ void Game::executeGameLoop()
 {
    double currentFrame = 0.0;
    double lastFrame    = 0.0;
+   float  deltaTime    = 0.0f;
 
    while (!mWindow->shouldClose())
    {
       currentFrame = glfwGetTime();
-      mDeltaTime   = static_cast<float>(currentFrame - lastFrame);
+      deltaTime    = static_cast<float>(currentFrame - lastFrame);
       lastFrame    = currentFrame;
 
-      mStateMachine->executeCurrentState();
+      mFSM->executeCurrentState(deltaTime);
 
       mWindow->swapBuffers();
       mWindow->pollEvents();
