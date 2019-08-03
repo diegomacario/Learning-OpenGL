@@ -118,6 +118,7 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="src\camera.cpp" />
+    <ClCompile Include="src\finite_state_machine.cpp" />
     <ClCompile Include="src\game.cpp" />
     <ClCompile Include="src\game_object_2D.cpp" />
     <ClCompile Include="src\game_object_3D.cpp" />
@@ -139,12 +140,12 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\camera.h" />
+    <ClInclude Include="inc\finite_state_machine.h" />
     <ClInclude Include="inc\game.h" />
     <ClInclude Include="inc\game_object_2D.h" />
     <ClInclude Include="inc\game_object_3D.h" />
     <ClInclude Include="inc\play_state.h" />
     <ClInclude Include="inc\state.h" />
-    <ClInclude Include="inc\state_machine.h" />
     <ClInclude Include="inc\mesh.h" />
     <ClInclude Include="inc\model.h" />
     <ClInclude Include="inc\model_loader.h" />
