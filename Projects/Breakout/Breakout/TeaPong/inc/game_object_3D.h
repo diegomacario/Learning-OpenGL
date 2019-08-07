@@ -27,6 +27,7 @@ public:
    void      render(const Shader& shader) const;
 
    glm::vec3 getPosition() const;
+   void      setPosition(const glm::vec3& position);
 
    void      translate(const glm::vec3& translation);
    void      rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot);

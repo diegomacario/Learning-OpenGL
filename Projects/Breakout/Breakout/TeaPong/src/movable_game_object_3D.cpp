@@ -29,3 +29,13 @@ MovableGameObject3D& MovableGameObject3D::operator=(MovableGameObject3D&& rhs) n
    mVelocity = std::exchange(rhs.mVelocity, glm::vec3(0.0f));
    return *this;
 }
+
+glm::vec3 MovableGameObject3D::getVelocity() const
+{
+   return mVelocity;
+}
+
+void MovableGameObject3D::setVelocity(const glm::vec3& velocity)
+{
+   mVelocity = velocity;
+}

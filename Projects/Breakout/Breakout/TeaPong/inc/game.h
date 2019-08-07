@@ -5,6 +5,7 @@
 #include "renderer_2D.h"
 #include "movable_game_object_2D.h"
 #include "movable_game_object_3D.h"
+#include "ball.h"
 #include "camera.h"
 #include "state.h"
 #include "finite_state_machine.h"
@@ -44,7 +45,7 @@ private:
    std::shared_ptr<GameObject3D>        mTable;
    std::shared_ptr<MovableGameObject2D> mLeftPaddle;
    std::shared_ptr<MovableGameObject2D> mRightPaddle;
-   std::shared_ptr<MovableGameObject3D> mBall;
+   std::shared_ptr<Ball>                mBall;
 };
 
 #endif

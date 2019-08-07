@@ -21,6 +21,9 @@ public:
    MovableGameObject3D(MovableGameObject3D&& rhs) noexcept;
    MovableGameObject3D& operator=(MovableGameObject3D&& rhs) noexcept;
 
+   glm::vec3 getVelocity() const;
+   void      setVelocity(const glm::vec3& velocity);
+
 private:
 
    glm::vec3 mVelocity; // TODO: Should this be divided into speed and direction?

@@ -57,6 +57,12 @@ glm::vec3 GameObject3D::getPosition() const
    return mPosition;
 }
 
+void GameObject3D::setPosition(const glm::vec3& position)
+{
+   mPosition = position;
+   mCalculateModelMatrix = true;
+}
+
 void GameObject3D::translate(const glm::vec3& translation)
 {
    mPosition += translation;

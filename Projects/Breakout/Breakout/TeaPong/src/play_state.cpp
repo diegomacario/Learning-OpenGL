@@ -6,7 +6,7 @@ PlayState::PlayState(const std::shared_ptr<Window>&              window,
                      const std::shared_ptr<GameObject3D>&        table,
                      const std::shared_ptr<MovableGameObject2D>& leftPaddle,
                      const std::shared_ptr<MovableGameObject2D>& rightPaddle,
-                     const std::shared_ptr<MovableGameObject3D>& ball)
+                     const std::shared_ptr<Ball>&                ball)
    : mWindow(window)
    , mCamera(camera)
    , mGameObject3DShader(gameObject3DShader)
@@ -26,7 +26,7 @@ void PlayState::enter()
 void PlayState::execute(float deltaTime)
 {
    processInput(deltaTime);
-   update();
+   update(deltaTime);
    render();
 }
 
@@ -56,9 +56,10 @@ void PlayState::processInput(float deltaTime)
    }
 }
 
-void PlayState::update()
+void PlayState::update(float deltaTime)
 {
-
+   // TODO: Get the dimensions from the table
+   mBall->move(deltaTime, 100.0f, 60.0f);
 }
 
 void PlayState::render()

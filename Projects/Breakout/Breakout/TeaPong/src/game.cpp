@@ -41,7 +41,7 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    }
 
    // Initialize the camera
-   mCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 80.0f), // Position
+   mCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 95.0f), // Position
                                       glm::vec3(0.0f, 1.0f, 0.0f),  // World up
                                       0.0f,                         // Yaw
                                       0.0f,                         // Pitch
@@ -89,12 +89,14 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                            glm::vec3(1.0f, 0.0f, 0.0f),
                                            1.0f);
 
-   mBall = std::make_shared<MovableGameObject3D>(mModelManager.getResource("teapot"),
-                                                 glm::vec3(0.0f),
-                                                 90.0f,
-                                                 glm::vec3(1.0f, 0.0f, 0.0f),
-                                                 1.0f,
-                                                 glm::vec3(0.0f));
+   mBall = std::make_shared<Ball>(mModelManager.getResource("teapot"),
+                                  glm::vec3(0.0f),
+                                  90.0f,
+                                  glm::vec3(1.0f, 0.0f, 0.0f),
+                                  1.0f,
+                                  glm::vec3(10.0f ,10.0f, 0.0f),
+                                  7.5f,
+                                  50.0f);
 
    mPlayState = std::make_unique<PlayState>(mWindow,
                                             mCamera,

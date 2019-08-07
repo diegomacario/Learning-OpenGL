@@ -117,6 +117,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="src\ball.cpp" />
     <ClCompile Include="src\camera.cpp" />
     <ClCompile Include="src\finite_state_machine.cpp" />
     <ClCompile Include="src\game.cpp" />
@@ -139,6 +140,7 @@
     <ClCompile Include="src\window.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="inc\ball.h" />
     <ClInclude Include="inc\camera.h" />
     <ClInclude Include="inc\finite_state_machine.h" />
     <ClInclude Include="inc\game.h" />
