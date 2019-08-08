@@ -14,7 +14,7 @@ public:
         float                         scalingFactor,
         const glm::vec3&              velocity,
         float                         radius,
-        float                         spinAngularVelocityInDeg);
+        float                         spinAngularVelocity);
    ~Ball() = default;
 
    Ball(const Ball&) = default;
@@ -28,7 +28,8 @@ public:
 private:
 
    float mRadius;
-   float mSpinAngularVelocityInDeg;
+   float mSpinAngularVelocity;
+   float mSpinAngularVelocityScaledByBounce;
 };
 
 #endif

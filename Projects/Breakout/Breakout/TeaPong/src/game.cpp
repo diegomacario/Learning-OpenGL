@@ -94,9 +94,10 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
                                   1.0f,
-                                  glm::vec3(10.0f ,10.0f, 0.0f),
+                                  glm::vec3(10.0f, 20.0f, 0.0f),
+                                  //glm::vec3(10.0f, 0.0f, 0.0f),
                                   7.5f,
-                                  50.0f);
+                                  1000.0f);
 
    mPlayState = std::make_unique<PlayState>(mWindow,
                                             mCamera,
