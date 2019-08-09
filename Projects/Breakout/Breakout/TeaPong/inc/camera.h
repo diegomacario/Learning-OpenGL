@@ -21,6 +21,9 @@ public:
           float     yawInDeg,
           float     pitchInDeg,
           float     fieldOfViewYInDeg,
+          float     aspectRatio,
+          float     near,
+          float     far,
           float     movementSpeed,
           float     mouseSensitivity);
    ~Camera() = default;
@@ -32,8 +35,8 @@ public:
    Camera& operator=(Camera&& rhs) noexcept;
 
    glm::vec3 getPosition();
-   float     getFieldOfViewYInDeg();
    glm::mat4 getViewMatrix();
+   glm::mat4 getPerspectiveProjectionMatrix();
 
    void      processKeyboardInput(MovementDirection direction, float deltaTime);
    void      processMouseMovement(float xOffset, float yOffset);
@@ -53,6 +56,9 @@ private:
    float     mPitchInDeg;
 
    float     mFieldOfViewYInDeg;
+   float     mAspectRatio;
+   float     mNear;
+   float     mFar;
 
    float     mMovementSpeed;
    float     mMouseSensitivity;

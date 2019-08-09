@@ -1,12 +1,12 @@
 #include "play_state.h"
 
-PlayState::PlayState(const std::shared_ptr<Window>&              window,
-                     const std::shared_ptr<Camera>&              camera,
-                     const std::shared_ptr<Shader>&              gameObject3DShader,
-                     const std::shared_ptr<GameObject3D>&        table,
-                     const std::shared_ptr<MovableGameObject2D>& leftPaddle,
-                     const std::shared_ptr<MovableGameObject2D>& rightPaddle,
-                     const std::shared_ptr<Ball>&                ball)
+PlayState::PlayState(const std::shared_ptr<Window>&       window,
+                     const std::shared_ptr<Camera>&       camera,
+                     const std::shared_ptr<Shader>&       gameObject3DShader,
+                     const std::shared_ptr<GameObject3D>& table,
+                     const std::shared_ptr<Paddle>&       leftPaddle,
+                     const std::shared_ptr<Paddle>&       rightPaddle,
+                     const std::shared_ptr<Ball>&         ball)
    : mWindow(window)
    , mCamera(camera)
    , mGameObject3DShader(gameObject3DShader)
@@ -52,14 +52,24 @@ void PlayState::processInput(float deltaTime)
    if (mWindow->scrollWheelMoved())
    {
       mCamera->processScrollWheelMovement(mWindow->getScrollYOffset());
+
+      mGameObject3DShader->use();
+      mGameObject3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
+
       mWindow->resetScrollWheelMoved();
    }
+
+   // TODO: Move the paddles here
 }
 
 void PlayState::update(float deltaTime)
 {
    // TODO: Get the dimensions from the table
-   mBall->move(deltaTime, 100.0f, 60.0f);
+   mBall->moveWithinArea(deltaTime, 100.0f, 60.0f);
+
+   // TODO: Perform collision detection here
+
+   // TODO: Check if we have a winner here
 }
 
 void PlayState::render()
@@ -75,6 +85,9 @@ void PlayState::render()
    mGameObject3DShader->setVec3("cameraPos", mCamera->getPosition());
 
    mTable->render(*mGameObject3DShader);
+
+   mLeftPaddle->render(*mGameObject3DShader);
+   mRightPaddle->render(*mGameObject3DShader);
 
    glDisable(GL_CULL_FACE);
    mBall->render(*mGameObject3DShader);

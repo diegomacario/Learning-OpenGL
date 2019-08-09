@@ -7,13 +7,13 @@ class PlayState : public State
 {
 public:
 
-   PlayState(const std::shared_ptr<Window>&              window,
-             const std::shared_ptr<Camera>&              camera,
-             const std::shared_ptr<Shader>&              gameObject3DShader,
-             const std::shared_ptr<GameObject3D>&        table,
-             const std::shared_ptr<MovableGameObject2D>& leftPaddle,
-             const std::shared_ptr<MovableGameObject2D>& rightPaddle,
-             const std::shared_ptr<Ball>&                ball);
+   PlayState(const std::shared_ptr<Window>&       window,
+             const std::shared_ptr<Camera>&       camera,
+             const std::shared_ptr<Shader>&       gameObject3DShader,
+             const std::shared_ptr<GameObject3D>& table,
+             const std::shared_ptr<Paddle>&       leftPaddle,
+             const std::shared_ptr<Paddle>&       rightPaddle,
+             const std::shared_ptr<Ball>&         ball);
    ~PlayState() = default;
 
    PlayState(const PlayState&) = delete;
@@ -32,16 +32,16 @@ private:
    void update(float deltaTime);
    void render();
 
-   std::shared_ptr<Window>              mWindow;
+   std::shared_ptr<Window>       mWindow;
 
-   std::shared_ptr<Camera>              mCamera;
+   std::shared_ptr<Camera>       mCamera;
 
-   std::shared_ptr<Shader>              mGameObject3DShader;
+   std::shared_ptr<Shader>       mGameObject3DShader;
 
-   std::shared_ptr<GameObject3D>        mTable;
-   std::shared_ptr<MovableGameObject2D> mLeftPaddle;
-   std::shared_ptr<MovableGameObject2D> mRightPaddle;
-   std::shared_ptr<Ball>                mBall;
+   std::shared_ptr<GameObject3D> mTable;
+   std::shared_ptr<Paddle>       mLeftPaddle;
+   std::shared_ptr<Paddle>       mRightPaddle;
+   std::shared_ptr<Ball>         mBall;
 };
 
 #endif

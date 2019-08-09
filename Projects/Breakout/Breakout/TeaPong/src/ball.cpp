@@ -39,63 +39,66 @@ Ball& Ball::operator=(Ball&& rhs) noexcept
    return *this;
 }
 
-void Ball::move(float deltaTime, float tableWidth, float tableHeight)
+void Ball::moveWithinArea(float deltaTime, float areaWidth, float areaHeight)
 {
-   glm::vec3 oldPos       = this->getPosition();
-   glm::vec3 currVelocity = this->getVelocity();
-   glm::vec3 currPos      = oldPos + (currVelocity * deltaTime);
+   glm::vec3 currVelocity     = this->getVelocity();
+   glm::vec3 currPos          = this->getPosition() + (currVelocity * deltaTime);
 
-   float rightBoundary  =   tableWidth  / 2.0f;
-   float leftBoundary   =  -tableWidth  / 2.0f;
-   float topBoundary    =   tableHeight / 2.0f;
-   float bottomBoundary =  -tableHeight / 2.0f;
+   float rightBoundary        =   areaWidth / 2.0f;
+   float leftBoundary         =  -rightBoundary;
+   float topBoundary          =   areaHeight / 2.0f;
+   float bottomBoundary       =  -topBoundary;
 
-   float reflectionDotProduct = 0.0f;
-   bool  bounced = false;
+   glm::vec3 incidentVelocity = currVelocity;
+   glm::vec3 normalOfCrossedBoundary;
+   bool bounced = false;
 
-   if ((currPos.x + mRadius) >= rightBoundary)       // Bounce left
+   if ((currPos.x + mRadius) >= rightBoundary)
    {
-      // Dot product of the normalized velocity and the normalized normal of the boundary
-      // This value ranges from 0 to 1
-      // It is equal to 0 when the two vectors are perpendicular (tangent collision)
-      // It is equal to 1 when the two vectors are parallel (direct collision)
-      reflectionDotProduct = std::abs(glm::dot(glm::normalize(currVelocity), glm::vec3(-1.0f, 0.0f, 0.0f)));
-
-      currVelocity.x       = -currVelocity.x;
-      currPos.x            = rightBoundary - mRadius;
-      bounced              = true;
+      // Bounce left
+      currVelocity.x          = -currVelocity.x;
+      currPos.x               = rightBoundary - mRadius;
+      normalOfCrossedBoundary = glm::vec3(-1.0f, 0.0f, 0.0f);
+      bounced                 = true;
    }
-   else if ((currPos.x - mRadius) <= leftBoundary)   // Bounce right
+   else if ((currPos.x - mRadius) <= leftBoundary)
    {
-      reflectionDotProduct = std::abs(glm::dot(glm::normalize(currVelocity), glm::vec3(1.0f, 0.0f, 0.0f)));
-
-      currVelocity.x       = -currVelocity.x;
-      currPos.x            = leftBoundary + mRadius;
-      bounced              = true;
+      // Bounce right
+      currVelocity.x          = -currVelocity.x;
+      currPos.x               = leftBoundary + mRadius;
+      normalOfCrossedBoundary = glm::vec3(1.0f, 0.0f, 0.0f);
+      bounced                 = true;
    }
-
-   if ((currPos.y + mRadius) >= topBoundary)         // Bounce down
+   else if ((currPos.y + mRadius) >= topBoundary)
    {
-      reflectionDotProduct = std::abs(glm::dot(glm::normalize(currVelocity), glm::vec3(0.0f, -1.0f, 0.0f)));
-
-      currVelocity.y       = -currVelocity.y;
-      currPos.y            = topBoundary - mRadius;
-      bounced              = true;
+      // Bounce down
+      currVelocity.y          = -currVelocity.y;
+      currPos.y               = topBoundary - mRadius;
+      normalOfCrossedBoundary = glm::vec3(0.0f, -1.0f, 0.0f);
+      bounced                 = true;
    }
-   else if ((currPos.y - mRadius) <= bottomBoundary) // Bounce up
+   else if ((currPos.y - mRadius) <= bottomBoundary)
    {
-      reflectionDotProduct = std::abs(glm::dot(glm::normalize(currVelocity), glm::vec3(0.0f, 1.0f, 0.0f)));
-
-      currVelocity.y       = -currVelocity.y;
-      currPos.y            = bottomBoundary + mRadius;
-      bounced              = true;
+      // Bounce up
+      currVelocity.y          = -currVelocity.y;
+      currPos.y               = bottomBoundary + mRadius;
+      normalOfCrossedBoundary = glm::vec3(0.0f, 1.0f, 0.0f);
+      bounced                 = true;
    }
 
    if (bounced)
    {
+      // Absolute value of the dot product of:
+      // - The normalized incident velocity
+      // - The normalized normal of the crossed boundary
+      // This value ranges from 0 to 1
+      // It is equal to 0 when the two vectors are perpendicular (tangent collision)
+      // It is equal to 1 when the two vectors are parallel (direct collision)
+      float dotProduct = std::abs(glm::dot(glm::normalize(incidentVelocity), normalOfCrossedBoundary));
+
       // The ball spins with its maximum angular velocity when a tangent collision occurs
       // The ball spins with its minimum angular velocity, that is, it doesn't spin, when a direct collision occurs
-      mSpinAngularVelocityScaledByBounce = mSpinAngularVelocity * (1.0f - reflectionDotProduct);
+      mSpinAngularVelocityScaledByBounce = mSpinAngularVelocity * (1.0f - dotProduct);
    }
 
    this->setVelocity(currVelocity);

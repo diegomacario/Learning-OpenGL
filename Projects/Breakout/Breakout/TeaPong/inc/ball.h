@@ -23,7 +23,7 @@ public:
    Ball(Ball&& rhs) noexcept;
    Ball& operator=(Ball&& rhs) noexcept;
 
-   void move(float deltaTime, float tableWidth, float tableHeight);
+   void moveWithinArea(float deltaTime, float areaWidth, float areaHeight);
 
 private:
 

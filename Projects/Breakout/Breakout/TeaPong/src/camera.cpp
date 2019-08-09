@@ -7,6 +7,9 @@ Camera::Camera(glm::vec3 position,
                float     yawInDeg,
                float     pitchInDeg,
                float     fieldOfViewYInDeg,
+               float     aspectRatio,
+               float     near,
+               float     far,
                float     movementSpeed,
                float     mouseSensitivity)
    : mPosition(position)
@@ -17,6 +20,9 @@ Camera::Camera(glm::vec3 position,
    , mYawInDeg(yawInDeg)
    , mPitchInDeg(pitchInDeg)
    , mFieldOfViewYInDeg(fieldOfViewYInDeg)
+   , mAspectRatio(aspectRatio)
+   , mNear(near)
+   , mFar(far)
    , mMovementSpeed(movementSpeed)
    , mMouseSensitivity(mouseSensitivity)
 {
@@ -32,6 +38,9 @@ Camera::Camera(Camera&& rhs) noexcept
    , mYawInDeg(std::exchange(rhs.mYawInDeg, 0.0f))
    , mPitchInDeg(std::exchange(rhs.mPitchInDeg, 0.0f))
    , mFieldOfViewYInDeg(std::exchange(rhs.mFieldOfViewYInDeg, 0.0f))
+   , mAspectRatio(std::exchange(rhs.mAspectRatio, 0.0f))
+   , mNear(std::exchange(rhs.mNear, 0.0f))
+   , mFar(std::exchange(rhs.mFar, 0.0f))
    , mMovementSpeed(std::exchange(rhs.mMovementSpeed, 0.0f))
    , mMouseSensitivity(std::exchange(rhs.mMouseSensitivity, 0.0f))
 {
@@ -48,6 +57,9 @@ Camera& Camera::operator=(Camera&& rhs) noexcept
    mYawInDeg          = std::exchange(rhs.mYawInDeg, 0.0f);
    mPitchInDeg        = std::exchange(rhs.mPitchInDeg, 0.0f);
    mFieldOfViewYInDeg = std::exchange(rhs.mFieldOfViewYInDeg, 0.0f);
+   mAspectRatio       = std::exchange(rhs.mAspectRatio, 0.0f);
+   mNear              = std::exchange(rhs.mNear, 0.0f);
+   mFar               = std::exchange(rhs.mFar, 0.0f);
    mMovementSpeed     = std::exchange(rhs.mMovementSpeed, 0.0f);
    mMouseSensitivity  = std::exchange(rhs.mMouseSensitivity, 0.0f);
    return *this;
@@ -58,15 +70,18 @@ glm::vec3 Camera::getPosition()
    return mPosition;
 }
 
-float Camera::getFieldOfViewYInDeg()
-{
-   return mFieldOfViewYInDeg;
-}
-
 glm::mat4 Camera::getViewMatrix()
 {
    // TODO: Could we optimize things by storing the lookAt matrix and only recalculating it if the camera's settings changed?
    return glm::lookAt(mPosition, mPosition + mFront, mUp);
+}
+
+glm::mat4 Camera::getPerspectiveProjectionMatrix()
+{
+   return glm::perspective(glm::radians(mFieldOfViewYInDeg),
+                                        mAspectRatio,
+                                        mNear,
+                                        mFar);
 }
 
 void Camera::processKeyboardInput(MovementDirection direction, float deltaTime)
