@@ -59,7 +59,45 @@ void PlayState::processInput(float deltaTime)
       mWindow->resetScrollWheelMoved();
    }
 
-   // TODO: Move the paddles here
+   // Move the left paddle
+   if (mWindow->keyIsPressed(GLFW_KEY_Z))
+   {
+      // Move up
+      glm::vec3 currPos = mLeftPaddle->getPosition();
+      if ((currPos.y + (mLeftPaddle->getLength() / 2.0f)) < 30.0f)
+      {
+         mLeftPaddle->translate(mLeftPaddle->getVelocity() * deltaTime);
+      }
+   }
+   if (mWindow->keyIsPressed(GLFW_KEY_X))
+   {
+      // Move down
+      glm::vec3 currPos = mLeftPaddle->getPosition();
+      if ((currPos.y - (mLeftPaddle->getLength() / 2.0f)) > -30.0f)
+      {
+         mLeftPaddle->translate(-mLeftPaddle->getVelocity() * deltaTime);
+      }
+   }
+
+   // Move the right paddle
+   if (mWindow->keyIsPressed(GLFW_KEY_N))
+   {
+      // Move up
+      glm::vec3 currPos = mRightPaddle->getPosition();
+      if ((currPos.y + (mRightPaddle->getLength() / 2.0f)) < 30.0f)
+      {
+         mRightPaddle->translate(mRightPaddle->getVelocity() * deltaTime);
+      }
+   }
+   if (mWindow->keyIsPressed(GLFW_KEY_M))
+   {
+      // Move down
+      glm::vec3 currPos = mRightPaddle->getPosition();
+      if ((currPos.y - (mRightPaddle->getLength() / 2.0f)) > -30.0f)
+      {
+         mRightPaddle->translate(-mRightPaddle->getVelocity() * deltaTime);
+      }
+   }
 }
 
 void PlayState::update(float deltaTime)

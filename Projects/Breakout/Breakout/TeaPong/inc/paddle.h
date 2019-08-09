@@ -12,7 +12,8 @@ public:
           float                         angleOfRotInDeg,
           const glm::vec3&              axisOfRot,
           float                         scalingFactor,
-          const glm::vec3&              velocity);
+          const glm::vec3&              velocity,
+          float                         length);
    ~Paddle() = default;
 
    Paddle(const Paddle&) = default;
@@ -21,9 +22,13 @@ public:
    Paddle(Paddle&& rhs) noexcept;
    Paddle& operator=(Paddle&& rhs) noexcept;
 
+   void moveWithinLine(float deltaTime, float lineLength);
+
+   float getLength() const;
+
 private:
 
-
+   float mLength;
 };
 
 #endif

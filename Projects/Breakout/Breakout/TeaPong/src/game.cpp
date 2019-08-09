@@ -98,14 +98,16 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                           90.0f,
                                           glm::vec3(1.0f, 0.0f, 0.0f),
                                           1.0f,
-                                          glm::vec3(0.0f, 10.0f, 0.0f));
+                                          glm::vec3(0.0f, 30.0f, 0.0f),
+                                          7.5f);
 
    mRightPaddle = std::make_shared<Paddle>(mModelManager.getResource("paddle"),
                                            glm::vec3(45.0f, 0.0f, 0.0f),
                                            90.0f,
                                            glm::vec3(1.0f, 0.0f, 0.0f),
                                            1.0f,
-                                           glm::vec3(0.0f, 10.0f, 0.0f));
+                                           glm::vec3(0.0f, 30.0f, 0.0f),
+                                           7.5f);
 
    mBall = std::make_shared<Ball>(mModelManager.getResource("teapot"),
                                   glm::vec3(0.0f),
