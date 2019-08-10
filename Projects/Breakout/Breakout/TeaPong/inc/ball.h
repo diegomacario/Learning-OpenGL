@@ -25,6 +25,8 @@ public:
 
    void  moveWithinArea(float deltaTime, float areaWidth, float areaHeight);
 
+   float getRadius() const;
+
 private:
 
    float mRadius;

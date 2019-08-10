@@ -13,7 +13,8 @@ public:
           const glm::vec3&              axisOfRot,
           float                         scalingFactor,
           const glm::vec3&              velocity,
-          float                         length);
+          float                         width,
+          float                         height);
    ~Paddle() = default;
 
    Paddle(const Paddle&) = default;
@@ -30,9 +31,13 @@ public:
 
    void  moveAlongLine(float deltaTime, float lineLength, MovementDirection direction);
 
+   float getWidth() const;
+   float getHeight() const;
+
 private:
 
-   float mLength;
+   float mWidth;
+   float mHeight;
 };
 
 #endif

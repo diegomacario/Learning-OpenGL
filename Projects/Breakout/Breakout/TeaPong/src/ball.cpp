@@ -105,3 +105,8 @@ void Ball::moveWithinArea(float deltaTime, float areaWidth, float areaHeight)
    this->setPosition(currPos);
    this->rotate(mSpinAngularVelocityScaledByBounce * deltaTime, glm::vec3(0.0f, 0.0f, 1.0f));
 }
+
+float Ball::getRadius() const
+{
+   return mRadius;
+}
