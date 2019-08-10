@@ -32,12 +32,21 @@ Paddle& Paddle::operator=(Paddle&& rhs) noexcept
    return *this;
 }
 
-void Paddle::moveWithinLine(float deltaTime, float lineLength)
+void Paddle::moveAlongLine(float deltaTime, float lineLength, MovementDirection direction)
 {
-
-}
-
-float Paddle::getLength() const
-{
-   return mLength;
+   switch (direction)
+   {
+   case MovementDirection::Up:
+      if ((this->getPosition().y + (mLength / 2.0f)) < (lineLength / 2.0f))
+      {
+         this->translate(this->getVelocity() * deltaTime);
+      }
+      break;
+   case MovementDirection::Down:
+      if ((this->getPosition().y - (mLength / 2.0f)) > -(lineLength / 2.0f))
+      {
+         this->translate(-this->getVelocity() * deltaTime);
+      }
+      break;
+   }
 }

@@ -4,14 +4,6 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
-enum class MovementDirection
-{
-   Forward,
-   Backward,
-   Left,
-   Right
-};
-
 class Camera
 {
 public:
@@ -37,6 +29,14 @@ public:
    glm::vec3 getPosition();
    glm::mat4 getViewMatrix();
    glm::mat4 getPerspectiveProjectionMatrix();
+
+   enum class MovementDirection
+   {
+      Forward,
+      Backward,
+      Left,
+      Right
+   };
 
    void      processKeyboardInput(MovementDirection direction, float deltaTime);
    void      processMouseMovement(float xOffset, float yOffset);

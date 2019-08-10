@@ -22,9 +22,13 @@ public:
    Paddle(Paddle&& rhs) noexcept;
    Paddle& operator=(Paddle&& rhs) noexcept;
 
-   void moveWithinLine(float deltaTime, float lineLength);
+   enum class MovementDirection
+   {
+      Up,
+      Down,
+   };
 
-   float getLength() const;
+   void  moveAlongLine(float deltaTime, float lineLength, MovementDirection direction);
 
 private:
 

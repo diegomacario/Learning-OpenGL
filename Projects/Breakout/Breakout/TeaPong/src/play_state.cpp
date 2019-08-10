@@ -37,67 +37,36 @@ void PlayState::exit()
 
 void PlayState::processInput(float deltaTime)
 {
+   // Close the game
    if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
-   if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(MovementDirection::Forward, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_S))      { mCamera->processKeyboardInput(MovementDirection::Backward, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_A))      { mCamera->processKeyboardInput(MovementDirection::Left, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_D))      { mCamera->processKeyboardInput(MovementDirection::Right, deltaTime); }
 
+   // Move the camera
+   if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(Camera::MovementDirection::Forward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_S))      { mCamera->processKeyboardInput(Camera::MovementDirection::Backward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_A))      { mCamera->processKeyboardInput(Camera::MovementDirection::Left, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_D))      { mCamera->processKeyboardInput(Camera::MovementDirection::Right, deltaTime); }
+
+   // Orient the camera
    if (mWindow->mouseMoved())
    {
       mCamera->processMouseMovement(mWindow->getCursorXOffset(), mWindow->getCursorYOffset());
       mWindow->resetMouseMoved();
    }
 
+   // Zoom in or out
    if (mWindow->scrollWheelMoved())
    {
       mCamera->processScrollWheelMovement(mWindow->getScrollYOffset());
-
       mGameObject3DShader->use();
       mGameObject3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-
       mWindow->resetScrollWheelMoved();
    }
 
-   // Move the left paddle
-   if (mWindow->keyIsPressed(GLFW_KEY_Z))
-   {
-      // Move up
-      glm::vec3 currPos = mLeftPaddle->getPosition();
-      if ((currPos.y + (mLeftPaddle->getLength() / 2.0f)) < 30.0f)
-      {
-         mLeftPaddle->translate(mLeftPaddle->getVelocity() * deltaTime);
-      }
-   }
-   if (mWindow->keyIsPressed(GLFW_KEY_X))
-   {
-      // Move down
-      glm::vec3 currPos = mLeftPaddle->getPosition();
-      if ((currPos.y - (mLeftPaddle->getLength() / 2.0f)) > -30.0f)
-      {
-         mLeftPaddle->translate(-mLeftPaddle->getVelocity() * deltaTime);
-      }
-   }
-
-   // Move the right paddle
-   if (mWindow->keyIsPressed(GLFW_KEY_N))
-   {
-      // Move up
-      glm::vec3 currPos = mRightPaddle->getPosition();
-      if ((currPos.y + (mRightPaddle->getLength() / 2.0f)) < 30.0f)
-      {
-         mRightPaddle->translate(mRightPaddle->getVelocity() * deltaTime);
-      }
-   }
-   if (mWindow->keyIsPressed(GLFW_KEY_M))
-   {
-      // Move down
-      glm::vec3 currPos = mRightPaddle->getPosition();
-      if ((currPos.y - (mRightPaddle->getLength() / 2.0f)) > -30.0f)
-      {
-         mRightPaddle->translate(-mRightPaddle->getVelocity() * deltaTime);
-      }
-   }
+   // Move the paddles
+   if (mWindow->keyIsPressed(GLFW_KEY_Z)) { mLeftPaddle->moveAlongLine(deltaTime, 60.0f, Paddle::MovementDirection::Up); }
+   if (mWindow->keyIsPressed(GLFW_KEY_X)) { mLeftPaddle->moveAlongLine(deltaTime, 60.0f, Paddle::MovementDirection::Down); }
+   if (mWindow->keyIsPressed(GLFW_KEY_N)) { mRightPaddle->moveAlongLine(deltaTime, 60.0f, Paddle::MovementDirection::Up); }
+   if (mWindow->keyIsPressed(GLFW_KEY_M)) { mRightPaddle->moveAlongLine(deltaTime, 60.0f, Paddle::MovementDirection::Down); }
 }
 
 void PlayState::update(float deltaTime)
