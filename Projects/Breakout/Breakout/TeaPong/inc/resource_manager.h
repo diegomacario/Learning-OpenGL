@@ -34,7 +34,7 @@ public:
 
 private:
 
-   std::unordered_map<std::string, std::shared_ptr<TResource>> resources;
+   std::unordered_map<std::string, std::shared_ptr<TResource>> mResources;
 };
 
 template<typename TResource>
@@ -43,8 +43,8 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
 {
    std::shared_ptr<TResource> resource{};
 
-   auto it = resources.find(resourceID);
-   if (it == resources.cend())
+   auto it = mResources.find(resourceID);
+   if (it == mResources.cend())
    {
       resource = TResourceLoader{}.loadResource(std::forward<Args>(args)...);
 
@@ -52,7 +52,7 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadResource(const std::s
       // We expect the loaders to print an error message when they are unable to load a resource successfully, which is why we don't print anything here
       if (resource)
       {
-         resources[resourceID] = resource;
+         mResources[resourceID] = resource;
       }
    }
    else
@@ -75,8 +75,8 @@ std::shared_ptr<TResource> ResourceManager<TResource>::loadUnmanagedResource(Arg
 template<typename TResource>
 std::shared_ptr<TResource> ResourceManager<TResource>::getResource(const std::string& resourceID) const
 {
-   auto it = resources.find(resourceID);
-   if (it != resources.end())
+   auto it = mResources.find(resourceID);
+   if (it != mResources.end())
    {
       return it->second;
    }
@@ -90,16 +90,16 @@ std::shared_ptr<TResource> ResourceManager<TResource>::getResource(const std::st
 template<typename TResource>
 bool ResourceManager<TResource>::containsResource(const std::string& resourceID) const noexcept
 {
-   return (resources.find(resourceID) != resources.cend());
+   return (mResources.find(resourceID) != mResources.cend());
 }
 
 template<typename TResource>
 void ResourceManager<TResource>::stopManagingResource(const std::string& resourceID) noexcept
 {
-   auto it = resources.find(resourceID);
-   if (it != resources.end())
+   auto it = mResources.find(resourceID);
+   if (it != mResources.end())
    {
-      resources.erase(it);
+      mResources.erase(it);
    }
    else
    {
@@ -110,7 +110,7 @@ void ResourceManager<TResource>::stopManagingResource(const std::string& resourc
 template<typename TResource>
 void ResourceManager<TResource>::stopManagingAllResources() noexcept
 {
-   resources.clear();
+   mResources.clear();
 }
 
 #endif

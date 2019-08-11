@@ -5,12 +5,12 @@
 #include "texture_loader.h"
 #include "model_loader.h"
 #include "play_state.h"
+#include "menu_state.h"
 #include "game.h"
 
 Game::Game()
-   : mWindow()
-   , mFSM()
-   , mPlayState()
+   : mFSM()
+   , mWindow()
    , mCamera()
    , mRenderer2D()
    , mModelManager()
@@ -121,17 +121,32 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                   2.5f,
                                   1000.0f);
 
+   // Create the FSM
+   mFSM = std::make_shared<FiniteStateMachine>();
+
    // Initialize the states
-   mPlayState = std::make_unique<PlayState>(mWindow,
-                                            mCamera,
-                                            gameObj3DShader,
-                                            mTable,
-                                            mLeftPaddle,
-                                            mRightPaddle,
-                                            mBall);
+   std::unordered_map<std::string, std::shared_ptr<State>> mStates;
+
+   mStates["play"] = std::make_shared<PlayState>(mFSM,
+                                                 mWindow,
+                                                 mCamera,
+                                                 gameObj3DShader,
+                                                 mTable,
+                                                 mLeftPaddle,
+                                                 mRightPaddle,
+                                                 mBall);
+
+   mStates["menu"] = std::make_shared<MenuState>(mFSM,
+                                                 mWindow,
+                                                 mCamera,
+                                                 gameObj3DShader,
+                                                 mTable,
+                                                 mLeftPaddle,
+                                                 mRightPaddle,
+                                                 mBall);
 
    // Initialize the FSM
-   mFSM = std::make_unique<FiniteStateMachine>(mPlayState.get());
+   mFSM->initialize(std::move(mStates), "menu");
 
    return true;
 }

@@ -1,13 +1,13 @@
-#ifndef PLAY_STATE_H
-#define PLAY_STATE_H
+#ifndef MENU_STATE_H
+#define MENU_STATE_H
 
 #include "game.h"
 
-class PlayState : public State
+class MenuState : public State
 {
 public:
 
-   PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
+   MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
              const std::shared_ptr<Window>&             window,
              const std::shared_ptr<Camera>&             camera,
              const std::shared_ptr<Shader>&             gameObject3DShader,
@@ -15,13 +15,13 @@ public:
              const std::shared_ptr<Paddle>&             leftPaddle,
              const std::shared_ptr<Paddle>&             rightPaddle,
              const std::shared_ptr<Ball>&               ball);
-   ~PlayState() = default;
+   ~MenuState() = default;
 
-   PlayState(const PlayState&) = delete;
-   PlayState& operator=(const PlayState&) = delete;
+   MenuState(const MenuState&) = delete;
+   MenuState& operator=(const MenuState&) = delete;
 
-   PlayState(PlayState&&) = delete;
-   PlayState& operator=(PlayState&&) = delete;
+   MenuState(MenuState&&) = delete;
+   MenuState& operator=(MenuState&&) = delete;
 
    void enter() override;
    void execute(float deltaTime) override;
@@ -46,7 +46,5 @@ private:
    std::shared_ptr<Paddle>             mRightPaddle;
    std::shared_ptr<Ball>               mBall;
 };
-
-void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision);
 
 #endif

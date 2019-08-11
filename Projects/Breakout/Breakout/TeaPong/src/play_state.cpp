@@ -2,14 +2,16 @@
 #include "collision.h"
 #include "play_state.h"
 
-PlayState::PlayState(const std::shared_ptr<Window>&       window,
-                     const std::shared_ptr<Camera>&       camera,
-                     const std::shared_ptr<Shader>&       gameObject3DShader,
-                     const std::shared_ptr<GameObject3D>& table,
-                     const std::shared_ptr<Paddle>&       leftPaddle,
-                     const std::shared_ptr<Paddle>&       rightPaddle,
-                     const std::shared_ptr<Ball>&         ball)
-   : mWindow(window)
+PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
+                     const std::shared_ptr<Window>&             window,
+                     const std::shared_ptr<Camera>&             camera,
+                     const std::shared_ptr<Shader>&             gameObject3DShader,
+                     const std::shared_ptr<GameObject3D>&       table,
+                     const std::shared_ptr<Paddle>&             leftPaddle,
+                     const std::shared_ptr<Paddle>&             rightPaddle,
+                     const std::shared_ptr<Ball>&               ball)
+   : mFSM(finiteStateMachine)
+   , mWindow(window)
    , mCamera(camera)
    , mGameObject3DShader(gameObject3DShader)
    , mTable(table)

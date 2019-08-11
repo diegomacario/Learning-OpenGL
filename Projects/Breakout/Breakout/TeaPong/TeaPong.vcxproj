@@ -126,6 +126,7 @@
     <ClCompile Include="src\game_object_3D.cpp" />
     <ClCompile Include="src\glad.c" />
     <ClCompile Include="src\main.cpp" />
+    <ClCompile Include="src\menu_state.cpp" />
     <ClCompile Include="src\mesh.cpp" />
     <ClCompile Include="src\model.cpp" />
     <ClCompile Include="src\model_loader.cpp" />
@@ -150,6 +151,7 @@
     <ClInclude Include="inc\game.h" />
     <ClInclude Include="inc\game_object_2D.h" />
     <ClInclude Include="inc\game_object_3D.h" />
+    <ClInclude Include="inc\menu_state.h" />
     <ClInclude Include="inc\paddle.h" />
     <ClInclude Include="inc\play_state.h" />
     <ClInclude Include="inc\state.h" />

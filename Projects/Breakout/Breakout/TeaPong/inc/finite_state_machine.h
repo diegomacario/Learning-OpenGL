@@ -1,13 +1,16 @@
 #ifndef FINITE_STATE_MACHINE_H
 #define FINITE_STATE_MACHINE_H
 
+#include <unordered_map>
+#include <memory>
+
 #include "state.h"
 
 class FiniteStateMachine
 {
 public:
 
-   FiniteStateMachine(State* initialState);
+   FiniteStateMachine() = default;
    ~FiniteStateMachine() = default;
 
    FiniteStateMachine(const FiniteStateMachine&) = delete;
@@ -16,12 +19,15 @@ public:
    FiniteStateMachine(FiniteStateMachine&&) = delete;
    FiniteStateMachine& operator=(FiniteStateMachine&&) = delete;
 
+   void initialize(std::unordered_map<std::string, std::shared_ptr<State>>&& states,
+                   const std::string&                                        initialStateID);
    void executeCurrentState(float deltaTime) const;
-   void changeState(State* newState);
+   void changeState(const std::string& newStateID);
 
 private:
 
-   State* mCurrentState;
+   std::unordered_map<std::string, std::shared_ptr<State>> mStates;
+   std::shared_ptr<State>                                  mCurrentState;
 };
 
 #endif

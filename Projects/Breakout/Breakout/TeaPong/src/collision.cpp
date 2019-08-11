@@ -2,9 +2,6 @@
 
 #include "collision.h"
 
-// 0) Did they collide?
-// 1) In what direction was the ball moving?
-// 2) Center of circle - closest point on AABB
 bool circleAndAABBCollided(const Ball& circle, const Paddle& AABB, glm::vec2& vecFromCenterOfCircleToPointOfCollision)
 {
    glm::vec2 centerOfCircle(circle.getPosition());

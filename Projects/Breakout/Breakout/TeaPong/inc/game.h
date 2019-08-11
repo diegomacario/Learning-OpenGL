@@ -30,10 +30,9 @@ public:
 
 private:
 
-   std::shared_ptr<Window>             mWindow;
+   std::shared_ptr<FiniteStateMachine> mFSM;
 
-   std::unique_ptr<FiniteStateMachine> mFSM;
-   std::unique_ptr<State>              mPlayState;
+   std::shared_ptr<Window>             mWindow;
 
    std::shared_ptr<Camera>             mCamera;
 
