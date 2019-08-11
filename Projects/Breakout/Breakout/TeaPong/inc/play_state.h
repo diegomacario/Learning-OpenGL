@@ -44,4 +44,6 @@ private:
    std::shared_ptr<Ball>         mBall;
 };
 
+void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision);
+
 #endif

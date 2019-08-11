@@ -16,7 +16,6 @@ Ball::Ball(const std::shared_ptr<Model>& model,
                          velocity)
    , mRadius(radius)
    , mSpinAngularVelocity(spinAngularVelocity)
-   , mSpinAngularVelocityScaledByBounce(spinAngularVelocity)
 {
 
 }
@@ -25,7 +24,6 @@ Ball::Ball(Ball&& rhs) noexcept
    : MovableGameObject3D(std::move(rhs))
    , mRadius(std::exchange(rhs.mRadius, 0.0f))
    , mSpinAngularVelocity(std::exchange(rhs.mSpinAngularVelocity, 0.0f))
-   , mSpinAngularVelocityScaledByBounce(std::exchange(rhs.mSpinAngularVelocityScaledByBounce, 0.0f))
 {
 
 }
@@ -35,7 +33,6 @@ Ball& Ball::operator=(Ball&& rhs) noexcept
    GameObject3D::operator=(std::move(rhs));
    mRadius = std::exchange(rhs.mRadius, 0.0f);
    mSpinAngularVelocity = std::exchange(rhs.mSpinAngularVelocity, 0.0f);
-   mSpinAngularVelocityScaledByBounce = std::exchange(rhs.mSpinAngularVelocityScaledByBounce, 0.0f);
    return *this;
 }
 

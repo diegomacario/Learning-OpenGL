@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "constants.h"
 #include "shader_loader.h"
 #include "texture_loader.h"
 #include "model_loader.h"
@@ -115,9 +116,9 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                   glm::vec3(0.0f),
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
-                                  1.0f,
-                                  glm::vec3(10.0f, 20.0f, 0.0f),
-                                  7.5f,
+                                  1.0f / 3.0f,
+                                  Constants::kInitialBallVelocity,
+                                  2.5f,
                                   1000.0f);
 
    // Initialize the states

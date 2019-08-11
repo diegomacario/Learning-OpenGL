@@ -1,6 +1,6 @@
+#include "constants.h"
+#include "collision.h"
 #include "play_state.h"
-
-bool circleAndAABBCollided(const Ball& circle, const Paddle& AABB);
 
 PlayState::PlayState(const std::shared_ptr<Window>&       window,
                      const std::shared_ptr<Camera>&       camera,
@@ -76,30 +76,15 @@ void PlayState::update(float deltaTime)
    // TODO: Get the dimensions from the table
    mBall->moveWithinArea(deltaTime, 100.0f, 60.0f);
 
-   // TODO: Perform collision detection here
-   if (circleAndAABBCollided(*mBall, *mLeftPaddle))
+   glm::vec2 vecFromCenterOfCircleToPointOfCollision;
+
+   if (circleAndAABBCollided(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision))
    {
-      // Check where it hit the board, and change velocity based on where it hit the board
-      //GLfloat distanceBetweenCenters          = mBall->getPosition().y - mLeftPaddle->getPosition().y;
-      //GLfloat distanceBetweenCentersInPercent = distanceBetweenCenters / (mLeftPaddle->getHeight() / 2.0f);
-
-      // Then move accordingly
-      //glm::vec2 oldVelocity = Ball->Velocity;
-
-      //Ball->Velocity.x = INITIAL_BALL_VELOCITY.x * percentage;
-      //Ball->Velocity.y = -Ball->Velocity.y;
-
-      // Keep speed consistent over both axes (multiply by length of old velocity, so total strength is not changed)
-      //Ball->Velocity = glm::normalize(Ball->Velocity) * glm::length(oldVelocity);
-      // Fix sticky paddle
-      //Ball->Velocity.y = -1 * abs(Ball->Velocity.y);
-      glm::vec3 ballVelocity = mBall->getVelocity();
-      mBall->setVelocity(glm::vec3(-ballVelocity.x, ballVelocity.y, ballVelocity.z));
+      resolveCollisionBetweenBallAndPaddle(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision);
    }
-   else if (circleAndAABBCollided(*mBall, *mRightPaddle))
+   else if (circleAndAABBCollided(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision))
    {
-      glm::vec3 ballVelocity = mBall->getVelocity();
-      mBall->setVelocity(glm::vec3(-ballVelocity.x, ballVelocity.y, ballVelocity.z));
+      resolveCollisionBetweenBallAndPaddle(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision);
    }
 
    // TODO: Check if we have a winner here
@@ -127,32 +112,86 @@ void PlayState::render()
    glEnable(GL_CULL_FACE);
 }
 
-bool circleAndAABBCollided(const Ball& circle, const Paddle& AABB)
+void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision)
 {
-   glm::vec2 centerOfCircle(circle.getPosition());
+   glm::vec3 currVelocity = ball.getVelocity();
+   glm::vec3 currPos      = ball.getPosition();
 
-   glm::vec2 centerOfAABB(AABB.getPosition());
-   glm::vec2 halfExtentsOfAABB(AABB.getWidth() / 2, AABB.getHeight() / 2);
+   CollisionDirection collisionDirection = determineDirectionOfCollisionBetweenCircleAndAABB(vecFromCenterOfCircleToPointOfCollision);
 
-   // Calculate the difference vector between both centers and clamp it to the AABB's half-extents
-   glm::vec2 diff = centerOfCircle - centerOfAABB;
-   glm::vec2 clampedDiff = glm::clamp(diff, -halfExtentsOfAABB, halfExtentsOfAABB);
-
-   // Add the clamped difference vector to the AABB's center to get the point on the AABB's edge that is closest to the center of the circle
-   glm::vec2 closest = centerOfAABB + clampedDiff;
-
-   // Calculate the difference vector between the center of the circle and the closest point on the AABB's edge
-   diff = closest - centerOfCircle;
-
-   // Check if the distance between the center of the circle and the closest point on the AABB's edge is smaller than the radius of the circle, which would indicate a collision
-   // Note that the check is not <= because in that case, a collision would also occur when the circle and the AABB are exactly touching each other,
-   // which is the state in which we leave the circle and the AABB after they collide
-   if (glm::length(diff) < circle.getRadius())
+   if (collisionDirection == CollisionDirection::Left || collisionDirection == CollisionDirection::Right)
    {
-      return true;
+      // Horizontal collision
+
+      // The direction in which the ball bounces off of the paddle depends on the distance between the point where it hits the paddle and the center of the paddle
+      // If it hits the center of the paddle, it bounces off completely horizontally
+      // If it hits either end of the paddle, it bounces off with the maximum possible angle
+      // Note that the speed of the ball is always the same; only its direction changes
+
+      GLfloat distanceBetweenCenters              = ball.getPosition().y - paddle.getPosition().y;
+      GLfloat distanceFromCenterOfPaddleInPercent = distanceBetweenCenters / (paddle.getHeight() / 2.0f);
+
+      float currSpeed = glm::length(currVelocity);
+      currVelocity.x  = -currVelocity.x;
+      currVelocity.y  = Constants::kInitialBallVelocity.y * distanceFromCenterOfPaddleInPercent;
+      currVelocity    = glm::normalize(currVelocity) * currSpeed;
+
+      float horizontalPenetration = ball.getRadius() - std::abs(vecFromCenterOfCircleToPointOfCollision.x);
+
+      if (collisionDirection == CollisionDirection::Left)
+      {
+         // Make sure the ball is moving to the right
+         if (currVelocity.x < 0.0f)
+         {
+            currVelocity.x = -1 * currVelocity.x;
+         }
+
+         // Move the ball to the right so that it doesn't overlap with the paddle
+         currPos.x += horizontalPenetration;
+      }
+      else // CollisionDirection::Right
+      {
+         // Make sure the ball is moving to the left
+         if (currVelocity.x > 0.0f)
+         {
+            currVelocity.x = -1 * currVelocity.x;
+         }
+
+         // Move the ball to the left so that it doesn't overlap with the paddle
+         currPos.x -= horizontalPenetration;
+      }
    }
    else
    {
-      return false;
+      // Vertical collision
+      currVelocity.y = -currVelocity.y;
+
+      float verticalPenetration = ball.getRadius() - std::abs(vecFromCenterOfCircleToPointOfCollision.y);
+
+      if (collisionDirection == CollisionDirection::Up)
+      {
+         // Make sure the ball is moving downwards
+         if (currVelocity.y > 0.0f)
+         {
+            currVelocity.y = -1 * currVelocity.y;
+         }
+
+         // Move the ball downwards so that it doesn't overlap with the paddle
+         currPos.y -= verticalPenetration;
+      }
+      else // CollisionDirection::Down
+      {
+         // Make sure the ball is moving upwards
+         if (currVelocity.y < 0.0f)
+         {
+            currVelocity.y = -1 * currVelocity.y;
+         }
+
+         // Move the ball upwards so that it doesn't overlap with the paddle
+         currPos.y += verticalPenetration;
+      }
    }
+
+   ball.setVelocity(currVelocity);
+   ball.setPosition(currPos);
 }
