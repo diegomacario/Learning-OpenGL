@@ -42,11 +42,24 @@ void MenuState::processInput(float deltaTime)
 {
    // Close the game
    if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
+
+   // Move the camera
+   if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(Camera::MovementDirection::Forward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_S))      { mCamera->processKeyboardInput(Camera::MovementDirection::Backward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_A))      { mCamera->processKeyboardInput(Camera::MovementDirection::Left, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_D))      { mCamera->processKeyboardInput(Camera::MovementDirection::Right, deltaTime); }
+
+   // Orient the camera
+   if (mWindow->mouseMoved())
+   {
+      mCamera->processMouseMovement(mWindow->getCursorXOffset(), mWindow->getCursorYOffset());
+      mWindow->resetMouseMoved();
+   }
 }
 
 void MenuState::update(float deltaTime)
 {
-   mFSM->changeState("play");
+
 }
 
 void MenuState::render()

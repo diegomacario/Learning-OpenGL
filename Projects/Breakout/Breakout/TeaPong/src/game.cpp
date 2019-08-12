@@ -43,15 +43,15 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    // Initialize the camera
    GLfloat aspectRatio = static_cast<GLfloat>(mWindow->getWidthInPix()) / static_cast<GLfloat>(mWindow->getHeightInPix());
 
-   mCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 95.0f), // Position
-                                      glm::vec3(0.0f, 1.0f, 0.0f),  // World up
-                                      0.0f,                         // Yaw
-                                      0.0f,                         // Pitch
+   mCamera = std::make_shared<Camera>(Constants::MenuStateConstants::kInitialCameraPosition,
+                                      Constants::MenuStateConstants::kInitialCameraWorldUp,
+                                      Constants::MenuStateConstants::kInitialCameraYaw,
+                                      Constants::MenuStateConstants::kInitialCameraPitch,
                                       45.0f,                        // Fovy
                                       aspectRatio,                  // Aspect ratio
                                       0.1f,                         // Near
                                       120.0f,                       // Far
-                                      10.0f,                        // Movement speed
+                                      20.0f,                        // Movement speed
                                       0.1f);                        // Mouse sensitivity
 
    // Initialize the 2D renderer
@@ -118,7 +118,7 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                   glm::vec3(1.0f, 0.0f, 0.0f),
                                   1.0f / 3.0f,
                                   Constants::kInitialBallVelocity,
-                                  2.5f,
+                                  Constants::MenuStateConstants::kTeapotRadius,
                                   1000.0f);
 
    // Create the FSM
