@@ -43,10 +43,10 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
    // Initialize the camera
    GLfloat aspectRatio = static_cast<GLfloat>(mWindow->getWidthInPix()) / static_cast<GLfloat>(mWindow->getHeightInPix());
 
-   mCamera = std::make_shared<Camera>(Constants::MenuStateConstants::kInitialCameraPosition,
-                                      Constants::MenuStateConstants::kInitialCameraWorldUp,
-                                      Constants::MenuStateConstants::kInitialCameraYaw,
-                                      Constants::MenuStateConstants::kInitialCameraPitch,
+   mCamera = std::make_shared<Camera>(glm::vec3(0.0f, 0.0f, 95.0f),
+                                      glm::vec3(0.0f, 1.0f, 0.0f),
+                                      0.0f,
+                                      0.0f,
                                       45.0f,                        // Fovy
                                       aspectRatio,                  // Aspect ratio
                                       0.1f,                         // Near
@@ -76,11 +76,12 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                                                     "shaders/game_object_3D.fs");
    gameObj3DShader->use();
    gameObj3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-   gameObj3DShader->setVec3("pointLights[0].worldPos", glm::vec3(40.0f, 30.0f, 80.0f));
+   gameObj3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
    gameObj3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
    gameObj3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
    gameObj3DShader->setFloat("pointLights[0].linearAtt", 0.01f);
    gameObj3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
+
    gameObj3DShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
@@ -116,9 +117,10 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
                                   glm::vec3(0.0f),
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
-                                  1.0f / 3.0f,
+                                  1.0f,
+                                  //1.0f / 3.0f,
                                   Constants::kInitialBallVelocity,
-                                  Constants::MenuStateConstants::kTeapotRadius,
+                                  2.5f,
                                   1000.0f);
 
    // Create the FSM
@@ -138,7 +140,6 @@ bool Game::initialize(GLuint widthInPix, GLuint heightInPix, const std::string& 
 
    mStates["menu"] = std::make_shared<MenuState>(mFSM,
                                                  mWindow,
-                                                 mCamera,
                                                  gameObj3DShader,
                                                  mTable,
                                                  mLeftPaddle,
