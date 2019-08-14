@@ -45,6 +45,7 @@ private:
 
    glm::vec3 mCameraPosition;
    glm::vec3 mCameraTarget;
+   glm::vec3 mCameraUp;
    float     mCameraOrbitalAngularVelocity;
    float     mCameraAngularPositionWRTNegativeYAxisInDeg;
 
@@ -56,6 +57,13 @@ private:
    float mSpeedOfRotationAroundPositiveZAxis;
    float mSpeedOfRotationAroundCameraRight;
    float mSpeedOfMovementAwayFromTarget;
+
+   float mRemainingDegreesAroundPositiveZAxis;
+   float mRemainingDegreesAroundCameraRight;
+   float mRemainingLengthToTravel;
+
+   bool mDoneAroundZ = false;
+   bool mDoneAroundRight = false;
 };
 
 #endif

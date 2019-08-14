@@ -63,30 +63,82 @@ void MenuState::update(float deltaTime)
 {
    if (mTransitionToPlayState)
    {
-      glm::vec3 vecFromCameraPositionToCameraTarget        = glm::normalize(mCameraTarget - mCameraPosition);
-      glm::vec3 cameraRight                                = glm::normalize(glm::cross(glm::vec3(0.0f, 0.0f, 1.0f), vecFromCameraPositionToCameraTarget)); // Want to rotate CCWISE around this vector to get to the top
-      float     cameraAngularPositionWRTPositiveZAxisInDeg = glm::degrees(glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), -vecFromCameraPositionToCameraTarget)));
-      float     distanceFromCameraPositionToCameraTarget   = glm::length(mCameraTarget - mCameraPosition);
-
       if (mFirstIterationOfTransitionToPlayState)
       {
-         mSpeedOfRotationAroundPositiveZAxis    = -(360.0f - mCameraAngularPositionWRTNegativeYAxisInDeg) / 7.5;
-         mSpeedOfRotationAroundCameraRight      = cameraAngularPositionWRTPositiveZAxisInDeg / 7.5;
-         mSpeedOfMovementAwayFromTarget         = (90.5f - distanceFromCameraPositionToCameraTarget) / 7.5;
+         mCameraUp = glm::vec3(0.0, 0.0, 1.0f);
+
+         float cameraAngularPositionWRTPositiveZAxisInDeg = glm::degrees(glm::acos(glm::dot(glm::vec3(0.0f, 0.0f, 1.0f), -glm::normalize(mCameraTarget - mCameraPosition))));
+         float distanceFromCameraPositionToCameraTarget   = glm::length(mCameraTarget - mCameraPosition);
+
+         mRemainingDegreesAroundPositiveZAxis = 360.0f - mCameraAngularPositionWRTNegativeYAxisInDeg;
+         mRemainingDegreesAroundCameraRight = cameraAngularPositionWRTPositiveZAxisInDeg;
+         mRemainingLengthToTravel = 90.5f - distanceFromCameraPositionToCameraTarget;
+
+         mSpeedOfRotationAroundPositiveZAxis    = -mRemainingDegreesAroundPositiveZAxis / 7.5f;
+         mSpeedOfRotationAroundCameraRight      = mRemainingDegreesAroundCameraRight / 7.5f;
+         mSpeedOfMovementAwayFromTarget         = mRemainingLengthToTravel / 7.5f;
          mFirstIterationOfTransitionToPlayState = false;
       }
 
-      glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mSpeedOfRotationAroundPositiveZAxis * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
-      rotationMatrix = glm::rotate(rotationMatrix, glm::radians(mSpeedOfRotationAroundCameraRight * deltaTime), cameraRight);
+      glm::vec3 vecFromCameraPositionToCameraTarget = glm::normalize(mCameraTarget - mCameraPosition);
+      glm::vec3 cameraRight                         = glm::normalize(glm::cross(mCameraUp, vecFromCameraPositionToCameraTarget)); // Want to rotate CCWISE around this vector to get to the top
+      mCameraUp                                     = glm::normalize(glm::cross(vecFromCameraPositionToCameraTarget, cameraRight));
 
-      mCameraPosition = glm::mat3(rotationMatrix) * mCameraPosition;
+      float degsToMove;
+      degsToMove = std::abs(mSpeedOfRotationAroundPositiveZAxis * deltaTime);
+      glm::mat4 rotationMatrixAroundPositiveZAxis;
+      if (mDoneAroundZ)
+      {
+         std::cout << "2here pos z = " << mRemainingDegreesAroundPositiveZAxis << '\n';
+         rotationMatrixAroundPositiveZAxis = glm::mat4(1.0f);
+      }
+      else if (mRemainingDegreesAroundPositiveZAxis - degsToMove < 0.0f)
+      {
+         std::cout << "1here pos z = " << mRemainingDegreesAroundPositiveZAxis << '\n';
+         rotationMatrixAroundPositiveZAxis = glm::rotate(glm::mat4(1.0f), glm::radians(-mRemainingDegreesAroundPositiveZAxis), glm::vec3(0.0f, 0.0f, 1.0f));
+         mRemainingDegreesAroundPositiveZAxis = 0.0f;
+         mDoneAroundZ = true;
+      }
+      else
+      {
+         rotationMatrixAroundPositiveZAxis = glm::rotate(glm::mat4(1.0f), glm::radians(-degsToMove), glm::vec3(0.0f, 0.0f, 1.0f));
+         mRemainingDegreesAroundPositiveZAxis -= degsToMove;
+      }
+
+      // The math is exploding here
+      degsToMove = std::abs(mSpeedOfRotationAroundCameraRight * deltaTime);
+      glm::mat4 rotationMatrixAroundCameraRight;
+      //if (mRemainingDegreesAroundCameraRight == 0.0f)
+      if (mDoneAroundRight)
+      {
+         std::cout << "2here cam r = " << mRemainingDegreesAroundCameraRight << '\n';
+         rotationMatrixAroundCameraRight = glm::mat4(1.0f);
+      }
+      //else if (mRemainingDegreesAroundCameraRight - degsToMove < 0.0f)
+      else if (mRemainingDegreesAroundCameraRight < 10.0f)
+      {
+         std::cout << "1here cam r = " << mRemainingDegreesAroundCameraRight << '\n';
+         //rotationMatrixAroundCameraRight = glm::rotate(glm::mat4(1.0f), glm::radians(mRemainingDegreesAroundCameraRight), cameraRight);
+         rotationMatrixAroundCameraRight = glm::mat4(1.0f);
+         mRemainingDegreesAroundCameraRight = 0.0f;
+         mDoneAroundRight = true;
+      }
+      else
+      {
+         rotationMatrixAroundCameraRight = glm::rotate(glm::mat4(1.0f), glm::radians(degsToMove), cameraRight);
+         mRemainingDegreesAroundCameraRight -= degsToMove;
+      }
+
+      mCameraUp = glm::normalize(glm::mat3(rotationMatrixAroundCameraRight) * glm::mat3(rotationMatrixAroundPositiveZAxis) * mCameraUp);
+      mCameraPosition = glm::mat3(rotationMatrixAroundCameraRight) * glm::mat3(rotationMatrixAroundPositiveZAxis) * mCameraPosition;
       mCameraPosition += -vecFromCameraPositionToCameraTarget * (mSpeedOfMovementAwayFromTarget * deltaTime);
 
-      std::cout << "timeSinceStartOfTransition = " << glfwGetTime() - mStartTimeOfTransition << '\n';
-
-      //if (mCameraPosition.z > 94.0f && mCameraPosition.z < 96.0f)
-      if (glfwGetTime() - mStartTimeOfTransition >= 7.3f)
+      //if (mRemainingDegreesAroundPositiveZAxis == 0.0f && mRemainingDegreesAroundCameraRight == 0.0f)
+      if (mDoneAroundZ && mDoneAroundRight)
       {
+         std::cout << "mRemainingDegreesAroundPositiveZAxis = " << mRemainingDegreesAroundPositiveZAxis << '\n';
+         std::cout << "mRemainingDegreesAroundCameraRight = " << mRemainingDegreesAroundCameraRight << '\n';
+         std::cout << "mRemainingLengthToTravel = " << mRemainingLengthToTravel << '\n';
          mFSM->changeState("play");
       }
    }

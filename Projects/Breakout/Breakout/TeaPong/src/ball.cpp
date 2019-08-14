@@ -16,6 +16,7 @@ Ball::Ball(const std::shared_ptr<Model>& model,
                          velocity)
    , mRadius(radius)
    , mSpinAngularVelocity(spinAngularVelocity)
+   , mSpinAngularVelocityScaledByBounce(spinAngularVelocity)
 {
 
 }
