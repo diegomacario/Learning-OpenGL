@@ -43,27 +43,27 @@ private:
    std::shared_ptr<Paddle>             mRightPaddle;
    std::shared_ptr<Ball>               mBall;
 
-   glm::vec3 mCameraPosition;
-   glm::vec3 mCameraTarget;
-   glm::vec3 mCameraUp;
-   float     mCameraOrbitalAngularVelocity;
-   float     mCameraAngularPositionWRTNegativeYAxisInDeg;
+   glm::vec3                           mCameraPosition;
+   glm::vec3                           mCameraTarget;
+   glm::vec3                           mCameraUp;
+   float                               mCameraOrbitalAngularVelocity;
 
-   bool   mTransitionToPlayState;
-   bool   mFirstIterationOfTransitionToPlayState;
+   bool                                mTransitionToPlayState;
+   bool                                mFirstIterationOfTransitionToPlayState;
 
-   double mStartTimeOfTransition;
+   float                               mCameraAngularPosWRTNegYAxisInDeg;
 
-   float mSpeedOfRotationAroundPositiveZAxis;
-   float mSpeedOfRotationAroundCameraRight;
-   float mSpeedOfMovementAwayFromTarget;
+   float                               mRemainingDegAroundPosZAxis;
+   float                               mRemainingDegAroundCameraRight;
+   float                               mRemainingLengthToTravel;
 
-   float mRemainingDegreesAroundPositiveZAxis;
-   float mRemainingDegreesAroundCameraRight;
-   float mRemainingLengthToTravel;
+   float                               mSpeedOfRotAroundPosZAxis;
+   float                               mSpeedOfRotAroundCameraRight;
+   float                               mSpeedOfMovementAwayFromTarget;
 
-   bool mDoneAroundZ = false;
-   bool mDoneAroundRight = false;
+   bool                                mDoneAroundZ     = false;
+   bool                                mDoneAroundRight = false;
+   bool                                mDoneMovingAway  = false;
 };
 
 #endif
