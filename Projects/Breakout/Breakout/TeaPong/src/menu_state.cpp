@@ -69,7 +69,7 @@ void MenuState::update(float deltaTime)
 
          mRemainingDegAroundPosZAxis                    = 360.0f - mCameraAngularPosWRTNegYAxisInDeg;
          mRemainingDegAroundCameraRight                 = cameraAngularPosWRTPosZAxisInDeg;
-         mRemainingLengthToTravel                       = 95.0f - distanceFromCameraPositionToCameraTarget;
+         mRemainingLengthToTravel                       = 90.0f - distanceFromCameraPositionToCameraTarget;
 
          mSpeedOfRotAroundPosZAxis                      = -mRemainingDegAroundPosZAxis / 10.0f;
          mSpeedOfRotAroundCameraRight                   = mRemainingDegAroundCameraRight / 10.0f;
@@ -129,18 +129,25 @@ void MenuState::update(float deltaTime)
       mCameraUp        = glm::normalize(glm::mat3(rotationMatrixAroundCameraRight) * glm::mat3(rotationMatrixAroundPositiveZAxis) * mCameraUp);
       mCameraPosition  = glm::mat3(rotationMatrixAroundCameraRight) * glm::mat3(rotationMatrixAroundPositiveZAxis) * mCameraPosition;
 
-      futureCameraPos = mCameraPosition + glm::normalize(mCameraPosition - mCameraTarget) * (mSpeedOfMovementAwayFromTarget * deltaTime);
-      if (glm::length(futureCameraPos - mCameraTarget) > 95.0f)
+      if (mDoneAroundRight)
       {
-         mCameraPosition += glm::normalize(mCameraPosition - mCameraTarget) * (95.0f - glm::length(mCameraPosition - mCameraTarget));
+         mCameraPosition = glm::vec3(0.0f, 0.0f, mCameraPosition.z);
+      }
+
+      futureCameraPos = mCameraPosition + glm::normalize(mCameraPosition - mCameraTarget) * (mSpeedOfMovementAwayFromTarget * deltaTime);
+      if (mDoneMovingAway)
+      {
+         // Do nothing
+      }
+      else if (glm::length(futureCameraPos - mCameraTarget) > 90.0f)
+      {
+         mCameraPosition += glm::normalize(mCameraPosition - mCameraTarget) * (90.0f - glm::length(mCameraPosition - mCameraTarget));
          mDoneMovingAway = true;
       }
       else
       {
          mCameraPosition += glm::normalize(mCameraPosition - mCameraTarget) * (mSpeedOfMovementAwayFromTarget * deltaTime);
       }
-
-      std::cout << "len = " << glm::length(mCameraPosition - mCameraTarget) << '\n';
 
       if (!mDoneAroundRight)
       {
@@ -151,24 +158,23 @@ void MenuState::update(float deltaTime)
          mRemainingDegAroundCameraRight = 0.0f;
       }
 
+      std::cout << "camera.x = " << mCameraPosition.x << '\n';
+      std::cout << "camera.y = " << mCameraPosition.y << '\n';
+      std::cout << "camera.z = " << mCameraPosition.z << '\n' << '\n';
+
       if (mDoneAroundZ)
       {
-         std::cout << "mDoneAroundZ = " << '\n';
-         std::cout << "camera.x = " << mCameraPosition.x << '\n';
-         std::cout << "camera.y = " << mCameraPosition.y << '\n';
-         std::cout << "camera.z = " << mCameraPosition.z << '\n';
+         std::cout << "**************************************************** mDoneAroundZ = " << '\n';
       }
 
       if (mDoneAroundRight)
       {
-         std::cout << "mDoneAroundRight = " << '\n';
-         std::cout << "camera.x = " << mCameraPosition.x << '\n';
-         std::cout << "camera.y = " << mCameraPosition.y << '\n';
-         std::cout << "camera.z = " << mCameraPosition.z << '\n';
+         std::cout << "**************************************************** mDoneAroundRight = " << '\n';
       }
 
       if (mDoneAroundZ && mDoneAroundRight && mDoneMovingAway)
       {
+         std::cout << "Final pos = " << '\n';
          std::cout << "camera.x = " << mCameraPosition.x << '\n';
          std::cout << "camera.y = " << mCameraPosition.y << '\n';
          std::cout << "camera.z = " << mCameraPosition.z << '\n';
