@@ -32,6 +32,8 @@ private:
    void update(float deltaTime);
    void render();
 
+   void updateCoordinateFrameOfCamera();
+
    std::shared_ptr<FiniteStateMachine> mFSM;
 
    std::shared_ptr<Window>             mWindow;
@@ -46,24 +48,22 @@ private:
    glm::vec3                           mCameraPosition;
    glm::vec3                           mCameraTarget;
    glm::vec3                           mCameraUp;
-   float                               mCameraOrbitalAngularVelocity;
+   glm::vec3                           mCameraRight;
+   float                               mCameraIdleOrbitalAngularVelocity;
 
    bool                                mTransitionToPlayState;
    bool                                mFirstIterationOfTransitionToPlayState;
 
-   float                               mCameraAngularPosWRTNegYAxisInDeg;
-
-   float                               mRemainingDegAroundPosZAxis;
-   float                               mRemainingDegAroundCameraRight;
-   float                               mRemainingLengthToTravel;
-
-   float                               mSpeedOfRotAroundPosZAxis;
-   float                               mSpeedOfRotAroundCameraRight;
+   float                               mHorizontalSpeedOfRotation;
+   float                               mVerticalSpeedOfRotation;
    float                               mSpeedOfMovementAwayFromTarget;
 
-   bool                                mDoneAroundZ     = false;
-   bool                                mDoneAroundRight = false;
-   bool                                mDoneMovingAway  = false;
+   float                               mDoneRotatingHorizontally;
+   float                               mDoneRotatingVertically;
+   float                               mDoneMovingAwayFromTarget;
 };
+
+float calculateCCWAngularPosWRTNegYAxisInDeg(const glm::vec3& point);
+float calculateAngularPosWRTPosZAxisInDeg(const glm::vec3& point);
 
 #endif
