@@ -10,10 +10,10 @@
 std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFilePath,
                                                    const std::string& fShaderFilePath) const
 {
-   GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
-   GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
+   unsigned int vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
+   unsigned int fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
 
-   GLuint shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID);
+   unsigned int shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID);
 
    glDetachShader(shaderProgID, vShaderID);
    glDetachShader(shaderProgID, fShaderID);
@@ -28,11 +28,11 @@ std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFil
                                                    const std::string& fShaderFilePath,
                                                    const std::string& gShaderFilePath) const
 {
-   GLuint vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
-   GLuint fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
-   GLuint gShaderID = createAndCompileShader(gShaderFilePath, GL_GEOMETRY_SHADER);
+   unsigned int vShaderID = createAndCompileShader(vShaderFilePath, GL_VERTEX_SHADER);
+   unsigned int fShaderID = createAndCompileShader(fShaderFilePath, GL_FRAGMENT_SHADER);
+   unsigned int gShaderID = createAndCompileShader(gShaderFilePath, GL_GEOMETRY_SHADER);
 
-   GLuint shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID, gShaderID);
+   unsigned int shaderProgID = createAndLinkShaderProgram(vShaderID, fShaderID, gShaderID);
 
    glDetachShader(shaderProgID, vShaderID);
    glDetachShader(shaderProgID, fShaderID);
@@ -45,7 +45,7 @@ std::shared_ptr<Shader> ShaderLoader::loadResource(const std::string& vShaderFil
    return std::make_shared<Shader>(shaderProgID);
 }
 
-GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const
+unsigned int ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const
 {
    std::ifstream shaderFile(shaderFilePath);
 
@@ -59,7 +59,7 @@ GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, G
       shaderFile.close();
 
       // Create and compile the shader
-      GLuint shaderID = glCreateShader(shaderType);
+      unsigned int shaderID = glCreateShader(shaderType);
       const char* shaderCodeCStr = shaderCodeStr.c_str();
       glShaderSource(shaderID, 1, &shaderCodeCStr, nullptr);
       glCompileShader(shaderID);
@@ -73,9 +73,9 @@ GLuint ShaderLoader::createAndCompileShader(const std::string& shaderFilePath, G
    }
 }
 
-GLuint ShaderLoader::createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID) const
+unsigned int ShaderLoader::createAndLinkShaderProgram(unsigned int vShaderID, unsigned int fShaderID) const
 {
-   GLuint shaderProgID = glCreateProgram();
+   unsigned int shaderProgID = glCreateProgram();
 
    glAttachShader(shaderProgID, vShaderID);
    glAttachShader(shaderProgID, fShaderID);
@@ -86,9 +86,9 @@ GLuint ShaderLoader::createAndLinkShaderProgram(GLuint vShaderID, GLuint fShader
    return shaderProgID;
 }
 
-GLuint ShaderLoader::createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID, GLuint gShaderID) const
+unsigned int ShaderLoader::createAndLinkShaderProgram(unsigned int vShaderID, unsigned int fShaderID, unsigned int gShaderID) const
 {
-   GLuint shaderProgID = glCreateProgram();
+   unsigned int shaderProgID = glCreateProgram();
 
    glAttachShader(shaderProgID, vShaderID);
    glAttachShader(shaderProgID, fShaderID);
@@ -100,34 +100,34 @@ GLuint ShaderLoader::createAndLinkShaderProgram(GLuint vShaderID, GLuint fShader
    return shaderProgID;
 }
 
-void ShaderLoader::checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const
+void ShaderLoader::checkForCompilationErrors(unsigned int shaderID, GLenum shaderType, const std::string& shaderFilePath) const
 {
-   GLint success;
+   int success;
    glGetShaderiv(shaderID, GL_COMPILE_STATUS, &success);
 
    if (!success)
    {
-      GLint infoLogLength = 0;
+      int infoLogLength = 0;
       glGetShaderiv(shaderID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-      std::vector<GLchar> infoLog(infoLogLength);
+      std::vector<char> infoLog(infoLogLength);
       glGetShaderInfoLog(shaderID, infoLogLength, nullptr, &infoLog[0]);
 
       std::cout << "Error - ShaderLoader::checkForCompilationErrors - The error below occurred while compiling this shader: " << shaderFilePath << "\n" << infoLog.data() << "\n";
    }
 }
 
-void ShaderLoader::checkForLinkingErrors(GLuint shaderProgID) const
+void ShaderLoader::checkForLinkingErrors(unsigned int shaderProgID) const
 {
-   GLint success;
+   int success;
    glGetProgramiv(shaderProgID, GL_LINK_STATUS, &success);
 
    if (!success)
    {
-      GLint infoLogLength = 0;
+      int infoLogLength = 0;
       glGetProgramiv(shaderProgID, GL_INFO_LOG_LENGTH, &infoLogLength);
 
-      std::vector<GLchar> infoLog(infoLogLength);
+      std::vector<char> infoLog(infoLogLength);
       glGetProgramInfoLog(shaderProgID, infoLogLength, nullptr, &infoLog[0]);
 
       std::cout << "Error - ShaderLoader::checkForLinkingErrors - The following error occurred while linking a shader program:\n" << infoLog.data() << "\n";

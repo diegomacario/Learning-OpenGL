@@ -27,11 +27,11 @@ public:
 
 private:
 
-   GLuint createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const;
-   GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID) const;
-   GLuint createAndLinkShaderProgram(GLuint vShaderID, GLuint fShaderID, GLuint gShaderID) const;
-   void   checkForCompilationErrors(GLuint shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
-   void   checkForLinkingErrors(GLuint shaderProgID) const;
+   unsigned int            createAndCompileShader(const std::string& shaderFilePath, GLenum shaderType) const;
+   unsigned int            createAndLinkShaderProgram(unsigned int vShaderID, unsigned int fShaderID) const;
+   unsigned int            createAndLinkShaderProgram(unsigned int vShaderID, unsigned int fShaderID, unsigned int gShaderID) const;
+   void                    checkForCompilationErrors(unsigned int shaderID, GLenum shaderType, const std::string& shaderFilePath) const;
+   void                    checkForLinkingErrors(unsigned int shaderProgID) const;
 };
 
 #endif

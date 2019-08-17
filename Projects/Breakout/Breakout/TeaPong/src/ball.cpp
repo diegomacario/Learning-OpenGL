@@ -92,7 +92,7 @@ void Ball::moveWithinArea(float deltaTime, float areaWidth, float areaHeight)
       // This value ranges from 0 to 1
       // It is equal to 0 when the two vectors are perpendicular (tangent collision)
       // It is equal to 1 when the two vectors are parallel (direct collision)
-      float dotProduct = std::abs(glm::dot(glm::normalize(incidentVelocity), normalOfCrossedBoundary));
+      float dotProduct = glm::abs(glm::dot(glm::normalize(incidentVelocity), normalOfCrossedBoundary));
 
       // The ball spins with its maximum angular velocity when a tangent collision occurs
       // The ball spins with its minimum angular velocity, that is, it doesn't spin, when a direct collision occurs

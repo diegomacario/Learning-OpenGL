@@ -66,7 +66,7 @@ void Renderer2D::configureVAO()
    */
 
                                           // Pos      // Tex coords
-   std::array<GLfloat, 24> vertices    = {0.0f, 1.0f, 0.0f, 1.0f,  // A
+   std::array<float, 24> vertices      = {0.0f, 1.0f, 0.0f, 1.0f,  // A
                                           1.0f, 0.0f, 1.0f, 0.0f,  // B
                                           0.0f, 0.0f, 0.0f, 0.0f,  // C
                                           1.0f, 1.0f, 1.0f, 1.0f}; // D
@@ -74,7 +74,7 @@ void Renderer2D::configureVAO()
    std::array<unsigned int, 6> indices = {0, 1, 2,  // Triangle 1
                                           0, 3, 1}; // Triangle 2
 
-   GLuint VBO, EBO;
+   unsigned int VBO, EBO;
 
    glGenVertexArrays(1, &mVAO);
    glGenBuffers(1, &VBO);
@@ -86,7 +86,7 @@ void Renderer2D::configureVAO()
 
    // Positions and texture coordinates
    glBindBuffer(GL_ARRAY_BUFFER, VBO);
-   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(GLfloat), &vertices[0], GL_STATIC_DRAW);
+   glBufferData(GL_ARRAY_BUFFER, vertices.size() * sizeof(float), &vertices[0], GL_STATIC_DRAW);
    // Indices
    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
    glBufferData(GL_ELEMENT_ARRAY_BUFFER, indices.size() * sizeof(unsigned int), &indices[0], GL_STATIC_DRAW);
@@ -95,7 +95,7 @@ void Renderer2D::configureVAO()
 
    // Positions and texture coordinates
    glEnableVertexAttribArray(0);
-   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(GLfloat), (void*)0);
+   glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 4 * sizeof(float), (void*)0);
 
    glBindVertexArray(0);
    glDeleteBuffers(1, &VBO);

@@ -45,7 +45,7 @@ void Mesh::render(const Shader& shader) const
 
 void Mesh::configureVAO(const std::vector<Vertex>& vertices, const std::vector<unsigned int>& indices)
 {
-   GLuint VBO, EBO;
+   unsigned int VBO, EBO;
 
    glGenVertexArrays(1, &mVAO);
    glGenBuffers(1, &VBO);
@@ -86,7 +86,7 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
    for (unsigned int i = 0; i < mMaterial.textures.size(); ++i)
    {
       // Get the location of the sampler2D uniform that should exist in the shader
-      GLint uniformLoc = glGetUniformLocation(shader.getID(), mMaterial.textures[i].uniformName.c_str());
+      int uniformLoc = glGetUniformLocation(shader.getID(), mMaterial.textures[i].uniformName.c_str());
 
       if (uniformLoc != -1)
       {

@@ -2,7 +2,7 @@
 
 #include "texture.h"
 
-Texture::Texture(GLuint texID)
+Texture::Texture(unsigned int texID)
    : mTexID(texID)
 {
 

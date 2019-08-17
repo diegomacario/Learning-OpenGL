@@ -41,10 +41,10 @@ CollisionDirection determineDirectionOfCollisionBetweenCircleAndAABB(const glm::
 
    glm::vec2 normalizedVecFromCenterOfCircleToPointOfCollision = glm::normalize(vecFromCenterOfCircleToPointOfCollision);
 
-   GLfloat dotProduct                = 0.0f;
-   GLfloat maxDotProduct             = 0.0f;
-   GLuint  closestCollisionDirection = -1;
-   for (GLuint i = 0; i < 4; i++)
+   float        dotProduct                = 0.0f;
+   float        maxDotProduct             = 0.0f;
+   unsigned int closestCollisionDirection = -1;
+   for (unsigned int i = 0; i < 4; i++)
    {
       dotProduct = glm::dot(normalizedVecFromCenterOfCircleToPointOfCollision, collisionDirections[i]);
       if (dotProduct > maxDotProduct)

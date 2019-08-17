@@ -189,9 +189,9 @@ private:
    void setMaterialTextureAvailabilities(const Shader& shader) const;
    void setMaterialConstants(const Shader& shader) const;
 
-   GLsizei  mNumIndices;
-   Material mMaterial;
-   GLuint   mVAO;
+   unsigned int mNumIndices;
+   Material     mMaterial;
+   unsigned int mVAO;
 };
 
 #endif

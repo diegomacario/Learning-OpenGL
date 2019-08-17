@@ -2,7 +2,7 @@
 
 #include "shader.h"
 
-Shader::Shader(GLuint shaderProgID)
+Shader::Shader(unsigned int shaderProgID)
    : mShaderProgID(shaderProgID)
 {
 
@@ -30,7 +30,7 @@ void Shader::use() const
    glUseProgram(mShaderProgID);
 }
 
-GLuint Shader::getID() const
+unsigned int Shader::getID() const
 {
    return mShaderProgID;
 }
@@ -95,9 +95,9 @@ void Shader::setMat4(const std::string& name, const glm::mat4& value) const
    glUniformMatrix4fv(getUniformLocation(name.c_str()), 1, GL_FALSE, &value[0][0]);
 }
 
-GLint Shader::getUniformLocation(const std::string& name) const
+int Shader::getUniformLocation(const std::string& name) const
 {
-   GLint uniformLoc = glGetUniformLocation(mShaderProgID, name.c_str());
+   int uniformLoc = glGetUniformLocation(mShaderProgID, name.c_str());
 
    if (uniformLoc == -1)
    {

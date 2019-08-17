@@ -7,7 +7,7 @@ class Texture
 {
 public:
 
-   explicit Texture(GLuint texID);
+   explicit Texture(unsigned int texID);
    ~Texture();
 
    Texture(const Texture&) = delete;
@@ -20,7 +20,7 @@ public:
 
 private:
 
-   GLuint mTexID;
+   unsigned int mTexID;
 };
 
 #endif

@@ -20,23 +20,23 @@ public:
    TextureLoader& operator=(TextureLoader&&) = default;
 
    std::shared_ptr<Texture> loadResource(const std::string& texFilePath,
-                                         GLuint             wrapS     = GL_REPEAT,
-                                         GLuint             wrapT     = GL_REPEAT,
-                                         GLuint             minFilter = GL_LINEAR,
-                                         GLuint             magFilter = GL_LINEAR,
+                                         unsigned int       wrapS     = GL_REPEAT,
+                                         unsigned int       wrapT     = GL_REPEAT,
+                                         unsigned int       minFilter = GL_LINEAR,
+                                         unsigned int       magFilter = GL_LINEAR,
                                          bool               genMipmap = false) const;
 
 private:
 
-   GLuint generateTexture(const std::unique_ptr<unsigned char, void(*)(void*)>& texData,
-                          int    width,
-                          int    height,
-                          int    numComponents,
-                          GLuint wrapS,
-                          GLuint wrapT,
-                          GLuint minFilter,
-                          GLuint magFilter,
-                          bool   genMipmap) const;
+   unsigned int generateTexture(const std::unique_ptr<unsigned char, void(*)(void*)>& texData,
+                                int          width,
+                                int          height,
+                                int          numComponents,
+                                unsigned int wrapS,
+                                unsigned int wrapT,
+                                unsigned int minFilter,
+                                unsigned int magFilter,
+                                bool         genMipmap) const;
 };
 
 #endif

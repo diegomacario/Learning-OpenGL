@@ -130,15 +130,15 @@ void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, cons
       // If it hits either end of the paddle, it bounces off with the maximum possible angle
       // Note that the speed of the ball is always the same; only its direction changes
 
-      GLfloat distanceBetweenCenters              = ball.getPosition().y - paddle.getPosition().y;
-      GLfloat distanceFromCenterOfPaddleInPercent = distanceBetweenCenters / (paddle.getHeight() / 2.0f);
+      float distanceBetweenCenters              = ball.getPosition().y - paddle.getPosition().y;
+      float distanceFromCenterOfPaddleInPercent = distanceBetweenCenters / (paddle.getHeight() / 2.0f);
 
       float currSpeed = glm::length(currVelocity);
       currVelocity.x  = -currVelocity.x;
       currVelocity.y  = Constants::kInitialBallVelocity.y * distanceFromCenterOfPaddleInPercent;
       currVelocity    = glm::normalize(currVelocity) * currSpeed;
 
-      float horizontalPenetration = ball.getRadius() - std::abs(vecFromCenterOfCircleToPointOfCollision.x);
+      float horizontalPenetration = ball.getRadius() - glm::abs(vecFromCenterOfCircleToPointOfCollision.x);
 
       if (collisionDirection == CollisionDirection::Left)
       {
@@ -168,7 +168,7 @@ void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, cons
       // Vertical collision
       currVelocity.y = -currVelocity.y;
 
-      float verticalPenetration = ball.getRadius() - std::abs(vecFromCenterOfCircleToPointOfCollision.y);
+      float verticalPenetration = ball.getRadius() - glm::abs(vecFromCenterOfCircleToPointOfCollision.y);
 
       if (collisionDirection == CollisionDirection::Up)
       {

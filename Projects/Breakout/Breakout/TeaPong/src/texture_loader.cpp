@@ -5,10 +5,10 @@
 #include "texture_loader.h"
 
 std::shared_ptr<Texture> TextureLoader::loadResource(const std::string& texFilePath,
-                                                     GLuint             wrapS,
-                                                     GLuint             wrapT,
-                                                     GLuint             minFilter,
-                                                     GLuint             magFilter,
+                                                     unsigned int       wrapS,
+                                                     unsigned int       wrapT,
+                                                     unsigned int       minFilter,
+                                                     unsigned int       magFilter,
                                                      bool               genMipmap) const
 {
    int width, height, numComponents;
@@ -20,20 +20,20 @@ std::shared_ptr<Texture> TextureLoader::loadResource(const std::string& texFileP
       return nullptr;
    }
 
-   GLuint texID = generateTexture(texData, width, height, numComponents, wrapS, wrapT, minFilter, magFilter, genMipmap);
+   unsigned int texID = generateTexture(texData, width, height, numComponents, wrapS, wrapT, minFilter, magFilter, genMipmap);
 
    return std::make_shared<Texture>(texID);
 }
 
-GLuint TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(*)(void*)>& texData,
-                                      int    width,
-                                      int    height,
-                                      int    numComponents,
-                                      GLuint wrapS,
-                                      GLuint wrapT,
-                                      GLuint minFilter,
-                                      GLuint magFilter,
-                                      bool   genMipmap) const
+unsigned int TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(*)(void*)>& texData,
+                                            int          width,
+                                            int          height,
+                                            int          numComponents,
+                                            unsigned int wrapS,
+                                            unsigned int wrapT,
+                                            unsigned int minFilter,
+                                            unsigned int magFilter,
+                                            bool         genMipmap) const
 {
    GLenum format;
    switch (numComponents)
@@ -48,7 +48,7 @@ GLuint TextureLoader::generateTexture(const std::unique_ptr<unsigned char, void(
       std::cout << "Error - TextureLoader::generateTexture - The texture has an invalid number of components: " << numComponents << "\n";
    }
 
-   GLuint texID;
+   unsigned int texID;
    glGenTextures(1, &texID);
    glBindTexture(GL_TEXTURE_2D, texID);
    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, GL_UNSIGNED_BYTE, texData.get());

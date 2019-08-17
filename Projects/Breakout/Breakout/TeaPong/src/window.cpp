@@ -2,7 +2,7 @@
 
 #include "window.h"
 
-Window::Window(GLuint widthInPix, GLuint heightInPix, const std::string& title)
+Window::Window(unsigned int widthInPix, unsigned int heightInPix, const std::string& title)
    : mWindow(nullptr)
    , mWidthInPix(widthInPix)
    , mHeightInPix(heightInPix)
@@ -99,12 +99,12 @@ void Window::pollEvents()
    glfwPollEvents();
 }
 
-GLuint Window::getWidthInPix() const
+unsigned int Window::getWidthInPix() const
 {
    return mWidthInPix;
 }
 
-GLuint Window::getHeightInPix() const
+unsigned int Window::getHeightInPix() const
 {
    return mHeightInPix;
 }

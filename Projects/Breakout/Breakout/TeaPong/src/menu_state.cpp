@@ -19,16 +19,16 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
    , mCameraTarget(0.0f, 0.0f, 5.0f)
    , mCameraUp(0.0f, 0.0f, 1.0f)
    , mCameraRight(0.0f)
-   , mCameraIdleOrbitalAngularVelocity(-15.0f)
+   , mIdleOrbitalAngularVelocity(-15.0f)
    , mTransitionToPlayState(false)
    , mFirstIterationOfTransitionToPlayState(false)
-   , mHorizontalSpeedOfRotation(0.0f)
-   , mVerticalSpeedOfRotation(0.0f)
+   , mTimeToCompleteTransitionToPlayStateInSec(7.5f)
+   , mHorizontalAngularSpeed(0.0f)
+   , mVerticalAngularSpeed(0.0f)
    , mSpeedOfMovementAwayFromTarget(0.0f)
    , mDoneRotatingHorizontally(0.0f)
    , mDoneRotatingVertically(0.0f)
    , mDoneMovingAwayFromTarget(0.0f)
-
 {
 
 }
@@ -66,108 +66,28 @@ void MenuState::update(float deltaTime)
 {
    if (mTransitionToPlayState)
    {
-      float cameraCCWAngularPosWRTNegYAxisInDeg = calculateCCWAngularPosWRTNegYAxisInDeg(mCameraPosition);
-      float cameraAngularPosWRTPosZAxisInDeg    = calculateAngularPosWRTPosZAxisInDeg(mCameraPosition);
-
       if (mFirstIterationOfTransitionToPlayState)
       {
-         mHorizontalSpeedOfRotation     = -(360.0f - cameraCCWAngularPosWRTNegYAxisInDeg) / 10.0f;
-         mVerticalSpeedOfRotation       = cameraAngularPosWRTPosZAxisInDeg / 10.0f;
-         mSpeedOfMovementAwayFromTarget = (90.0f - glm::length(mCameraPosition - mCameraTarget)) / 10.0f;
-
+         calculateAngularAndMovementSpeeds();
          mFirstIterationOfTransitionToPlayState = false;
       }
 
-      // Rotate the camera horizontally
-      if (!mDoneRotatingHorizontally)
-      {
-         glm::mat3 horizontalRotationMatrix = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(mHorizontalSpeedOfRotation * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f)));
-
-         glm::vec3 futureCameraPos                           = horizontalRotationMatrix * mCameraPosition;
-         float     futureCameraCCWAngularPosWRTNegYAxisInDeg = calculateCCWAngularPosWRTNegYAxisInDeg(futureCameraPos);
-         // ---
-         //if (futureCameraCCWAngularPosWRTNegYAxisInDeg < cameraCCWAngularPosWRTNegYAxisInDeg)
-         //{
-         //   calculateCCWAngularPosWRTNegYAxisInDeg(futureCameraPos);
-         //}
-         // ---
-         if (futureCameraCCWAngularPosWRTNegYAxisInDeg < cameraCCWAngularPosWRTNegYAxisInDeg)
-         {
-            std::cout << "mDoneRotatingHorizontally" << '\n';
-            std::cout << "cameraCCWAngularPosWRTNegYAxisInDeg          = " << cameraCCWAngularPosWRTNegYAxisInDeg << '\n';
-            std::cout << "futureCameraCCWAngularPosWRTNegYAxisInDeg    = " << futureCameraCCWAngularPosWRTNegYAxisInDeg << '\n' << '\n';
-            // If we rotate by what is dictated by (mHorizontalSpeedOfRotation * deltaTime), we would overshoot the desired destination (e.g. we might be rotating from 359 to 1 instead of from 359 to 0)
-            // So we modify the rotation matrix so that it only makes us rotate the exact number of degrees left to reach 0
-            horizontalRotationMatrix  = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-(360.0f - cameraCCWAngularPosWRTNegYAxisInDeg)), glm::vec3(0.0f, 0.0f, 1.0f)));
-            mDoneRotatingHorizontally = true;
-         }
-
-         mCameraPosition = horizontalRotationMatrix * mCameraPosition;
-         mCameraUp       = horizontalRotationMatrix * mCameraUp;
-      }
-
-      updateCoordinateFrameOfCamera();
-
-      // Rotate the camera vertically
-      if (!mDoneRotatingVertically)
-      {
-         glm::mat3 verticalRotationMatrix = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(mVerticalSpeedOfRotation * deltaTime), mCameraRight));
-
-         cameraAngularPosWRTPosZAxisInDeg                 = calculateAngularPosWRTPosZAxisInDeg(mCameraPosition);
-         glm::vec3 futureCameraPos                        = verticalRotationMatrix * mCameraPosition;
-         float     futureCameraAngularPosWRTPosZAxisInDeg = calculateAngularPosWRTPosZAxisInDeg(futureCameraPos);
-         if (futureCameraAngularPosWRTPosZAxisInDeg > cameraAngularPosWRTPosZAxisInDeg)
-         {
-            std::cout << "mDoneRotatingVertically" << '\n';
-            std::cout << "cameraAngularPosWRTPosZAxisInDeg             = " << cameraAngularPosWRTPosZAxisInDeg << '\n';
-            std::cout << "futureCameraAngularPosWRTPosZAxisInDeg       = " << futureCameraAngularPosWRTPosZAxisInDeg << '\n' << '\n';
-            // If we rotate by what is dictated by (mVerticalSpeedOfRotation * deltaTime), we would overshoot the desired destination (e.g. we might be rotating from 0.1 to 0.2 instead of from 0.1 to 0)
-            // So we modify the rotation matrix so that it only makes us rotate the exact number of degrees left to reach 0
-            verticalRotationMatrix  = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(cameraAngularPosWRTPosZAxisInDeg), glm::vec3(0.0f, 0.0f, 1.0f)));
-            mDoneRotatingVertically = true;
-         }
-
-         mCameraPosition = verticalRotationMatrix * mCameraPosition;
-         mCameraUp       = verticalRotationMatrix * mCameraUp;
-      }
-
-      // Move the camera away from the target
-      if (!mDoneMovingAwayFromTarget)
-      {
-         glm::vec3 distanceToMoveAwayFromTarget = glm::normalize(mCameraPosition - mCameraTarget) * (mSpeedOfMovementAwayFromTarget * deltaTime);
-         glm::vec3 futureCameraPos              = mCameraPosition + distanceToMoveAwayFromTarget;
-         if (glm::length(futureCameraPos - mCameraTarget) > 90.0f)
-         {
-            std::cout << "mDoneMovingAwayFromTarget" << '\n';
-            std::cout << "glm::length(mCameraPosition - mCameraTarget) = " << glm::length(mCameraPosition - mCameraTarget) << '\n';
-            std::cout << "glm::length(futureCameraPos - mCameraTarget) = " << glm::length(futureCameraPos - mCameraTarget) << '\n' << '\n';
-            // If we move by what is dictated by (mSpeedOfMovementAwayFromTarget * deltaTime),
-            // we would overshoot the desired destination (e.g. the length of (mCameraPosition - mCameraTarget) might be increasing from 89 to 91 instead of from 89 to 90)
-            // So we modify the length we move so that it only makes us move the exact distance left to reach 90
-            distanceToMoveAwayFromTarget = glm::normalize(mCameraPosition - mCameraTarget) * (90.0f - glm::length(mCameraPosition - mCameraTarget));
-            mDoneMovingAwayFromTarget = true;
-         }
-
-         mCameraPosition += distanceToMoveAwayFromTarget;
-      }
+      if (!mDoneRotatingHorizontally) { rotateCameraHorizontally(deltaTime); }
+      if (!mDoneRotatingVertically)   { rotateCameraVertically(deltaTime); }
+      if (!mDoneMovingAwayFromTarget) { moveCameraAwayFromTarget(deltaTime); }
 
       updateCoordinateFrameOfCamera();
 
       if (mDoneRotatingHorizontally && mDoneRotatingVertically && mDoneMovingAwayFromTarget)
       {
-         std::cout << "mDoneRotatingHorizontally && mDoneRotatingVertically && mDoneMovingAwayFromTarget" << '\n';
-         std::cout << "mCameraPosition.x                            = " << mCameraPosition.x << '\n';
-         std::cout << "mCameraPosition.y                            = " << mCameraPosition.y << '\n';
-         std::cout << "mCameraPosition.z                            = " << mCameraPosition.z << '\n' << '\n';
          mFSM->changeState("play");
       }
    }
    else
    {
-      // Rotate the camera CCW around the positive Z axis
-      glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mCameraIdleOrbitalAngularVelocity * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
+      // Rotate the camera CW around the positive Z axis
+      glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mIdleOrbitalAngularVelocity * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
       mCameraPosition = glm::mat3(rotationMatrix) * mCameraPosition;
-      std::cout << "cameraCCWAngularPosWRTNegYAxisInDeg = " << calculateCCWAngularPosWRTNegYAxisInDeg(mCameraPosition) << '\n' << '\n';
    }
 }
 
@@ -193,18 +113,99 @@ void MenuState::render()
    glEnable(GL_CULL_FACE);
 }
 
-float calculateCCWAngularPosWRTNegYAxisInDeg(const glm::vec3& point)
+void MenuState::calculateAngularAndMovementSpeeds()
+{
+   float cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg = calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(mCameraPosition);
+   float cameraAngularPosWRTPosZAxisInDeg            = calculateAngularPosWRTPosZAxisInDeg(mCameraPosition);
+
+   mHorizontalAngularSpeed        = -(360.0f - cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg) / mTimeToCompleteTransitionToPlayStateInSec;
+   mVerticalAngularSpeed          = cameraAngularPosWRTPosZAxisInDeg / mTimeToCompleteTransitionToPlayStateInSec;
+   mSpeedOfMovementAwayFromTarget = (90.0f - glm::length(mCameraPosition - mCameraTarget)) / mTimeToCompleteTransitionToPlayStateInSec;
+}
+
+void MenuState::rotateCameraHorizontally(float deltaTime)
+{
+   glm::mat3 horizontalRotationMatrix = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(mHorizontalAngularSpeed * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f)));
+
+   float     cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg       = calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(mCameraPosition);
+   glm::vec3 futureCameraPos                                   = horizontalRotationMatrix * mCameraPosition;
+   float     futureCameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg = calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(futureCameraPos);
+
+   if (futureCameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg < cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg)
+   {
+      // If we rotate by what is dictated by (mHorizontalSpeedOfRotation * deltaTime),
+      // we would overshoot the desired destination (e.g. we might be rotating from 359.0f to 1.0f instead of from 359.0f to 0.0f)
+      // So we modify the rotation matrix so that it only makes us rotate the exact number of degrees left to reach 0.0f
+      horizontalRotationMatrix  = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(-(360.0f - cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg)), glm::vec3(0.0f, 0.0f, 1.0f)));
+      mDoneRotatingHorizontally = true;
+   }
+
+   mCameraPosition = horizontalRotationMatrix * mCameraPosition;
+   mCameraUp       = horizontalRotationMatrix * mCameraUp;
+}
+
+void MenuState::rotateCameraVertically(float deltaTime)
+{
+   updateCoordinateFrameOfCamera();
+
+   glm::mat3 verticalRotationMatrix = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(mVerticalAngularSpeed * deltaTime), mCameraRight));
+
+   float     cameraAngularPosWRTPosZAxisInDeg        = calculateAngularPosWRTPosZAxisInDeg(mCameraPosition);
+   glm::vec3 futureCameraPos1                        = verticalRotationMatrix * mCameraPosition;
+   glm::vec3 futureCameraPos2                        = verticalRotationMatrix * futureCameraPos1;
+   float     futureCameraAngularPosWRTPosZAxisInDeg1 = calculateAngularPosWRTPosZAxisInDeg(futureCameraPos1);
+   float     futureCameraAngularPosWRTPosZAxisInDeg2 = calculateAngularPosWRTPosZAxisInDeg(futureCameraPos2);
+
+   if (futureCameraAngularPosWRTPosZAxisInDeg2 > futureCameraAngularPosWRTPosZAxisInDeg1)
+   {
+      // If we rotate by what is dictated by (mVerticalSpeedOfRotation * deltaTime),
+      // we would overshoot the desired destination (e.g. we might be rotating from 0.1f to 0.2f instead of from 0.1f to 0.0f)
+      // So we modify the rotation matrix so that it only makes us rotate the exact number of degrees left to reach 0.0f
+      verticalRotationMatrix  = glm::mat3(glm::rotate(glm::mat4(1.0f), glm::radians(cameraAngularPosWRTPosZAxisInDeg), mCameraRight));
+      mDoneRotatingVertically = true;
+   }
+
+   mCameraPosition = verticalRotationMatrix * mCameraPosition;
+   mCameraUp       = verticalRotationMatrix * mCameraUp;
+}
+
+void MenuState::moveCameraAwayFromTarget(float deltaTime)
+{
+   glm::vec3 distanceToMoveAwayFromTarget = glm::normalize(mCameraPosition - mCameraTarget) * (mSpeedOfMovementAwayFromTarget * deltaTime);
+   glm::vec3 futureCameraPos              = mCameraPosition + distanceToMoveAwayFromTarget;
+
+   if (glm::length(futureCameraPos - mCameraTarget) > 90.0f)
+   {
+      // If we move by what is dictated by (mSpeedOfMovementAwayFromTarget * deltaTime),
+      // we would overshoot the desired destination (e.g. the length of (mCameraPosition - mCameraTarget) might be increasing from 89.0f to 91.0f instead of from 89.0f to 90.0f)
+      // So we modify the length we move so that it only makes us move the exact distance left to reach 90.0f
+      distanceToMoveAwayFromTarget = glm::normalize(mCameraPosition - mCameraTarget) * (90.0f - glm::length(mCameraPosition - mCameraTarget));
+      mDoneMovingAwayFromTarget = true;
+   }
+
+   mCameraPosition += distanceToMoveAwayFromTarget;
+}
+
+void MenuState::updateCoordinateFrameOfCamera()
+{
+   glm::vec3 vecFromCameraPositionToCameraTarget = glm::normalize(mCameraTarget - mCameraPosition);
+
+   mCameraRight = glm::normalize(glm::cross(mCameraUp, vecFromCameraPositionToCameraTarget));
+   mCameraUp    = glm::normalize(glm::cross(vecFromCameraPositionToCameraTarget, mCameraRight));
+}
+
+float calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(const glm::vec3& point)
 {
    float result = 0.0f;
 
    // The math of the first two if statements must be wrong
    if ((point.x < 0.0f && point.y < 0.0f) || (point.x < 0.0f && point.y > 0.0f)) // Lower left quadrant or upper left quadrant
    {
-      result = glm::degrees(glm::acos(glm::dot(glm::normalize(point), glm::vec3(0.0f, -1.0f, 0.0f))));
+      result = glm::degrees(glm::acos(glm::dot(glm::normalize(glm::vec3(point.x, point.y, 0.0f)), glm::vec3(0.0f, -1.0f, 0.0f))));
    }
    else if ((point.x > 0.0f && point.y > 0.0f) || (point.x > 0.0f && point.y < 0.0f)) // Upper right quadrant or lower right quadrant
    {
-      result = 360.0f - glm::degrees(glm::acos(glm::dot(glm::normalize(point), glm::vec3(0.0f, -1.0f, 0.0f))));
+      result = 360.0f - glm::degrees(glm::acos(glm::dot(glm::normalize(glm::vec3(point.x, point.y, 0.0f)), glm::vec3(0.0f, -1.0f, 0.0f))));
    }
    else if (point.x == 0.0f && point.y > 0.0f) // Aligned with the positive Y axis
    {
@@ -244,11 +245,4 @@ float calculateAngularPosWRTPosZAxisInDeg(const glm::vec3& point)
    }
 
    return result;
-}
-
-void MenuState::updateCoordinateFrameOfCamera()
-{
-   glm::vec3 vecFromCameraPositionToCameraTarget = glm::normalize(mCameraTarget - mCameraPosition);
-   mCameraRight                                  = glm::normalize(glm::cross(mCameraUp, vecFromCameraPositionToCameraTarget));
-   mCameraUp                                     = glm::normalize(glm::cross(vecFromCameraPositionToCameraTarget, mCameraRight));
 }

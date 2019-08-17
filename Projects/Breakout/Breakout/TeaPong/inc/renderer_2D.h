@@ -24,7 +24,7 @@ private:
    void configureVAO();
 
    std::shared_ptr<Shader> mShader;
-   GLuint                  mVAO;
+   unsigned int            mVAO;
 };
 
 #endif

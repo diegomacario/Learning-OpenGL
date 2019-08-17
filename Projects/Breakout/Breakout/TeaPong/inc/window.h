@@ -11,7 +11,7 @@ class Window
 {
 public:
 
-   Window(GLuint widthInPix, GLuint heightInPix, const std::string& title);
+   Window(unsigned int widthInPix, unsigned int heightInPix, const std::string& title);
    ~Window();
 
    Window(const Window&) = delete;
@@ -20,44 +20,44 @@ public:
    Window(Window&&) = delete;
    Window& operator=(Window&&) = delete;
 
-   bool   initialize();
+   bool         initialize();
 
-   bool   shouldClose() const;
-   void   setShouldClose(bool shouldClose); // TODO: Could this be considered to be const?
-   void   swapBuffers();                    // TODO: Could this be considered to be const?
-   void   pollEvents();                     // TODO: Could this be considered to be const?
+   bool         shouldClose() const;
+   void         setShouldClose(bool shouldClose); // TODO: Could this be considered to be const?
+   void         swapBuffers();                    // TODO: Could this be considered to be const?
+   void         pollEvents();                     // TODO: Could this be considered to be const?
 
-   GLuint getWidthInPix() const;
-   GLuint getHeightInPix() const;
+   unsigned int getWidthInPix() const;
+   unsigned int getHeightInPix() const;
 
    // Keyboard
-   bool   keyIsPressed(int key) const;
-   bool   keyHasBeenProcessed(int key) const;
-   void   setKeyAsProcessed(int key);
+   bool         keyIsPressed(int key) const;
+   bool         keyHasBeenProcessed(int key) const;
+   void         setKeyAsProcessed(int key);
 
    // Cursor
-   bool   mouseMoved() const;
-   void   resetMouseMoved();
-   float  getCursorXOffset() const;
-   float  getCursorYOffset() const;
+   bool         mouseMoved() const;
+   void         resetMouseMoved();
+   float        getCursorXOffset() const;
+   float        getCursorYOffset() const;
 
    // Scroll wheel
-   bool   scrollWheelMoved() const;
-   void   resetScrollWheelMoved();
-   float  getScrollYOffset() const;
+   bool         scrollWheelMoved() const;
+   void         resetScrollWheelMoved();
+   float        getScrollYOffset() const;
 
 private:
 
-   void   setInputCallbacks();
-   void   framebufferSizeCallback(GLFWwindow* window, int width, int height);
-   void   keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
-   void   cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
-   void   scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
+   void         setInputCallbacks();
+   void         framebufferSizeCallback(GLFWwindow* window, int width, int height);
+   void         keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+   void         cursorPosCallback(GLFWwindow* window, double xPos, double yPos);
+   void         scrollCallback(GLFWwindow* window, double xOffset, double yOffset);
 
    GLFWwindow*                    mWindow;
 
-   GLuint                         mWidthInPix;
-   GLuint                         mHeightInPix;
+   unsigned int                   mWidthInPix;
+   unsigned int                   mHeightInPix;
    std::string                    mTitle;
 
    // Keyboard
