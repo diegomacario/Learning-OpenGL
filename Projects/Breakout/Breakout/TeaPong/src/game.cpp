@@ -4,8 +4,9 @@
 #include "shader_loader.h"
 #include "texture_loader.h"
 #include "model_loader.h"
-#include "play_state.h"
 #include "menu_state.h"
+#include "play_state.h"
+#include "pause_state.h"
 #include "game.h"
 
 Game::Game()
@@ -81,8 +82,21 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    gameObj3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
    gameObj3DShader->setFloat("pointLights[0].linearAtt", 0.01f);
    gameObj3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
-
    gameObj3DShader->setInt("numPointLightsInScene", 1);
+
+   // Initialize the explosive 3D shader
+   auto gameObj3DExplosiveShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D_explosive",
+                                                                             "shaders/game_object_3D.vs",
+                                                                             "shaders/game_object_3D.fs",
+                                                                             "shaders/game_object_3D_explosive.gs");
+   gameObj3DExplosiveShader->use();
+   gameObj3DExplosiveShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
+   gameObj3DExplosiveShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
+   gameObj3DExplosiveShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
+   gameObj3DExplosiveShader->setFloat("pointLights[0].constantAtt", 1.0f);
+   gameObj3DExplosiveShader->setFloat("pointLights[0].linearAtt", 0.01f);
+   gameObj3DExplosiveShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
+   gameObj3DExplosiveShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
    mModelManager.loadResource<ModelLoader>("table", "models/table/table.obj");
@@ -128,6 +142,14 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    // Initialize the states
    std::unordered_map<std::string, std::shared_ptr<State>> mStates;
 
+   mStates["menu"] = std::make_shared<MenuState>(mFSM,
+                                                 mWindow,
+                                                 gameObj3DShader,
+                                                 mTable,
+                                                 mLeftPaddle,
+                                                 mRightPaddle,
+                                                 mBall);
+
    mStates["play"] = std::make_shared<PlayState>(mFSM,
                                                  mWindow,
                                                  mCamera,
@@ -137,13 +159,8 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                  mRightPaddle,
                                                  mBall);
 
-   mStates["menu"] = std::make_shared<MenuState>(mFSM,
-                                                 mWindow,
-                                                 gameObj3DShader,
-                                                 mTable,
-                                                 mLeftPaddle,
-                                                 mRightPaddle,
-                                                 mBall);
+   mStates["pause"] = std::make_shared<PauseState>(mFSM,
+                                                   mWindow);
 
    // Initialize the FSM
    mFSM->initialize(std::move(mStates), "menu");
@@ -164,8 +181,5 @@ void Game::executeGameLoop()
       lastFrame    = currentFrame;
 
       mFSM->executeCurrentState(deltaTime);
-
-      mWindow->swapBuffers();
-      mWindow->pollEvents();
    }
 }

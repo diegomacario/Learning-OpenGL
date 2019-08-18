@@ -1,7 +1,6 @@
 #include <array>
 #include <random>
 
-#include "constants.h"
 #include "collision.h"
 #include "play_state.h"
 
@@ -33,7 +32,12 @@ PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
 
 void PlayState::enter()
 {
-
+   if (mFSM->getPreviousStateID() != "pause")
+   {
+      resetCamera();
+      mPointsScoredByLeftPaddle  = 0;
+      mPointsScoredByRightPaddle = 0;
+   }
 }
 
 void PlayState::execute(float deltaTime)
@@ -50,13 +54,23 @@ void PlayState::execute(float deltaTime)
 
 void PlayState::exit()
 {
-
+   if (mFSM->getCurrentStateID() != "pause")
+   {
+      resetScene();
+   }
 }
 
 void PlayState::processInput(float deltaTime)
 {
    // Close the game
    if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
+
+   // Pause the game
+   if (mWindow->keyIsPressed(GLFW_KEY_P) && !mWindow->keyHasBeenProcessed(GLFW_KEY_P))
+   {
+      mWindow->setKeyAsProcessed(GLFW_KEY_P);
+      mFSM->changeState("pause");
+   }
 
    // Release the ball
    if (!mBallIsInPlay && mWindow->keyIsPressed(GLFW_KEY_SPACE))
@@ -65,11 +79,14 @@ void PlayState::processInput(float deltaTime)
       mBallIsInPlay = true;
    }
 
+   // Reset the camera
+   if (mWindow->keyIsPressed(GLFW_KEY_R)) { resetCamera(); }
+
    // Move the camera
-   if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(Camera::MovementDirection::Forward, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_S))      { mCamera->processKeyboardInput(Camera::MovementDirection::Backward, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_A))      { mCamera->processKeyboardInput(Camera::MovementDirection::Left, deltaTime); }
-   if (mWindow->keyIsPressed(GLFW_KEY_D))      { mCamera->processKeyboardInput(Camera::MovementDirection::Right, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_W)) { mCamera->processKeyboardInput(Camera::MovementDirection::Forward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_S)) { mCamera->processKeyboardInput(Camera::MovementDirection::Backward, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_A)) { mCamera->processKeyboardInput(Camera::MovementDirection::Left, deltaTime); }
+   if (mWindow->keyIsPressed(GLFW_KEY_D)) { mCamera->processKeyboardInput(Camera::MovementDirection::Right, deltaTime); }
 
    // Orient the camera
    if (mWindow->mouseMoved())
@@ -113,7 +130,15 @@ void PlayState::update(float deltaTime)
 
       if (mBall->getPosition().z < -30.0f)
       {
-         resetScene();
+         if (mPointsScoredByLeftPaddle == 3 || mPointsScoredByRightPaddle == 3)
+         {
+            mFSM->changeState("menu");
+            return;
+         }
+         else
+         {
+            resetScene();
+         }
       }
    }
    else
@@ -154,6 +179,9 @@ void PlayState::render()
    glDisable(GL_CULL_FACE);
    mBall->render(*mGameObject3DShader);
    glEnable(GL_CULL_FACE);
+
+   mWindow->swapBuffers();
+   mWindow->pollEvents();
 }
 
 void PlayState::calculateInitialDirectionOfBall()
@@ -197,11 +225,6 @@ void PlayState::updateScore()
    {
       ++mPointsScoredByRightPaddle;
    }
-
-   if (mPointsScoredByLeftPaddle == 3 || mPointsScoredByRightPaddle == 3)
-   {
-      mFSM->changeState("menu");
-   }
 }
 
 void PlayState::resetScene()
@@ -213,6 +236,18 @@ void PlayState::resetScene()
 
    mBallIsInPlay  = false;
    mBallIsFalling = false;
+}
+
+void PlayState::resetCamera()
+{
+   mCamera->reposition(glm::vec3(0.0f, 0.0f, 95.0f),
+                       glm::vec3(0.0f, 1.0f, 0.0f),
+                       0.0f,
+                       0.0f,
+                       45.0f);
+
+   mGameObject3DShader->use();
+   mGameObject3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
 }
 
 void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision)

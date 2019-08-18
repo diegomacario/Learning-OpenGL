@@ -1,4 +1,3 @@
-#include "constants.h"
 #include "menu_state.h"
 
 MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
@@ -37,7 +36,6 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
 
 void MenuState::enter()
 {
-   mBall->reset();
    float currRadius = mBall->getRadius();
    mBall->scale(7.5f / currRadius);
    mBall->setRadius(7.5f);
@@ -105,6 +103,7 @@ void MenuState::update(float deltaTime)
       if (mDoneRotatingHorizontally && mDoneRotatingVertically && mDoneMovingAwayFromTarget && mDoneShrinking)
       {
          mFSM->changeState("play");
+         return;
       }
    }
    else
@@ -135,6 +134,9 @@ void MenuState::render()
    glDisable(GL_CULL_FACE);
    mBall->render(*mGameObject3DShader);
    glEnable(GL_CULL_FACE);
+
+   mWindow->swapBuffers();
+   mWindow->pollEvents();
 }
 
 void MenuState::calculateAngularAndMovementSpeeds()

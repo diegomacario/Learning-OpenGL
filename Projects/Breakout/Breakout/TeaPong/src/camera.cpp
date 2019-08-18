@@ -84,6 +84,21 @@ glm::mat4 Camera::getPerspectiveProjectionMatrix()
                                         mFar);
 }
 
+void Camera::reposition(const glm::vec3& position,
+                        const glm::vec3& worldUp,
+                        float            yawInDeg,
+                        float            pitchInDeg,
+                        float            fieldOfViewYInDeg)
+{
+   mPosition          = position;
+   mWorldUp           = worldUp;
+   mYawInDeg          = yawInDeg;
+   mPitchInDeg        = pitchInDeg;
+   mFieldOfViewYInDeg = fieldOfViewYInDeg;
+
+   updateCoordinateFrame();
+}
+
 void Camera::processKeyboardInput(MovementDirection direction, float deltaTime)
 {
    float velocity = mMovementSpeed * deltaTime;

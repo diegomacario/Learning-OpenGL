@@ -133,6 +133,7 @@
     <ClCompile Include="src\movable_game_object_2D.cpp" />
     <ClCompile Include="src\movable_game_object_3D.cpp" />
     <ClCompile Include="src\paddle.cpp" />
+    <ClCompile Include="src\pause_state.cpp" />
     <ClCompile Include="src\play_state.cpp" />
     <ClCompile Include="src\renderer_2D.cpp" />
     <ClCompile Include="src\shader.cpp" />
@@ -153,6 +154,7 @@
     <ClInclude Include="inc\game_object_3D.h" />
     <ClInclude Include="inc\menu_state.h" />
     <ClInclude Include="inc\paddle.h" />
+    <ClInclude Include="inc\pause_state.h" />
     <ClInclude Include="inc\play_state.h" />
     <ClInclude Include="inc\state.h" />
     <ClInclude Include="inc\mesh.h" />

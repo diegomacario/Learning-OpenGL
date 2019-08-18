@@ -27,8 +27,15 @@ public:
    Camera& operator=(Camera&& rhs) noexcept;
 
    glm::vec3 getPosition();
+
    glm::mat4 getViewMatrix();
    glm::mat4 getPerspectiveProjectionMatrix();
+
+   void      reposition(const glm::vec3& position,
+                        const glm::vec3& worldUp,
+                        float            yawInDeg,
+                        float            pitchInDeg,
+                        float            fieldOfViewYInDeg);
 
    enum class MovementDirection
    {

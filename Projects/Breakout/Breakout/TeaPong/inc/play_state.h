@@ -41,6 +41,8 @@ private:
 
    void resetScene();
 
+   void resetCamera();
+
    std::shared_ptr<FiniteStateMachine> mFSM;
 
    std::shared_ptr<Window>             mWindow;

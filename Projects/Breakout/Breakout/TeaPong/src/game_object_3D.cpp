@@ -46,7 +46,6 @@ void GameObject3D::render(const Shader& shader) const
       calculateModelMatrix();
    }
 
-   // TODO: Should a call to shader.use() be made here?
    shader.setMat4("model", mModelMatrix);
 
    mModel->render(shader);
