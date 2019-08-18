@@ -118,12 +118,9 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
                                   1.0f,
-                                  //1.0f / 3.0f,
-                                  //Constants::kInitialBallVelocity,
-                                  glm::vec3(0.0f),
-                                  2.5f,
-                                  //1000.0f);
-                                  0.0f);
+                                  glm::vec3(27.5f, 37.5f, 0.0f),
+                                  7.5f,
+                                  1000.0f);
 
    // Create the FSM
    mFSM = std::make_shared<FiniteStateMachine>();

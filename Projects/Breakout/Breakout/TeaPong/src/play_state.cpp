@@ -1,6 +1,11 @@
+#include <array>
+#include <random>
+
 #include "constants.h"
 #include "collision.h"
 #include "play_state.h"
+
+void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision);
 
 PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
                      const std::shared_ptr<Window>&             window,
@@ -18,6 +23,10 @@ PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
    , mLeftPaddle(leftPaddle)
    , mRightPaddle(rightPaddle)
    , mBall(ball)
+   , mBallIsInPlay(false)
+   , mBallIsFalling(false)
+   , mPointsScoredByLeftPaddle(0)
+   , mPointsScoredByRightPaddle(0)
 {
 
 }
@@ -30,7 +39,12 @@ void PlayState::enter()
 void PlayState::execute(float deltaTime)
 {
    processInput(deltaTime);
-   update(deltaTime);
+
+   if (mBallIsInPlay)
+   {
+      update(deltaTime);
+   }
+
    render();
 }
 
@@ -43,6 +57,13 @@ void PlayState::processInput(float deltaTime)
 {
    // Close the game
    if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
+
+   // Release the ball
+   if (!mBallIsInPlay && mWindow->keyIsPressed(GLFW_KEY_SPACE))
+   {
+      calculateInitialDirectionOfBall();
+      mBallIsInPlay = true;
+   }
 
    // Move the camera
    if (mWindow->keyIsPressed(GLFW_KEY_W))      { mCamera->processKeyboardInput(Camera::MovementDirection::Forward, deltaTime); }
@@ -75,21 +96,42 @@ void PlayState::processInput(float deltaTime)
 
 void PlayState::update(float deltaTime)
 {
-   // TODO: Get the dimensions from the table
-   mBall->moveWithinArea(deltaTime, 100.0f, 60.0f);
-
-   glm::vec2 vecFromCenterOfCircleToPointOfCollision;
-
-   if (circleAndAABBCollided(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision))
+   if (!mBallIsFalling && ballIsOutsideOfHorizontalRange())
    {
-      resolveCollisionBetweenBallAndPaddle(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision);
-   }
-   else if (circleAndAABBCollided(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision))
-   {
-      resolveCollisionBetweenBallAndPaddle(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision);
+      updateScore();
+
+      glm::vec3 currVelocity     = mBall->getVelocity();
+      glm::vec3 freeFallVelocity = glm::vec3(currVelocity.x * 0.4, currVelocity.y * 0.4, -15.0f);
+      mBall->setVelocity(freeFallVelocity);
+
+      mBallIsFalling = true;
    }
 
-   // TODO: Check if we have a winner here
+   if (mBallIsFalling)
+   {
+      mBall->moveInFreeFall(deltaTime);
+
+      if (mBall->getPosition().z < -30.0f)
+      {
+         resetScene();
+      }
+   }
+   else
+   {
+      // TODO: Get the vertical range the table
+      mBall->moveWithinVerticalRange(deltaTime, 60.0f);
+
+      glm::vec2 vecFromCenterOfCircleToPointOfCollision;
+
+      if (circleAndAABBCollided(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision))
+      {
+         resolveCollisionBetweenBallAndPaddle(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision);
+      }
+      else if (circleAndAABBCollided(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision))
+      {
+         resolveCollisionBetweenBallAndPaddle(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision);
+      }
+   }
 }
 
 void PlayState::render()
@@ -114,6 +156,65 @@ void PlayState::render()
    glEnable(GL_CULL_FACE);
 }
 
+void PlayState::calculateInitialDirectionOfBall()
+{
+   std::array<glm::vec3, 4> initialDirections = {glm::vec3( 1.0f,  1.0f, 0.0f),  // Upper right diagonal
+                                                 glm::vec3( 1.0f, -1.0f, 0.0f),  // Lower right diagonal
+                                                 glm::vec3(-1.0f, -1.0f, 0.0f),  // Lower left diagonal
+                                                 glm::vec3(-1.0f,  1.0f, 0.0f)}; // Upper left diagonal
+
+   std::random_device              randomDevice;
+   std::mt19937                    randomNumberGenerator(randomDevice());
+   std::uniform_int_distribution<> uniformIntDistribution(0, 3);
+
+   int randomIndex = uniformIntDistribution(randomNumberGenerator);
+
+   mBall->setVelocity(glm::length(mBall->getVelocity()) * glm::normalize(initialDirections[randomIndex]));
+}
+
+bool PlayState::ballIsOutsideOfHorizontalRange()
+{
+   glm::vec3 currentPosition = mBall->getPosition();
+   float     radius          = mBall->getRadius();
+
+   if ((currentPosition.x + radius < -50.0f) || (currentPosition.x - radius > 50.0f))
+   {
+      return true;
+   }
+
+   return false;
+}
+
+void PlayState::updateScore()
+{
+   glm::vec3 currPos = mBall->getPosition();
+
+   if (currPos.x > 0.0f)
+   {
+      ++mPointsScoredByLeftPaddle;
+   }
+   else
+   {
+      ++mPointsScoredByRightPaddle;
+   }
+
+   if (mPointsScoredByLeftPaddle == 3 || mPointsScoredByRightPaddle == 3)
+   {
+      mFSM->changeState("menu");
+   }
+}
+
+void PlayState::resetScene()
+{
+   mBall->reset();
+
+   mLeftPaddle->setPosition(glm::vec3(-45.0f, 0.0f, 0.0f));
+   mRightPaddle->setPosition(glm::vec3(45.0f, 0.0f, 0.0f));
+
+   mBallIsInPlay  = false;
+   mBallIsFalling = false;
+}
+
 void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision)
 {
    glm::vec3 currVelocity = ball.getVelocity();
@@ -135,7 +236,7 @@ void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, cons
 
       float currSpeed = glm::length(currVelocity);
       currVelocity.x  = -currVelocity.x;
-      currVelocity.y  = Constants::kInitialBallVelocity.y * distanceFromCenterOfPaddleInPercent;
+      currVelocity.y  = ball.getInitialVelocity().y * distanceFromCenterOfPaddleInPercent;
       currVelocity    = glm::normalize(currVelocity) * currSpeed;
 
       float horizontalPenetration = ball.getRadius() - glm::abs(vecFromCenterOfCircleToPointOfCollision.x);

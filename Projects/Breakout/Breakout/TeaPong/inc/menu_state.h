@@ -36,6 +36,7 @@ private:
    void rotateCameraHorizontally(float deltaTime);
    void rotateCameraVertically(float deltaTime);
    void moveCameraAwayFromTarget(float deltaTime);
+   void shrinkBall(float deltaTime);
    void updateCoordinateFrameOfCamera();
 
    std::shared_ptr<FiniteStateMachine> mFSM;
@@ -63,10 +64,12 @@ private:
    float                               mHorizontalAngularSpeed;
    float                               mVerticalAngularSpeed;
    float                               mSpeedOfMovementAwayFromTarget;
+   float                               mSpeedOfShrink;
 
-   float                               mDoneRotatingHorizontally;
-   float                               mDoneRotatingVertically;
-   float                               mDoneMovingAwayFromTarget;
+   bool                                mDoneRotatingHorizontally;
+   bool                                mDoneRotatingVertically;
+   bool                                mDoneMovingAwayFromTarget;
+   bool                                mDoneShrinking;
 };
 
 float calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(const glm::vec3& point);

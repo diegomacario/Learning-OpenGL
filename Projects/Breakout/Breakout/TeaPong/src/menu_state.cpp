@@ -22,20 +22,43 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
    , mIdleOrbitalAngularVelocity(-15.0f)
    , mTransitionToPlayState(false)
    , mFirstIterationOfTransitionToPlayState(false)
-   , mTimeToCompleteTransitionToPlayStateInSec(7.5f)
+   , mTimeToCompleteTransitionToPlayStateInSec(1.0f)
    , mHorizontalAngularSpeed(0.0f)
    , mVerticalAngularSpeed(0.0f)
    , mSpeedOfMovementAwayFromTarget(0.0f)
-   , mDoneRotatingHorizontally(0.0f)
-   , mDoneRotatingVertically(0.0f)
-   , mDoneMovingAwayFromTarget(0.0f)
+   , mSpeedOfShrink(0.0f)
+   , mDoneRotatingHorizontally(false)
+   , mDoneRotatingVertically(false)
+   , mDoneMovingAwayFromTarget(false)
+   , mDoneShrinking(false)
 {
 
 }
 
 void MenuState::enter()
 {
+   mBall->reset();
+   float currRadius = mBall->getRadius();
+   mBall->scale(7.5f / currRadius);
+   mBall->setRadius(7.5f);
 
+   mCameraPosition = glm::vec3(0.0f, -30.0f, 10.0f);
+   mCameraTarget   = glm::vec3(0.0f, 0.0f, 5.0f);
+   mCameraUp       = glm::vec3(0.0f, 0.0f, 1.0f);
+   mCameraRight    = glm::vec3(0.0f);
+
+   mTransitionToPlayState                 = false;
+   mFirstIterationOfTransitionToPlayState = false;
+
+   mHorizontalAngularSpeed        = 0.0f;
+   mVerticalAngularSpeed          = 0.0f;
+   mSpeedOfMovementAwayFromTarget = 0.0f;
+   mSpeedOfShrink                 = 0.0f;
+
+   mDoneRotatingHorizontally = false;
+   mDoneRotatingVertically   = false;
+   mDoneMovingAwayFromTarget = false;
+   mDoneShrinking            = false;
 }
 
 void MenuState::execute(float deltaTime)
@@ -55,10 +78,10 @@ void MenuState::processInput(float deltaTime)
    // Close the game
    if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
 
-   if (mWindow->keyIsPressed(GLFW_KEY_SPACE) && !mTransitionToPlayState)
+   if (!mTransitionToPlayState && mWindow->keyIsPressed(GLFW_KEY_SPACE))
    {
-      mTransitionToPlayState = true;
       mFirstIterationOfTransitionToPlayState = true;
+      mTransitionToPlayState = true;
    }
 }
 
@@ -75,10 +98,11 @@ void MenuState::update(float deltaTime)
       if (!mDoneRotatingHorizontally) { rotateCameraHorizontally(deltaTime); }
       if (!mDoneRotatingVertically)   { rotateCameraVertically(deltaTime); }
       if (!mDoneMovingAwayFromTarget) { moveCameraAwayFromTarget(deltaTime); }
+      if (!mDoneShrinking)            { shrinkBall(deltaTime); }
 
       updateCoordinateFrameOfCamera();
 
-      if (mDoneRotatingHorizontally && mDoneRotatingVertically && mDoneMovingAwayFromTarget)
+      if (mDoneRotatingHorizontally && mDoneRotatingVertically && mDoneMovingAwayFromTarget && mDoneShrinking)
       {
          mFSM->changeState("play");
       }
@@ -121,6 +145,7 @@ void MenuState::calculateAngularAndMovementSpeeds()
    mHorizontalAngularSpeed        = -(360.0f - cameraCWAngularPosOnXYPlaneWRTNegYAxisInDeg) / mTimeToCompleteTransitionToPlayStateInSec;
    mVerticalAngularSpeed          = cameraAngularPosWRTPosZAxisInDeg / mTimeToCompleteTransitionToPlayStateInSec;
    mSpeedOfMovementAwayFromTarget = (90.0f - glm::length(mCameraPosition - mCameraTarget)) / mTimeToCompleteTransitionToPlayStateInSec;
+   mSpeedOfShrink                 = (mBall->getRadius() - 2.5f) / mTimeToCompleteTransitionToPlayStateInSec;
 }
 
 void MenuState::rotateCameraHorizontally(float deltaTime)
@@ -184,6 +209,26 @@ void MenuState::moveCameraAwayFromTarget(float deltaTime)
    }
 
    mCameraPosition += distanceToMoveAwayFromTarget;
+}
+
+void MenuState::shrinkBall(float deltaTime)
+{
+   float amountToDecreaseRadiusBy = (mSpeedOfShrink * deltaTime);
+   float currentBallRadius        = mBall->getRadius();
+   float futureBallRadius         = currentBallRadius - amountToDecreaseRadiusBy;
+
+   if (futureBallRadius < 2.5f)
+   {
+      // If we decrease the radius by what is dictated by (mSpeedOfShrink * deltaTime),
+      // we would overshoot the desired radius (e.g. the radius might be increasing from 2.6f to 2.4f instead of from 2.6f to 2.5f)
+      // So we modify the amount we decrease the radius by so that it only makes us decrease the exact amount left to reach 2.5f
+      amountToDecreaseRadiusBy = currentBallRadius - 2.5f;
+      mDoneShrinking = true;
+   }
+
+   float newRadius = currentBallRadius - amountToDecreaseRadiusBy;
+   mBall->scale(newRadius / currentBallRadius);
+   mBall->setRadius(newRadius);
 }
 
 void MenuState::updateCoordinateFrameOfCamera()

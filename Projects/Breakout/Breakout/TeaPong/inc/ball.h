@@ -23,15 +23,21 @@ public:
    Ball(Ball&& rhs) noexcept;
    Ball& operator=(Ball&& rhs) noexcept;
 
-   void  moveWithinArea(float deltaTime, float areaWidth, float areaHeight);
+   void      moveWithinVerticalRange(float deltaTime, float verticalRange);
+   void      moveInFreeFall(float deltaTime);
+   void      reset();
 
-   float getRadius() const;
+   glm::vec3 getInitialVelocity() const;
+
+   float     getRadius() const;
+   void      setRadius(float radius);
 
 private:
 
-   float mRadius;
-   float mSpinAngularVelocity;
-   float mSpinAngularVelocityScaledByBounce;
+   glm::vec3 mInitialVelocity;
+   float     mRadius;
+   float     mSpinAngularVelocity;
+   float     mSpinAngularVelocityScaledByBounce;
 };
 
 #endif

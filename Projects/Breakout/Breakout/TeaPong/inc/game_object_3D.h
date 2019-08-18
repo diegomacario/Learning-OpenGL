@@ -29,6 +29,10 @@ public:
    glm::vec3 getPosition() const;
    void      setPosition(const glm::vec3& position);
 
+   float     getScalingFactor() const;
+
+   void      setRotationMatrix(const glm::mat4& rotationMatrix);
+
    void      translate(const glm::vec3& translation);
    void      rotate(float angleOfRotInDeg, const glm::vec3& axisOfRot);
    void      scale(float scalingFactor);

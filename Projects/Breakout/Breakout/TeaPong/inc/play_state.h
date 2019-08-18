@@ -33,6 +33,14 @@ private:
    void update(float deltaTime);
    void render();
 
+   void calculateInitialDirectionOfBall();
+
+   bool ballIsOutsideOfHorizontalRange();
+
+   void updateScore();
+
+   void resetScene();
+
    std::shared_ptr<FiniteStateMachine> mFSM;
 
    std::shared_ptr<Window>             mWindow;
@@ -45,8 +53,12 @@ private:
    std::shared_ptr<Paddle>             mLeftPaddle;
    std::shared_ptr<Paddle>             mRightPaddle;
    std::shared_ptr<Ball>               mBall;
-};
 
-void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision);
+   bool                                mBallIsInPlay;
+   bool                                mBallIsFalling;
+
+   unsigned int                        mPointsScoredByLeftPaddle;
+   unsigned int                        mPointsScoredByRightPaddle;
+};
 
 #endif

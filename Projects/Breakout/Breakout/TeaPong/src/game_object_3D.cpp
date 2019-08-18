@@ -63,6 +63,17 @@ void GameObject3D::setPosition(const glm::vec3& position)
    mCalculateModelMatrix = true;
 }
 
+float GameObject3D::getScalingFactor() const
+{
+   return mScalingFactor;
+}
+
+void GameObject3D::setRotationMatrix(const glm::mat4& rotationMatrix)
+{
+   mRotationMatrix = rotationMatrix;
+   mCalculateModelMatrix = true;
+}
+
 void GameObject3D::translate(const glm::vec3& translation)
 {
    mPosition += translation;
