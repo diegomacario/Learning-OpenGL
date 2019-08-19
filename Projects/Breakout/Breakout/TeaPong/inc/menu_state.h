@@ -72,7 +72,4 @@ private:
    bool                                mDoneShrinking;
 };
 
-float calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(const glm::vec3& point);
-float calculateAngularPosWRTPosZAxisInDeg(const glm::vec3& point);
-
 #endif

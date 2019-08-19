@@ -17,7 +17,7 @@ out VertexData
    vec2 texCoords;
 } o;
 
-uniform float time;
+uniform float distanceToMove;
 
 vec3 calculateNormalOfTriangle();
 vec4 explode(vec4 position, vec3 normal);
@@ -56,7 +56,6 @@ vec3 calculateNormalOfTriangle()
 
 vec4 explode(vec4 position, vec3 normal)
 {
-   float magnitude = 2.0;
-   vec3 direction  = normal * ((sin(time) + 1.0) / 2.0) * magnitude;
+   vec3 direction = normal * distanceToMove;
    return (position + vec4(direction, 0.0));
 }

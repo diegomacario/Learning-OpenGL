@@ -142,6 +142,7 @@
     <ClCompile Include="src\texture.cpp" />
     <ClCompile Include="src\texture_loader.cpp" />
     <ClCompile Include="src\window.cpp" />
+    <ClCompile Include="src\win_state.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="inc\ball.h" />
@@ -170,6 +171,7 @@
     <ClInclude Include="inc\texture.h" />
     <ClInclude Include="inc\texture_loader.h" />
     <ClInclude Include="inc\window.h" />
+    <ClInclude Include="inc\win_state.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

@@ -1,5 +1,8 @@
 #include "menu_state.h"
 
+float calculateCWAngularPosOnXYPlaneWRTNegYAxisInDeg(const glm::vec3& point);
+float calculateAngularPosWRTPosZAxisInDeg(const glm::vec3& point);
+
 MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
                      const std::shared_ptr<Window>&             window,
                      const std::shared_ptr<Shader>&             gameObject3DShader,
@@ -21,7 +24,7 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
    , mIdleOrbitalAngularVelocity(-15.0f)
    , mTransitionToPlayState(false)
    , mFirstIterationOfTransitionToPlayState(false)
-   , mTimeToCompleteTransitionToPlayStateInSec(1.0f)
+   , mTimeToCompleteTransitionToPlayStateInSec(7.5f)
    , mHorizontalAngularSpeed(0.0f)
    , mVerticalAngularSpeed(0.0f)
    , mSpeedOfMovementAwayFromTarget(0.0f)

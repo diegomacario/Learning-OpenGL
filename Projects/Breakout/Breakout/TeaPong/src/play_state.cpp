@@ -132,7 +132,7 @@ void PlayState::update(float deltaTime)
       {
          if (mPointsScoredByLeftPaddle == 3 || mPointsScoredByRightPaddle == 3)
          {
-            mFSM->changeState("menu");
+            mFSM->changeState("win");
             return;
          }
          else

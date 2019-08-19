@@ -30,7 +30,9 @@ public:
 private:
 
    std::unordered_map<std::string, std::shared_ptr<State>> mStates;
+
    std::shared_ptr<State>                                  mCurrentState;
+
    std::string                                             mPreviousStateID;
    std::string                                             mCurrentStateID;
 };

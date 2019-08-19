@@ -7,6 +7,7 @@
 #include "menu_state.h"
 #include "play_state.h"
 #include "pause_state.h"
+#include "win_state.h"
 #include "game.h"
 
 Game::Game()
@@ -48,12 +49,12 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                       glm::vec3(0.0f, 1.0f, 0.0f),
                                       0.0f,
                                       0.0f,
-                                      45.0f,                        // Fovy
-                                      aspectRatio,                  // Aspect ratio
-                                      0.1f,                         // Near
-                                      120.0f,                       // Far
-                                      20.0f,                        // Movement speed
-                                      0.1f);                        // Mouse sensitivity
+                                      45.0f,       // Fovy
+                                      aspectRatio, // Aspect ratio
+                                      0.1f,        // Near
+                                      120.0f,      // Far
+                                      20.0f,       // Movement speed
+                                      0.1f);       // Mouse sensitivity
 
    // Initialize the 2D renderer
    glm::mat4 orthoProj = glm::ortho(0.0f,                                          // Left
@@ -160,7 +161,18 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                  mBall);
 
    mStates["pause"] = std::make_shared<PauseState>(mFSM,
-                                                   mWindow);
+                                                   mWindow,
+                                                   mCamera,
+                                                   gameObj3DShader,
+                                                   mTable,
+                                                   mLeftPaddle,
+                                                   mRightPaddle,
+                                                   mBall);
+
+   mStates["win"] = std::make_shared<WinState>(mFSM,
+                                               mWindow,
+                                               gameObj3DExplosiveShader,
+                                               mBall);
 
    // Initialize the FSM
    mFSM->initialize(std::move(mStates), "menu");
