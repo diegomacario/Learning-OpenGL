@@ -39,8 +39,9 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
 
 void MenuState::enter()
 {
-   float currRadius = mBall->getRadius();
-   mBall->scale(7.5f / currRadius);
+   mBall->reset();
+   mBall->scale(7.5f / mBall->getRadius());
+   mBall->setPosition(glm::vec3(0.0f, 0.0f, mBall->getScalingFactor() * 1.96875));
    mBall->setRadius(7.5f);
 
    mCameraPosition = glm::vec3(0.0f, -30.0f, 10.0f);
@@ -233,6 +234,7 @@ void MenuState::shrinkBall(float deltaTime)
 
    float newRadius = currentBallRadius - amountToDecreaseRadiusBy;
    mBall->scale(newRadius / currentBallRadius);
+   mBall->setPosition(glm::vec3(0.0f, 0.0f, mBall->getScalingFactor() * 1.96875));
    mBall->setRadius(newRadius);
 }
 

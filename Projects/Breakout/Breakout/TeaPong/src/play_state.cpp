@@ -6,16 +6,18 @@
 
 void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision);
 
-PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
-                     const std::shared_ptr<Window>&             window,
-                     const std::shared_ptr<Camera>&             camera,
-                     const std::shared_ptr<Shader>&             gameObject3DShader,
-                     const std::shared_ptr<GameObject3D>&       table,
-                     const std::shared_ptr<Paddle>&             leftPaddle,
-                     const std::shared_ptr<Paddle>&             rightPaddle,
-                     const std::shared_ptr<Ball>&               ball)
+PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>&     finiteStateMachine,
+                     const std::shared_ptr<Window>&                 window,
+                     const std::shared_ptr<irrklang::ISoundEngine>& soundEngine,
+                     const std::shared_ptr<Camera>&                 camera,
+                     const std::shared_ptr<Shader>&                 gameObject3DShader,
+                     const std::shared_ptr<GameObject3D>&           table,
+                     const std::shared_ptr<Paddle>&                 leftPaddle,
+                     const std::shared_ptr<Paddle>&                 rightPaddle,
+                     const std::shared_ptr<Ball>&                   ball)
    : mFSM(finiteStateMachine)
    , mWindow(window)
+   , mSoundEngine(soundEngine)
    , mCamera(camera)
    , mGameObject3DShader(gameObject3DShader)
    , mTable(table)
@@ -35,6 +37,7 @@ void PlayState::enter()
    if (mFSM->getPreviousStateID() != "pause")
    {
       resetCamera();
+      resetScene();
       mPointsScoredByLeftPaddle  = 0;
       mPointsScoredByRightPaddle = 0;
    }
@@ -56,7 +59,15 @@ void PlayState::exit()
 {
    if (mFSM->getCurrentStateID() != "pause")
    {
-      resetScene();
+      if (mFSM->getCurrentStateID() == "win")
+      {
+         mLeftPaddle->setPosition(glm::vec3(-45.0f, 0.0f, 0.0f));
+         mRightPaddle->setPosition(glm::vec3(45.0f, 0.0f, 0.0f));
+      }
+      else
+      {
+         resetScene();
+      }
    }
 }
 
@@ -150,10 +161,12 @@ void PlayState::update(float deltaTime)
 
       if (circleAndAABBCollided(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision))
       {
+         playSoundOfCollision();
          resolveCollisionBetweenBallAndPaddle(*mBall, *mLeftPaddle, vecFromCenterOfCircleToPointOfCollision);
       }
       else if (circleAndAABBCollided(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision))
       {
+         playSoundOfCollision();
          resolveCollisionBetweenBallAndPaddle(*mBall, *mRightPaddle, vecFromCenterOfCircleToPointOfCollision);
       }
    }
@@ -248,6 +261,24 @@ void PlayState::resetCamera()
 
    mGameObject3DShader->use();
    mGameObject3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
+}
+
+void PlayState::playSoundOfCollision()
+{
+   std::random_device              randomDevice;
+   std::mt19937                    randomNumberGenerator(randomDevice());
+   std::uniform_int_distribution<> uniformIntDistribution(0, 1);
+
+   int randomVal = uniformIntDistribution(randomNumberGenerator);
+
+   if (randomVal == 0)
+   {
+      mSoundEngine->play2D("sounds/ping_pong_hit_2.wav", false);
+   }
+   else
+   {
+      mSoundEngine->play2D("sounds/ping_pong_hit_2.wav", false);
+   }
 }
 
 void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, const glm::vec2& vecFromCenterOfCircleToPointOfCollision)

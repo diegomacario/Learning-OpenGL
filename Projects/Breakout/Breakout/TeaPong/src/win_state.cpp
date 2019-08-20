@@ -73,6 +73,11 @@ void WinState::update(float deltaTime)
       mSpeedOfExplodingFragments += 0.025;
       mDistanceTravelledByExplodingFragments += mSpeedOfExplodingFragments * deltaTime;
    }
+   else
+   {
+      mBall->moveInFreeFall(deltaTime);
+      mBall->setPosition(glm::vec3(0.0f, 0.0f, mBall->getScalingFactor() * 1.96875));
+   }
 
    // Rotate the camera CW around the positive Z axis
    glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mIdleOrbitalAngularVelocity * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));

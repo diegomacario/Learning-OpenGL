@@ -104,7 +104,7 @@ void Ball::moveInFreeFall(float deltaTime)
 
 void Ball::reset()
 {
-   this->setPosition(glm::vec3(0.0f));
+   this->setPosition(glm::vec3(0.0f, 0.0f, this->getScalingFactor() * 1.96875));
    this->setRotationMatrix(glm::mat4(1.0f));
    this->rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
    this->setVelocity(mInitialVelocity);

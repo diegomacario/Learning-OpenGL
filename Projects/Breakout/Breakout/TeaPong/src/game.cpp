@@ -13,6 +13,7 @@
 Game::Game()
    : mFSM()
    , mWindow()
+   , mSoundEngine(irrklang::createIrrKlangDevice(), [=](irrklang::ISoundEngine* soundEngine){soundEngine->drop();})
    , mCamera()
    , mRenderer2D()
    , mModelManager()
@@ -129,10 +130,10 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                            7.5f);
 
    mBall = std::make_shared<Ball>(mModelManager.getResource("teapot"),
-                                  glm::vec3(0.0f),
+                                  glm::vec3(0.0f, 0.0f, 1.96875 * (7.5f / 2.5f)),
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
-                                  1.0f,
+                                  7.5f / 2.5f,
                                   glm::vec3(27.5f, 37.5f, 0.0f),
                                   7.5f,
                                   1000.0f);
@@ -153,6 +154,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
 
    mStates["play"] = std::make_shared<PlayState>(mFSM,
                                                  mWindow,
+                                                 mSoundEngine,
                                                  mCamera,
                                                  gameObj3DShader,
                                                  mTable,
