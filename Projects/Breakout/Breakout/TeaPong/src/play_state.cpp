@@ -265,19 +265,12 @@ void PlayState::resetCamera()
 
 void PlayState::playSoundOfCollision()
 {
-   std::random_device              randomDevice;
-   std::mt19937                    randomNumberGenerator(randomDevice());
-   std::uniform_int_distribution<> uniformIntDistribution(0, 1);
+   static double lastPlayed = 0;
 
-   int randomVal = uniformIntDistribution(randomNumberGenerator);
-
-   if (randomVal == 0)
+   if (glfwGetTime() > lastPlayed + 1)
    {
       mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
-   }
-   else
-   {
-      mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
+      lastPlayed = glfwGetTime();
    }
 }
 

@@ -70,7 +70,7 @@ void WinState::update(float deltaTime)
 
    if (mExplode)
    {
-      mSpeedOfExplodingFragments += 0.025;
+      mSpeedOfExplodingFragments += 0.025f;
       mDistanceTravelledByExplodingFragments += mSpeedOfExplodingFragments * deltaTime;
    }
    else

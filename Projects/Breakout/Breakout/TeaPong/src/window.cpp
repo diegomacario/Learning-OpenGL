@@ -42,6 +42,7 @@ bool Window::initialize()
    glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
    glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
    //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // TODO: Can we keep it resizable? And how can we offer a fullscreen option?
+   glfwWindowHint(GLFW_SAMPLES, 4);
 
    // TODO: Is this necessary?
 #ifdef __APPLE__
@@ -75,13 +76,14 @@ bool Window::initialize()
    glEnable(GL_CULL_FACE);
    glEnable(GL_BLEND);
    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+   glEnable(GL_MULTISAMPLE);
 
    return true;
 }
 
 bool Window::shouldClose() const
 {
-   return glfwWindowShouldClose(mWindow);
+   return static_cast<bool>(glfwWindowShouldClose(mWindow));
 }
 
 void Window::setShouldClose(bool shouldClose)
