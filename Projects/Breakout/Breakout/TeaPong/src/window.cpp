@@ -198,16 +198,19 @@ void Window::framebufferSizeCallback(GLFWwindow* window, int width, int height)
 
 void Window::keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
-   if (action == GLFW_PRESS)
+   if (key != -1)
    {
-      mKeys.set(key);
-   }
-   else if (action == GLFW_RELEASE)
-   {
-      mKeys.reset(key);
-   }
+      if (action == GLFW_PRESS)
+      {
+         mKeys.set(key);
+      }
+      else if (action == GLFW_RELEASE)
+      {
+         mKeys.reset(key);
+      }
 
-   mProcessedKeys.reset(key);
+      mProcessedKeys.reset(key);
+   }
 }
 
 void Window::cursorPosCallback(GLFWwindow* window, double xPos, double yPos)

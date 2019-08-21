@@ -46,6 +46,7 @@ private:
    ResourceManager<Texture>                mTextureManager;
    ResourceManager<Shader>                 mShaderManager;
 
+   std::shared_ptr<GameObject3D>           mTitle;
    std::shared_ptr<GameObject3D>           mTable;
    std::shared_ptr<Paddle>                 mLeftPaddle;
    std::shared_ptr<Paddle>                 mRightPaddle;

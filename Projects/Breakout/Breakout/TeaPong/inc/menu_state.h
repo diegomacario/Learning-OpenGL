@@ -10,6 +10,7 @@ public:
    MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
              const std::shared_ptr<Window>&             window,
              const std::shared_ptr<Shader>&             gameObject3DShader,
+             const std::shared_ptr<GameObject3D>&       title,
              const std::shared_ptr<GameObject3D>&       table,
              const std::shared_ptr<Paddle>&             leftPaddle,
              const std::shared_ptr<Paddle>&             rightPaddle,
@@ -45,6 +46,7 @@ private:
 
    std::shared_ptr<Shader>             mGameObject3DShader;
 
+   std::shared_ptr<GameObject3D>       mTitle;
    std::shared_ptr<GameObject3D>       mTable;
    std::shared_ptr<Paddle>             mLeftPaddle;
    std::shared_ptr<Paddle>             mRightPaddle;

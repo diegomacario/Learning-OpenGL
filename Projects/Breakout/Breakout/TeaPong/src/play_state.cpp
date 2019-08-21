@@ -129,7 +129,7 @@ void PlayState::update(float deltaTime)
       updateScore();
 
       glm::vec3 currVelocity     = mBall->getVelocity();
-      glm::vec3 freeFallVelocity = glm::vec3(currVelocity.x * 0.4, currVelocity.y * 0.4, -15.0f);
+      glm::vec3 freeFallVelocity = glm::vec3(currVelocity.x * 0.25, currVelocity.y * 0.25, -15.0f);
       mBall->setVelocity(freeFallVelocity);
 
       mBallIsFalling = true;
@@ -139,7 +139,7 @@ void PlayState::update(float deltaTime)
    {
       mBall->moveInFreeFall(deltaTime);
 
-      if (mBall->getPosition().z < -30.0f)
+      if (mBall->getPosition().z < -45.0f)
       {
          if (mPointsScoredByLeftPaddle == 3 || mPointsScoredByRightPaddle == 3)
          {
@@ -199,10 +199,10 @@ void PlayState::render()
 
 void PlayState::calculateInitialDirectionOfBall()
 {
-   std::array<glm::vec3, 4> initialDirections = {glm::vec3( 1.0f,  1.0f, 0.0f),  // Upper right diagonal
-                                                 glm::vec3( 1.0f, -1.0f, 0.0f),  // Lower right diagonal
-                                                 glm::vec3(-1.0f, -1.0f, 0.0f),  // Lower left diagonal
-                                                 glm::vec3(-1.0f,  1.0f, 0.0f)}; // Upper left diagonal
+   std::array<glm::vec3, 4> initialDirections = {glm::vec3( 0.725f,  1.0f, 0.0f),  // Upper right diagonal
+                                                 glm::vec3( 0.725f, -1.0f, 0.0f),  // Lower right diagonal
+                                                 glm::vec3(-0.725f, -1.0f, 0.0f),  // Lower left diagonal
+                                                 glm::vec3(-0.725f,  1.0f, 0.0f)}; // Upper left diagonal
 
    std::random_device              randomDevice;
    std::mt19937                    randomNumberGenerator(randomDevice());
@@ -273,11 +273,11 @@ void PlayState::playSoundOfCollision()
 
    if (randomVal == 0)
    {
-      mSoundEngine->play2D("sounds/ping_pong_hit_2.wav", false);
+      mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
    }
    else
    {
-      mSoundEngine->play2D("sounds/ping_pong_hit_2.wav", false);
+      mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
    }
 }
 

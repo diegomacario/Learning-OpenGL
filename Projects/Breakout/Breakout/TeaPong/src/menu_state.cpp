@@ -6,6 +6,7 @@ float calculateAngularPosWRTPosZAxisInDeg(const glm::vec3& point);
 MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachine,
                      const std::shared_ptr<Window>&             window,
                      const std::shared_ptr<Shader>&             gameObject3DShader,
+                     const std::shared_ptr<GameObject3D>&       title,
                      const std::shared_ptr<GameObject3D>&       table,
                      const std::shared_ptr<Paddle>&             leftPaddle,
                      const std::shared_ptr<Paddle>&             rightPaddle,
@@ -13,6 +14,7 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
    : mFSM(finiteStateMachine)
    , mWindow(window)
    , mGameObject3DShader(gameObject3DShader)
+   , mTitle(title)
    , mTable(table)
    , mLeftPaddle(leftPaddle)
    , mRightPaddle(rightPaddle)
@@ -39,6 +41,9 @@ MenuState::MenuState(const std::shared_ptr<FiniteStateMachine>& finiteStateMachi
 
 void MenuState::enter()
 {
+   mTitle->setRotationMatrix(glm::mat4(1.0f));
+   mTitle->rotate(90.0f, glm::vec3(1.0f, 0.0f, 0.0f));
+
    mBall->reset();
    mBall->scale(7.5f / mBall->getRadius());
    mBall->setPosition(glm::vec3(0.0f, 0.0f, mBall->getScalingFactor() * 1.96875));
@@ -115,6 +120,9 @@ void MenuState::update(float deltaTime)
       // Rotate the camera CW around the positive Z axis
       glm::mat4 rotationMatrix = glm::rotate(glm::mat4(1.0f), glm::radians(mIdleOrbitalAngularVelocity * deltaTime), glm::vec3(0.0f, 0.0f, 1.0f));
       mCameraPosition = glm::mat3(rotationMatrix) * mCameraPosition;
+
+      // Rotate the title CW around the positive Z axis
+      mTitle->rotate(mIdleOrbitalAngularVelocity * deltaTime, glm::vec3(0.0f, 0.0f, 1.0f));
    }
 }
 
@@ -129,6 +137,11 @@ void MenuState::render()
    mGameObject3DShader->use();
    mGameObject3DShader->setMat4("view", glm::lookAt(mCameraPosition, mCameraTarget, mCameraUp));
    mGameObject3DShader->setVec3("cameraPos", mCameraPosition);
+
+   if (!mTransitionToPlayState)
+   {
+      mTitle->render(*mGameObject3DShader);
+   }
 
    mTable->render(*mGameObject3DShader);
 

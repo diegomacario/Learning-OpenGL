@@ -19,6 +19,7 @@ Game::Game()
    , mModelManager()
    , mTextureManager()
    , mShaderManager()
+   , mTitle()
    , mTable()
    , mLeftPaddle()
    , mRightPaddle()
@@ -53,7 +54,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                       45.0f,       // Fovy
                                       aspectRatio, // Aspect ratio
                                       0.1f,        // Near
-                                      120.0f,      // Far
+                                      130.0f,      // Far
                                       20.0f,       // Movement speed
                                       0.1f);       // Mouse sensitivity
 
@@ -101,9 +102,16 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    gameObj3DExplosiveShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
+   mModelManager.loadResource<ModelLoader>("title", "models/title/title.obj");
    mModelManager.loadResource<ModelLoader>("table", "models/table/table.obj");
    mModelManager.loadResource<ModelLoader>("paddle", "models/paddle/paddle.obj");
    mModelManager.loadResource<ModelLoader>("teapot", "models/teapot/teapot.obj");
+
+   mTitle = std::make_shared<GameObject3D>(mModelManager.getResource("title"),
+                                           glm::vec3(0.0f, 0.0f, 13.75f),
+                                           90.0f,
+                                           glm::vec3(1.0f, 0.0f, 0.0f),
+                                           1.0f);
 
    mTable = std::make_shared<GameObject3D>(mModelManager.getResource("table"),
                                            glm::vec3(0.0f),
@@ -134,7 +142,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                   90.0f,
                                   glm::vec3(1.0f, 0.0f, 0.0f),
                                   7.5f / 2.5f,
-                                  glm::vec3(27.5f, 37.5f, 0.0f),
+                                  glm::vec3(35.0f, 45.0f, 0.0f),
                                   7.5f,
                                   1000.0f);
 
@@ -147,6 +155,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    mStates["menu"] = std::make_shared<MenuState>(mFSM,
                                                  mWindow,
                                                  gameObj3DShader,
+                                                 mTitle,
                                                  mTable,
                                                  mLeftPaddle,
                                                  mRightPaddle,
@@ -178,6 +187,9 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
 
    // Initialize the FSM
    mFSM->initialize(std::move(mStates), "menu");
+
+   irrklang::ISound* backgroundMusic = mSoundEngine->play2D("sounds/podington_bear_filaments.mp3", true, false, true);
+   backgroundMusic->setVolume(0.3f);
 
    return true;
 }
