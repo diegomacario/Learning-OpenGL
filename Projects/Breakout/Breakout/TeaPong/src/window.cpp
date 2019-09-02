@@ -44,7 +44,6 @@ bool Window::initialize()
    //glfwWindowHint(GLFW_RESIZABLE, GL_FALSE); // TODO: Can we keep it resizable? And how can we offer a fullscreen option?
    glfwWindowHint(GLFW_SAMPLES, 4);
 
-   // TODO: Is this necessary?
 #ifdef __APPLE__
    glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
 #endif

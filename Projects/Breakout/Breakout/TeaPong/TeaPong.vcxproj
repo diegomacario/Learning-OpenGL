@@ -73,6 +73,11 @@
     <LibraryPath>C:\OpenGL\Libraries;$(LibraryPath)</LibraryPath>
     <SourcePath>C:\OpenGL\Projects\Breakout\Breakout\TeaPong\src;$(SourcePath)</SourcePath>
   </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <IncludePath>C:\OpenGL\Projects\Breakout\Breakout\TeaPong\inc;C:\OpenGL\Includes;$(IncludePath)</IncludePath>
+    <LibraryPath>C:\OpenGL\Libraries;$(LibraryPath)</LibraryPath>
+    <SourcePath>C:\OpenGL\Projects\Breakout\Breakout\TeaPong\src;$(SourcePath)</SourcePath>
+  </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
     <ClCompile>
       <WarningLevel>Level3</WarningLevel>
@@ -101,6 +106,7 @@
     <Link>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>
+      <AdditionalDependencies>opengl32.lib;glfw3.lib;assimp-vc140-mt.lib;irrKlang.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
   </ItemDefinitionGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
