@@ -8,7 +8,7 @@ void resolveCollisionBetweenBallAndPaddle(Ball& ball, const Paddle& paddle, cons
 
 PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>&     finiteStateMachine,
                      const std::shared_ptr<Window>&                 window,
-                     const std::shared_ptr<irrklang::ISoundEngine>& soundEngine,
+                     //const std::shared_ptr<irrklang::ISoundEngine>& soundEngine,
                      const std::shared_ptr<Camera>&                 camera,
                      const std::shared_ptr<Shader>&                 gameObject3DShader,
                      const std::shared_ptr<GameObject3D>&           table,
@@ -17,7 +17,7 @@ PlayState::PlayState(const std::shared_ptr<FiniteStateMachine>&     finiteStateM
                      const std::shared_ptr<Ball>&                   ball)
    : mFSM(finiteStateMachine)
    , mWindow(window)
-   , mSoundEngine(soundEngine)
+   //, mSoundEngine(soundEngine)
    , mCamera(camera)
    , mGameObject3DShader(gameObject3DShader)
    , mTable(table)
@@ -269,7 +269,7 @@ void PlayState::playSoundOfCollision()
 
    if (glfwGetTime() > lastPlayed + 1)
    {
-      mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
+      //mSoundEngine->play2D("sounds/ping_pong_hit.wav", false);
       lastPlayed = glfwGetTime();
    }
 }

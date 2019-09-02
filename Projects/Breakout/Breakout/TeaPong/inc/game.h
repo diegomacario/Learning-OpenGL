@@ -1,7 +1,7 @@
 #ifndef GAME_H
 #define GAME_H
 
-#include <irrklang/irrKlang.h>
+//#include <irrklang/irrKlang.h>
 
 #include "model.h"
 #include "renderer_2D.h"
@@ -36,7 +36,7 @@ private:
 
    std::shared_ptr<Window>                 mWindow;
 
-   std::shared_ptr<irrklang::ISoundEngine> mSoundEngine;
+   //std::shared_ptr<irrklang::ISoundEngine> mSoundEngine;
 
    std::shared_ptr<Camera>                 mCamera;
 
