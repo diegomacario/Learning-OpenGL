@@ -200,33 +200,12 @@ void Game::executeGameLoop()
    double lastFrame    = 0.0;
    float  deltaTime    = 0.0f;
 
-   auto gameObj3DShader = mShaderManager.getResource("game_object_3D");
-
    while (!mWindow->shouldClose())
    {
-      //currentFrame = glfwGetTime();
-      //deltaTime    = static_cast<float>(currentFrame - lastFrame);
-      //lastFrame    = currentFrame;
+      currentFrame = glfwGetTime();
+      deltaTime    = static_cast<float>(currentFrame - lastFrame);
+      lastFrame    = currentFrame;
 
-      //mFSM->executeCurrentState(deltaTime);
-
-      if (mWindow->keyIsPressed(GLFW_KEY_ESCAPE)) { mWindow->setShouldClose(true); }
-
-      glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-      glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-      // Enable depth testing for 3D objects
-      glEnable(GL_DEPTH_TEST);
-
-      gameObj3DShader->use();
-      gameObj3DShader->setMat4("view", mCamera->getViewMatrix());
-      gameObj3DShader->setVec3("cameraPos", mCamera->getPosition());
-
-      glDisable(GL_CULL_FACE);
-      mBall->render(*gameObj3DShader);
-      glEnable(GL_CULL_FACE);
-
-      mWindow->swapBuffers();
-      mWindow->pollEvents();
+      mFSM->executeCurrentState(deltaTime);
    }
 }
