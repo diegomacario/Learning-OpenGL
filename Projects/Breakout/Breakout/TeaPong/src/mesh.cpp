@@ -93,7 +93,7 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
          // Activate the proper texture unit before binding the current texture
          glActiveTexture(texUnit);
          // Tell the sampler2D uniform in what texture unit to look for the texture data
-         glUniform1i(uniformLoc, texUnit);
+         glUniform1i(uniformLoc, i);
          // Bind the texture
          mMaterial.textures[i].texture->bind();
 
