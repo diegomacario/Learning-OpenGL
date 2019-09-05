@@ -80,12 +80,11 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                                     "shaders/game_object_3D.fs");
    gameObj3DShader->use();
    gameObj3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-   gameObj3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
-   gameObj3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
-   gameObj3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
-   gameObj3DShader->setFloat("pointLights[0].linearAtt", 0.01f);
-   gameObj3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
-   gameObj3DShader->setInt("numPointLightsInScene", 1);
+   gameObj3DShader->setVec3("pl_worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
+   gameObj3DShader->setVec3("pl_color", glm::vec3(1.0f, 1.0f, 1.0f));
+   gameObj3DShader->setFloat("pl_constantAtt", 1.0f);
+   gameObj3DShader->setFloat("pl_linearAtt", 0.01f);
+   gameObj3DShader->setFloat("pl_quadraticAtt", 0.0f);
 
    // Initialize the explosive 3D shader
    auto gameObj3DExplosiveShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D_explosive",
@@ -94,12 +93,11 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                                              "shaders/game_object_3D_explosive.gs");
    gameObj3DExplosiveShader->use();
    gameObj3DExplosiveShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-   gameObj3DExplosiveShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
-   gameObj3DExplosiveShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
-   gameObj3DExplosiveShader->setFloat("pointLights[0].constantAtt", 1.0f);
-   gameObj3DExplosiveShader->setFloat("pointLights[0].linearAtt", 0.01f);
-   gameObj3DExplosiveShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
-   gameObj3DExplosiveShader->setInt("numPointLightsInScene", 1);
+   gameObj3DExplosiveShader->setVec3("pl_worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
+   gameObj3DExplosiveShader->setVec3("pl_color", glm::vec3(1.0f, 1.0f, 1.0f));
+   gameObj3DExplosiveShader->setFloat("pl_constantAtt", 1.0f);
+   gameObj3DExplosiveShader->setFloat("pl_linearAtt", 0.01f);
+   gameObj3DExplosiveShader->setFloat("pl_quadraticAtt", 0.0f);
 
    // Load the models
    mModelManager.loadResource<ModelLoader>("title", "models/title/title.obj");
