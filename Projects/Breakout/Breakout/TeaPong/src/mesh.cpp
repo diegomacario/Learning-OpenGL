@@ -34,7 +34,7 @@ Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 
 void Mesh::render(const Shader& shader) const
 {
-   bindMaterialTextures(shader);
+   //bindMaterialTextures(shader);
    setMaterialTextureAvailabilities(shader);
    setMaterialConstants(shader);
 
@@ -110,10 +110,10 @@ void Mesh::bindMaterialTextures(const Shader& shader) const
 
 void Mesh::setMaterialTextureAvailabilities(const Shader& shader) const
 {
-   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::ambient)));
-   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::emissive)));
-   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::diffuse)));
-   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", mMaterial.textureAvailabilities.test(static_cast<unsigned int>(MaterialTextureTypes::specular)));
+   shader.setInt("materialTextureAvailabilities.ambientTexIsAvailable", 0);
+   shader.setInt("materialTextureAvailabilities.emissiveTexIsAvailable", 0);
+   shader.setInt("materialTextureAvailabilities.diffuseTexIsAvailable", 0);
+   shader.setInt("materialTextureAvailabilities.specularTexIsAvailable", 0);
 }
 
 void Mesh::setMaterialConstants(const Shader& shader) const
