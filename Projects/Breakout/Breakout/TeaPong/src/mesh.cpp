@@ -35,7 +35,7 @@ Mesh& Mesh::operator=(Mesh&& rhs) noexcept
 void Mesh::render(const Shader& shader) const
 {
    //bindMaterialTextures(shader);
-   setMaterialTextureAvailabilities(shader);
+   //setMaterialTextureAvailabilities(shader);
    setMaterialConstants(shader);
 
    glBindVertexArray(mVAO);
@@ -118,9 +118,9 @@ void Mesh::setMaterialTextureAvailabilities(const Shader& shader) const
 
 void Mesh::setMaterialConstants(const Shader& shader) const
 {
-   shader.setVec3("materialConstants.ambient", mMaterial.constants.ambientColor);
-   shader.setVec3("materialConstants.emissive", mMaterial.constants.emissiveColor);
-   shader.setVec3("materialConstants.diffuse", mMaterial.constants.diffuseColor);
-   shader.setVec3("materialConstants.specular", mMaterial.constants.specularColor);
-   shader.setFloat("materialConstants.shininess", mMaterial.constants.shininess);
+   shader.setVec3("ambientConst", mMaterial.constants.ambientColor);
+   shader.setVec3("emissiveConst", mMaterial.constants.emissiveColor);
+   shader.setVec3("diffuseConst", mMaterial.constants.diffuseColor);
+   shader.setVec3("specularConst", mMaterial.constants.specularColor);
+   shader.setFloat("shininessConst", mMaterial.constants.shininess);
 }
