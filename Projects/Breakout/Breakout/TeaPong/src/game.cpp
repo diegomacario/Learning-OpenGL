@@ -13,7 +13,7 @@
 Game::Game()
    : mFSM()
    , mWindow()
-   //, mSoundEngine(irrklang::createIrrKlangDevice(), [=](irrklang::ISoundEngine* soundEngine){soundEngine->drop();})
+   , mSoundEngine(irrklang::createIrrKlangDevice(), [=](irrklang::ISoundEngine* soundEngine){soundEngine->drop();})
    , mCamera()
    , mRenderer2D()
    , mModelManager()
@@ -80,11 +80,12 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                                     "shaders/game_object_3D.fs");
    gameObj3DShader->use();
    gameObj3DShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-   gameObj3DShader->setVec3("pl_worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
-   gameObj3DShader->setVec3("pl_color", glm::vec3(1.0f, 1.0f, 1.0f));
-   gameObj3DShader->setFloat("pl_constantAtt", 1.0f);
-   gameObj3DShader->setFloat("pl_linearAtt", 0.01f);
-   gameObj3DShader->setFloat("pl_quadraticAtt", 0.0f);
+   gameObj3DShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
+   gameObj3DShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
+   gameObj3DShader->setFloat("pointLights[0].constantAtt", 1.0f);
+   gameObj3DShader->setFloat("pointLights[0].linearAtt", 0.01f);
+   gameObj3DShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
+   gameObj3DShader->setInt("numPointLightsInScene", 1);
 
    // Initialize the explosive 3D shader
    auto gameObj3DExplosiveShader = mShaderManager.loadResource<ShaderLoader>("game_object_3D_explosive",
@@ -93,11 +94,12 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
                                                                              "shaders/game_object_3D_explosive.gs");
    gameObj3DExplosiveShader->use();
    gameObj3DExplosiveShader->setMat4("projection", mCamera->getPerspectiveProjectionMatrix());
-   gameObj3DExplosiveShader->setVec3("pl_worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
-   gameObj3DExplosiveShader->setVec3("pl_color", glm::vec3(1.0f, 1.0f, 1.0f));
-   gameObj3DExplosiveShader->setFloat("pl_constantAtt", 1.0f);
-   gameObj3DExplosiveShader->setFloat("pl_linearAtt", 0.01f);
-   gameObj3DExplosiveShader->setFloat("pl_quadraticAtt", 0.0f);
+   gameObj3DExplosiveShader->setVec3("pointLights[0].worldPos", glm::vec3(0.0f, 0.0f, 100.0f));
+   gameObj3DExplosiveShader->setVec3("pointLights[0].color", glm::vec3(1.0f, 1.0f, 1.0f));
+   gameObj3DExplosiveShader->setFloat("pointLights[0].constantAtt", 1.0f);
+   gameObj3DExplosiveShader->setFloat("pointLights[0].linearAtt", 0.01f);
+   gameObj3DExplosiveShader->setFloat("pointLights[0].quadraticAtt", 0.0f);
+   gameObj3DExplosiveShader->setInt("numPointLightsInScene", 1);
 
    // Load the models
    mModelManager.loadResource<ModelLoader>("title", "models/title/title.obj");
@@ -161,7 +163,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
 
    mStates["play"] = std::make_shared<PlayState>(mFSM,
                                                  mWindow,
-                                                 //mSoundEngine,
+                                                 mSoundEngine,
                                                  mCamera,
                                                  gameObj3DShader,
                                                  mTable,
@@ -186,31 +188,11 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    // Initialize the FSM
    mFSM->initialize(std::move(mStates), "menu");
 
-   //irrklang::ISound* backgroundMusic = mSoundEngine->play2D("sounds/podington_bear_filaments.mp3", true, false, true);
-   //backgroundMusic->setVolume(0.3f);
+   irrklang::ISound* backgroundMusic = mSoundEngine->play2D("sounds/podington_bear_filaments.mp3", true, false, true);
+   backgroundMusic->setVolume(0.3f);
 
    return true;
 }
-
-GLenum glCheckError_(const char *file, int line)
-{
-   GLenum errorCode;
-   while ((errorCode = glGetError()) != GL_NO_ERROR)
-   {
-      std::string error;
-      switch (errorCode)
-      {
-      case GL_INVALID_ENUM:                  error = "INVALID_ENUM"; break;
-      case GL_INVALID_VALUE:                 error = "INVALID_VALUE"; break;
-      case GL_INVALID_OPERATION:             error = "INVALID_OPERATION"; break;
-      case GL_OUT_OF_MEMORY:                 error = "OUT_OF_MEMORY"; break;
-      case GL_INVALID_FRAMEBUFFER_OPERATION: error = "INVALID_FRAMEBUFFER_OPERATION"; break;
-      }
-      std::cout << error << " | " << file << " (" << line << ")" << std::endl;
-   }
-   return errorCode;
-}
-#define glCheckError() glCheckError_(__FILE__, __LINE__) 
 
 void Game::executeGameLoop()
 {
@@ -225,7 +207,5 @@ void Game::executeGameLoop()
       lastFrame    = currentFrame;
 
       mFSM->executeCurrentState(deltaTime);
-
-      glCheckError();
    }
 }
