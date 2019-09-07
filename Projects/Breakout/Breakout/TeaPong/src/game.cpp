@@ -13,7 +13,7 @@
 Game::Game()
    : mFSM()
    , mWindow()
-   , mSoundEngine(irrklang::createIrrKlangDevice(), [=](irrklang::ISoundEngine* soundEngine){soundEngine->drop();})
+   //, mSoundEngine(irrklang::createIrrKlangDevice(), [=](irrklang::ISoundEngine* soundEngine){soundEngine->drop();})
    , mCamera()
    , mRenderer2D()
    , mModelManager()
@@ -163,7 +163,7 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
 
    mStates["play"] = std::make_shared<PlayState>(mFSM,
                                                  mWindow,
-                                                 mSoundEngine,
+                                                 //mSoundEngine,
                                                  mCamera,
                                                  gameObj3DShader,
                                                  mTable,
@@ -188,8 +188,8 @@ bool Game::initialize(unsigned int widthInPix, unsigned int heightInPix, const s
    // Initialize the FSM
    mFSM->initialize(std::move(mStates), "menu");
 
-   irrklang::ISound* backgroundMusic = mSoundEngine->play2D("sounds/podington_bear_filaments.mp3", true, false, true);
-   backgroundMusic->setVolume(0.3f);
+   //irrklang::ISound* backgroundMusic = mSoundEngine->play2D("sounds/podington_bear_filaments.mp3", true, false, true);
+   //backgroundMusic->setVolume(0.3f);
 
    return true;
 }
