@@ -82,7 +82,16 @@ bool Window::initialize()
 
 bool Window::shouldClose() const
 {
-   return static_cast<bool>(glfwWindowShouldClose(mWindow));
+   int windowShouldClose = glfwWindowShouldClose(mWindow);
+
+   if (windowShouldClose == 0)
+   {
+      return false;
+   }
+   else
+   {
+      return true;
+   }
 }
 
 void Window::setShouldClose(bool shouldClose)

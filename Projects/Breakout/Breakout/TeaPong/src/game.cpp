@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "constants.h"
 #include "shader_loader.h"
 #include "texture_loader.h"
 #include "model_loader.h"
