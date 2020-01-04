@@ -56,7 +56,7 @@ void main()
 {
    vec3 viewDir = normalize(cameraPos - i.worldPos);
 
-   vec3 color;
+   vec3 color = vec3(0.0);
    for(int i = 0; i < numPointLightsInScene; i++)
    {
       color += calculateContributionOfPointLight(pointLights[i], viewDir);
